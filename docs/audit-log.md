@@ -551,3 +551,41 @@
 - Polish gate 6/10: signup-flow-cro
 ### Blockers
 - None
+
+## Iteration 16 — 2026-04-05 [POLISH]
+### Polish gate 6/10: signup-flow-cro
+### What was done
+- Created `apps/web/src/app/(auth)/submit-button.tsx` — client component using `useFormStatus` for loading states on all auth form submissions (spinner + pending text + disabled state)
+- **Sign-up page** (`sign-up/page.tsx`):
+  - Headline changed from "Start your free trial" to "Start monitoring in 2 minutes" (outcome-focused, specificity)
+  - GitHub OAuth restyled as primary CTA with GitHub's brand color (#24292f) instead of generic gray — highest-conversion option for dev audience gets visual prominence
+  - Added "Fastest option — one click, no password" hint below GitHub button to reduce decision paralysis
+  - Email magic link restyled as secondary option (gray border) with "or use email" separator
+  - Added loading states: "Connecting to GitHub..." and "Sending link..." with spinner during form submission
+  - Added comprehensive error handling: OAuthAccountNotLinked, EmailSignin (send failure), Callback (expired/used link), plus generic fallback — sign-up page previously had no error handling at all
+  - Added trust signals strip below form: "No credit card", "Setup in 2 min", "Team-ready" with icons
+  - Label changed from "Email address" to "Work email" (signals B2B context, encourages work email)
+  - "Sign in" link text preserved for returning users
+- **Sign-in page** (`sign-in/page.tsx`):
+  - Same GitHub OAuth visual prominence (brand color, primary position)
+  - Same loading states on both buttons
+  - Expanded error handling: added EmailSignin, Callback, AccessDenied error types with descriptive recovery guidance
+  - "Sign up" link text changed to "Start free trial" (conversion-oriented)
+  - Email input label kept as "Email address" (returning users may use personal email)
+- **Verify-request page** (`verify-request/page.tsx`):
+  - Added email provider quick-open buttons (Gmail, Outlook, Yahoo) — reduces friction of finding the email
+  - Each button opens provider inbox in new tab with hover color matching provider brand
+  - Enlarged envelope icon with ring effect for visual hierarchy
+  - Split help text into two actionable items: "Check spam folder" and "Wrong email? Try again with a different address"
+  - Heading changed from "Check your email" to "Check your inbox" (more specific)
+- **Auth layout** (`(auth)/layout.tsx`):
+  - Added Terms of Service and Privacy Policy links in footer (trust signal + legal compliance)
+- Both auth pages now use unique input IDs (`signup-email`, `signin-email`) to avoid autocomplete conflicts
+### Audit results
+- Build: PASS
+- Skills used: signup-flow-cro
+- Polish gates: 6/10 passed
+### What's next
+- Polish gate 7/10: form-cro
+### Blockers
+- None

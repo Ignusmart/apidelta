@@ -15,9 +15,24 @@ export default function AuthLayout({
         <Zap aria-hidden="true" className="h-6 w-6 text-violet-400" />
         DriftWatch
       </Link>
-      <main id="main-content">
-        {children}
-      </main>
+      <main id="main-content">{children}</main>
+      <p className="mt-10 max-w-xs text-center text-xs leading-relaxed text-gray-600">
+        By signing up you agree to our{' '}
+        <a
+          href="/terms"
+          className="rounded text-gray-500 underline underline-offset-2 hover:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+        >
+          Terms of Service
+        </a>{' '}
+        and{' '}
+        <a
+          href="/privacy"
+          className="rounded text-gray-500 underline underline-offset-2 hover:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+        >
+          Privacy Policy
+        </a>
+        .
+      </p>
     </div>
   );
 }
