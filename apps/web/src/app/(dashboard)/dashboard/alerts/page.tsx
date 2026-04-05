@@ -99,7 +99,7 @@ export default function AlertsPage() {
       setAlerts(alertsData.data ?? []);
       setSources(sourcesData);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load alerts');
+      setError(e instanceof Error ? e.message : 'Could not load alert data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -140,21 +140,21 @@ export default function AlertsPage() {
       setShowCreateForm(false);
       await fetchData();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create rule');
+      setError(e instanceof Error ? e.message : 'Could not create alert rule. Please try again.');
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleDeleteRule(id: string) {
-    if (!confirm('Delete this alert rule? Future alerts will not be sent.'))
+    if (!confirm('Delete this alert rule? You will stop receiving notifications from this rule.'))
       return;
     setDeletingId(id);
     try {
       await apiFetch(`/alerts/rules/${id}`, { method: 'DELETE' });
       setRules((prev) => prev.filter((r) => r.id !== id));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to delete rule');
+      setError(e instanceof Error ? e.message : 'Could not delete alert rule. Please try again.');
     } finally {
       setDeletingId(null);
     }
@@ -175,7 +175,7 @@ export default function AlertsPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Alerts</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Configure when and how you get notified about API changes.
+            Set up rules for when and where you get notified about API changes.
           </p>
         </div>
         <button
@@ -350,7 +350,7 @@ export default function AlertsPage() {
                   className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
                 />
                 <p className="mt-1 text-xs text-gray-600">
-                  Only alert when changes contain these keywords.
+                  Only notify when changes mention these keywords. Leave blank to match all changes.
                 </p>
               </div>
 
@@ -371,7 +371,7 @@ export default function AlertsPage() {
                   {submitting ? (
                     <Loader2 className="mx-auto h-4 w-4 animate-spin" />
                   ) : (
-                    'Create Rule'
+                    'Create Alert Rule'
                   )}
                 </button>
               </div>
@@ -387,17 +387,17 @@ export default function AlertsPage() {
             <div className="rounded-xl border border-dashed border-gray-800 py-16 text-center">
               <Bell className="mx-auto h-10 w-10 text-gray-700" />
               <p className="mt-4 text-sm text-gray-500">
-                No alert rules configured.
+                No alert rules yet.
               </p>
               <p className="mt-1 text-xs text-gray-600">
-                Create a rule to get notified when API changes are detected.
+                Create a rule to start receiving Slack or email notifications when API changes are detected.
               </p>
               <button
                 onClick={() => setShowCreateForm(true)}
                 className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
               >
                 <Plus className="h-4 w-4" />
-                Create your first rule
+                Create your first alert rule
               </button>
             </div>
           ) : (
@@ -499,10 +499,10 @@ export default function AlertsPage() {
             <div className="rounded-xl border border-dashed border-gray-800 py-16 text-center">
               <Clock className="mx-auto h-10 w-10 text-gray-700" />
               <p className="mt-4 text-sm text-gray-500">
-                No alerts have been triggered yet.
+                No alerts sent yet.
               </p>
               <p className="mt-1 text-xs text-gray-600">
-                Alerts will appear here when changes match your rules.
+                When a detected change matches one of your alert rules, the notification will appear here.
               </p>
             </div>
           ) : (

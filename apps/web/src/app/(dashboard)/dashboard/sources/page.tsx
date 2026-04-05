@@ -77,7 +77,7 @@ export default function SourcesPage() {
       setSourceLimit(limitData);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load sources');
+      setError(e instanceof Error ? e.message : 'Could not load API sources. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -109,20 +109,20 @@ export default function SourcesPage() {
       setShowAddForm(false);
       await fetchSources();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to add source');
+      setError(e instanceof Error ? e.message : 'Could not add this source. Check the URL and try again.');
     } finally {
       setSubmitting(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this source? All crawl data will be lost.')) return;
+    if (!confirm('Delete this API source? All crawl history and change data for this source will be permanently removed.')) return;
     setDeletingId(id);
     try {
       await apiFetch(`/sources/${id}`, { method: 'DELETE' });
       setSources((prev) => prev.filter((s) => s.id !== id));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to delete');
+      setError(e instanceof Error ? e.message : 'Could not delete this source. Please try again.');
     } finally {
       setDeletingId(null);
     }
@@ -135,7 +135,7 @@ export default function SourcesPage() {
       // Refresh to get updated lastCrawledAt
       setTimeout(() => fetchSources(), 2000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to trigger crawl');
+      setError(e instanceof Error ? e.message : 'Could not start crawl. Please try again.');
     } finally {
       setCrawlingId(null);
     }
@@ -156,7 +156,7 @@ export default function SourcesPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">API Sources</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Manage the APIs and changelogs DriftWatch monitors for you.
+            Add, remove, and monitor the API changelogs DriftWatch crawls for your team.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -282,7 +282,7 @@ export default function SourcesPage() {
                   {submitting ? (
                     <Loader2 className="mx-auto h-4 w-4 animate-spin" />
                   ) : (
-                    'Add Source'
+                    'Add and Start Monitoring'
                   )}
                 </button>
               </div>
@@ -297,14 +297,14 @@ export default function SourcesPage() {
           <Rss className="mx-auto h-10 w-10 text-gray-700" />
           <p className="mt-4 text-sm text-gray-500">No API sources yet.</p>
           <p className="mt-1 text-xs text-gray-600">
-            Add a changelog URL to start monitoring for changes.
+            Paste a changelog URL and DriftWatch starts monitoring within minutes.
           </p>
           <button
             onClick={() => setShowAddForm(true)}
             className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
           >
             <Plus className="h-4 w-4" />
-            Add your first source
+            Add your first API source
           </button>
         </div>
       ) : (

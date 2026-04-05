@@ -45,58 +45,58 @@ const FEATURES = [
     icon: Bot,
     title: "AI-Powered Classification",
     description:
-      "Claude AI reads every changelog entry and classifies it as breaking, deprecation, or informational — so you only get woken up for what matters.",
+      "AI reads every changelog entry and classifies it as breaking, deprecation, or informational — so you only act on what matters.",
   },
   {
     icon: Bell,
-    title: "Multi-Channel Alerts",
+    title: "Slack and Email Alerts",
     description:
-      "Get notified in Slack, email, or both. Set severity thresholds per channel so critical changes hit Slack instantly while info-level changes go to a digest.",
+      "Route critical changes to Slack for instant visibility, and batch lower-severity updates into email digests. Set severity thresholds per channel so the right signal reaches the right place.",
   },
   {
     icon: Rss,
     title: "50+ Changelog Formats",
     description:
-      "HTML pages, RSS feeds, GitHub Releases — DriftWatch handles the messy reality of how APIs publish changes. Add a URL and we figure out the rest.",
+      "HTML pages, RSS feeds, GitHub Releases — we handle the messy reality of how APIs publish changes. Paste a URL and DriftWatch figures out the rest.",
   },
   {
     icon: Users,
-    title: "Team Collaboration",
+    title: "Built for Teams",
     description:
-      "Invite your team, assign API ownership, and route alerts to the right people. Everyone sees the same change feed with severity badges.",
+      "Assign API ownership to the engineers who maintain each integration. Route alerts to the right people and share a single change feed with clear severity badges.",
   },
   {
     icon: Clock,
     title: "Hourly Monitoring",
     description:
-      "We check your monitored APIs every hour. When a breaking change drops, you know within 60 minutes — not when your CI pipeline fails at 2 AM.",
+      "DriftWatch checks every monitored API on the hour. When a breaking change lands, you know within 60 minutes — not when your CI pipeline fails at 2 AM.",
   },
   {
     icon: Shield,
-    title: "Audit Trail",
+    title: "Full Audit Trail",
     description:
-      "Every change, every classification, every alert — logged and searchable. Perfect for compliance reviews and post-mortems.",
+      "Every change, every classification, every alert — logged and searchable. When a post-mortem asks \"did we know about this?\", the answer is in your dashboard.",
   },
 ];
 
 const HOW_IT_WORKS = [
   {
     step: "1",
-    title: "Add your API dependencies",
+    title: "Paste your changelog URLs",
     description:
-      "Paste the changelog URL for any third-party API you depend on. We support Stripe, Twilio, GitHub, OpenAI, and 50+ more out of the box.",
+      "Add the changelog URL for any third-party API your product depends on. Stripe, Twilio, GitHub, OpenAI, and 50+ more work out of the box — any URL with a changelog works.",
   },
   {
     step: "2",
-    title: "AI classifies every change",
+    title: "AI reads and classifies every update",
     description:
-      "Our AI reads each changelog entry and tags it with a severity level, affected endpoints, and a plain-English summary your whole team can understand.",
+      "Each changelog entry gets a severity level, affected endpoints, and a plain-English summary. No more skimming release notes — your team sees exactly what matters.",
   },
   {
     step: "3",
     title: "Get alerted before things break",
     description:
-      "Breaking change detected? You get a Slack message or email with exactly what changed, what endpoints are affected, and what you need to do.",
+      "When a breaking change drops, you get a Slack message or email with exactly what changed, which endpoints are affected, and what to do next.",
   },
 ];
 
@@ -105,7 +105,7 @@ const PLANS = [
     name: "Starter",
     price: 49,
     period: "per month",
-    description: "For small teams monitoring critical APIs",
+    description: "For small teams with a handful of key integrations",
     features: [
       "10 monitored APIs",
       "2 team members",
@@ -121,7 +121,7 @@ const PLANS = [
     name: "Pro",
     price: 99,
     period: "per month",
-    description: "For growing teams with many dependencies",
+    description: "For teams managing dozens of API dependencies",
     features: [
       "50 monitored APIs",
       "10 team members",
@@ -140,19 +140,19 @@ const PLANS = [
 const FAQS = [
   {
     q: "What APIs can DriftWatch monitor?",
-    a: "Any API that publishes a changelog, release notes, or status page. We support HTML pages, RSS feeds, and GitHub Releases out of the box. If it has a URL, we can probably crawl it.",
+    a: "Any API that publishes a changelog, release notes, or status page. We handle HTML pages, RSS feeds, and GitHub Releases out of the box. If it has a URL, DriftWatch can crawl it.",
   },
   {
     q: "How does the AI classification work?",
-    a: "We use Anthropic's Claude AI to read each changelog entry and classify it by type (breaking, deprecation, non-breaking, informational) and severity (critical, high, medium, low). It also extracts affected endpoints and generates a plain-English summary.",
+    a: "DriftWatch uses AI to read each changelog entry and classify it by type (breaking, deprecation, non-breaking, informational) and severity (critical, high, medium, low). It also extracts affected endpoints and generates a plain-English summary your whole team can act on.",
   },
   {
     q: "How is this different from basic change detection tools?",
-    a: "Most monitoring platforms charge $149-749/mo for basic text diffing with no intelligence layer. DriftWatch uses AI to actually understand what changed and whether it will break your integration — at a fraction of the cost. Smarter alerts, lower price.",
+    a: "Most monitoring tools charge $149-749/mo for basic text diffing with no intelligence layer. DriftWatch uses AI to understand what changed and whether it affects your integration — at a fraction of the cost. You get smarter alerts for less money.",
   },
   {
     q: "Do I need to install anything?",
-    a: "No. DriftWatch is a hosted service. Sign up, paste your API changelog URLs, configure your alert channels, and you are done. No agents, no SDKs, no CI plugins.",
+    a: "Nothing. DriftWatch is fully hosted. Sign up, paste your API changelog URLs, configure your alert channels, and you are done. No agents to deploy, no SDKs to integrate, no CI plugins to maintain.",
   },
   {
     q: "What happens during the free trial?",
@@ -164,7 +164,7 @@ const FAQS = [
   },
   {
     q: "Is my data secure?",
-    a: "Yes. All data is encrypted in transit (TLS) and at rest. We only store changelog content and your alert configuration — never your source code or API keys. Each team's data is fully isolated in our multi-tenant architecture.",
+    a: "All data is encrypted in transit (TLS) and at rest. DriftWatch only stores changelog content and your alert configuration — never your source code or API keys. Each team's data is fully isolated.",
   },
 ];
 
@@ -317,11 +317,11 @@ export default function HomePage() {
               Features
             </p>
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Everything you need to stay ahead of API changes
+              Stop reading changelogs manually
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-400">
-              From crawling changelogs to sending the right alert to the right
-              person — DriftWatch handles the entire pipeline.
+              DriftWatch crawls changelogs, classifies what changed, and sends
+              the right alert to the right engineer — end to end.
             </p>
           </div>
 
@@ -357,7 +357,7 @@ export default function HomePage() {
               How it works
             </p>
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              Three steps to never be surprised again
+              Set up in under 2 minutes
             </h2>
           </div>
 
@@ -402,7 +402,7 @@ export default function HomePage() {
             </h2>
             <p className="mx-auto max-w-xl text-gray-400">
               When a breaking change lands, you get a clear, actionable summary
-              — not a raw diff.
+              with affected endpoints and next steps — not a raw diff.
             </p>
           </div>
 
@@ -485,9 +485,9 @@ export default function HomePage() {
               </span>
             </h2>
             <p className="mx-auto max-w-xl text-gray-400">
-              Enterprise monitoring platforms charge $149-749/mo for basic text
-              diffing with no intelligence. DriftWatch uses AI to understand
-              changes — starting at $49/mo.
+              Most monitoring platforms charge $149-749/mo for basic text
+              diffing with no intelligence layer. DriftWatch uses AI to
+              understand what changed and why it matters — starting at $49/mo.
             </p>
           </div>
 
@@ -600,8 +600,8 @@ export default function HomePage() {
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-lg text-gray-400">
             Engineering teams lose an average of 4 hours per incident caused by
-            unannounced API changes. Start monitoring in under 2 minutes — no
-            credit card, no agents to install.
+            surprise API changes. Start monitoring in under 2 minutes — no
+            credit card required, nothing to install.
           </p>
           <a
             href="/sign-up"

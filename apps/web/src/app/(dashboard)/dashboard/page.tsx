@@ -95,7 +95,7 @@ export default function DashboardPage() {
       setSources(srcData);
       setAlerts(alertData.data ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load dashboard');
+      setError(e instanceof Error ? e.message : 'Could not load dashboard data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -136,7 +136,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Overview</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Monitor your API dependencies at a glance.
+            Your API dependencies at a glance.
           </p>
         </div>
         <button
@@ -180,7 +180,7 @@ export default function DashboardPage() {
             </div>
             {recentChangeEntries.length === 0 ? (
               <div className="px-5 py-12 text-center text-sm text-gray-600">
-                No changes detected yet. Add API sources to start monitoring.
+                No changes detected yet. Changes will appear here once your API sources are crawled.
               </div>
             ) : (
               <div className="divide-y divide-gray-800/50">
@@ -222,12 +222,12 @@ export default function DashboardPage() {
             </div>
             {sources.length === 0 ? (
               <div className="px-5 py-12 text-center">
-                <p className="text-sm text-gray-600">No sources yet.</p>
+                <p className="text-sm text-gray-600">No APIs monitored yet.</p>
                 <Link
                   href="/dashboard/sources"
                   className="mt-3 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
                 >
-                  Add your first API
+                  Add your first API source
                 </Link>
               </div>
             ) : (

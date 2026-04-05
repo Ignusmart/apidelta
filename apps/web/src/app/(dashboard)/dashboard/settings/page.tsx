@@ -39,10 +39,10 @@ const PLANS = [
     icon: Zap,
     accent: 'violet',
     features: [
-      '3 API sources',
+      'Up to 3 API sources',
       '1 team member',
-      'Email alerts only',
-      'Basic change feed',
+      'Email alerts',
+      'AI-classified change feed',
     ],
   },
   {
@@ -54,10 +54,10 @@ const PLANS = [
     accent: 'blue',
     popular: true,
     features: [
-      '10 API sources',
+      'Up to 10 API sources',
       '2 team members',
       'Email + Slack alerts',
-      'AI change classification',
+      'AI-powered classification',
       'Priority support',
     ],
   },
@@ -69,10 +69,10 @@ const PLANS = [
     icon: Crown,
     accent: 'amber',
     features: [
-      '50 API sources',
+      'Up to 50 API sources',
       '10 team members',
       'All alert channels',
-      'AI change classification',
+      'AI-powered classification',
       'Weekly digest emails',
       'Priority support',
     ],
@@ -101,11 +101,11 @@ export default function SettingsPage() {
   useEffect(() => {
     const billing = searchParams.get('billing');
     if (billing === 'success') {
-      setSuccessMessage('Subscription activated successfully! Your plan has been upgraded.');
+      setSuccessMessage('Plan upgraded. Your new limits are active now.');
       // Clear URL param
       window.history.replaceState({}, '', '/dashboard/settings');
     } else if (billing === 'cancelled') {
-      setError('Checkout was cancelled. No changes were made.');
+      setError('Checkout cancelled. Your plan was not changed.');
       window.history.replaceState({}, '', '/dashboard/settings');
     }
   }, [searchParams]);
@@ -118,7 +118,7 @@ export default function SettingsPage() {
       setTeamPlan(data);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load plan');
+      setError(e instanceof Error ? e.message : 'Could not load plan details. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ export default function SettingsPage() {
         window.location.href = url;
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create checkout session');
+      setError(e instanceof Error ? e.message : 'Could not start checkout. Please try again.');
       setCheckoutLoading(null);
     }
   }
@@ -159,7 +159,7 @@ export default function SettingsPage() {
         window.location.href = url;
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to open billing portal');
+      setError(e instanceof Error ? e.message : 'Could not open billing portal. Please try again.');
       setPortalLoading(false);
     }
   }
@@ -182,7 +182,7 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Manage your subscription and billing.
+          Manage your plan, billing, and team limits.
         </p>
       </div>
 

@@ -111,7 +111,7 @@ export default function ChangesPage() {
       );
       setSources(sourcesData);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load changes');
+      setError(e instanceof Error ? e.message : 'Could not load changes. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -155,7 +155,7 @@ export default function ChangesPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Changes</h1>
           <p className="mt-1 text-sm text-gray-500">
-            All detected API changes across your monitored sources.
+            Every API change detected across your monitored sources, classified by severity.
           </p>
         </div>
         <button
@@ -281,11 +281,11 @@ export default function ChangesPage() {
           <p className="mt-4 text-sm text-gray-500">
             {changes.length === 0
               ? 'No changes detected yet.'
-              : 'No changes match your filters.'}
+              : 'No changes match your current filters.'}
           </p>
           {changes.length === 0 && (
             <p className="mt-1 text-xs text-gray-600">
-              Changes will appear here after crawling your API sources.
+              Changes will appear here after DriftWatch crawls your API sources.
             </p>
           )}
         </div>

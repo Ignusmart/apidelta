@@ -32,7 +32,7 @@ export default async function SignInPage({
         {error && (
           <div className="mb-4 rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400">
             {error === 'OAuthAccountNotLinked'
-              ? 'This email is already associated with another sign-in method.'
+              ? 'This email is already linked to a different sign-in method. Try the other option below.'
               : 'Something went wrong. Please try again.'}
           </div>
         )}
@@ -92,7 +92,7 @@ export default async function SignInPage({
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500"
           >
             <Mail className="h-4 w-4" />
-            Send magic link
+            Send sign-in link
           </button>
         </form>
       </div>

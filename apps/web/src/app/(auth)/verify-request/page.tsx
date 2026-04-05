@@ -16,8 +16,8 @@ export default function VerifyRequestPage() {
           Check your email
         </h1>
         <p className="mb-6 text-sm text-gray-400">
-          We sent you a magic link to sign in. Click the link in your email to
-          continue. The link expires in 24 hours.
+          We sent a sign-in link to your email. Click it to access your
+          dashboard. The link expires in 24 hours.
         </p>
         <div className="rounded-lg bg-gray-800/50 px-4 py-3 text-xs text-gray-500">
           Didn&apos;t get the email? Check your spam folder or{' '}

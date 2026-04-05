@@ -58,7 +58,7 @@ export class SlackTransport {
     const endpoints =
       payload.affectedEndpoints.length > 0
         ? payload.affectedEndpoints.map((e) => `\`${e}\``).join(', ')
-        : 'None specified';
+        : 'No specific endpoints identified';
 
     return {
       blocks: [
@@ -66,7 +66,7 @@ export class SlackTransport {
           type: 'header',
           text: {
             type: 'plain_text',
-            text: `${payload.changeType} Change — ${payload.sourceName}`,
+            text: `${payload.changeType} Change in ${payload.sourceName}`,
             emoji: true,
           },
         },
@@ -104,7 +104,7 @@ export class SlackTransport {
               type: 'button',
               text: {
                 type: 'plain_text',
-                text: 'View in Dashboard',
+                text: 'View Full Details',
               },
               url: payload.dashboardUrl,
               style: 'primary',

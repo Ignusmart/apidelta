@@ -459,3 +459,29 @@
 - Polish gate 2/10: copywriting
 ### Blockers
 - None
+
+## Iteration 12 — 2026-04-05 [POLISH]
+### Polish gate 2/10: copywriting — All Copy Sharpened
+### What was done
+- **Landing page body copy** (`apps/web/src/app/page.tsx`): Sharpened all 6 feature descriptions to be more benefit-led and specific (e.g., "AI-Powered Classification" now says "so you only act on what matters" instead of "so you only get woken up"); renamed "Team Collaboration" to "Built for Teams"; renamed "Audit Trail" to "Full Audit Trail" with concrete scenario copy; changed "Multi-Channel Alerts" to "Slack and Email Alerts" for specificity
+- **Landing page section headers**: Changed "Everything you need to stay ahead of API changes" to "Stop reading changelogs manually" (pain-led); changed "Three steps to never be surprised again" to "Set up in under 2 minutes" (specificity); tightened features subhead
+- **How it works steps**: Reworded all 3 steps — "Add your API dependencies" becomes "Paste your changelog URLs" (action-specific); step 2 now leads with outcome "No more skimming release notes"; step 3 tightened
+- **Pricing copy**: Updated plan descriptions ("For small teams monitoring critical APIs" to "For small teams with a handful of key integrations"); changed "Enterprise monitoring platforms" to "Most monitoring platforms" in subhead; added "why it matters" to pricing subtext
+- **FAQ answers**: Removed Claude/Anthropic brand mention (changed to generic "AI"); made FAQ 3 more benefit-led ("You get smarter alerts for less money"); improved FAQ 4 answer to "Nothing" (direct); tightened security FAQ
+- **CTA banner**: Changed "unannounced" to "surprise" (simpler word); "no agents to install" to "nothing to install" (cleaner)
+- **Auth pages** (`apps/web/src/app/(auth)/`): Changed "Send magic link" to "Send sign-in link"/"Send sign-up link" (clearer for users unfamiliar with magic links); improved OAuth error message to guide user to try the other method; updated verify-request page to say "sign-in link" consistently
+- **Dashboard overview** (`apps/web/src/app/(dashboard)/dashboard/page.tsx`): Tightened subtitle; improved empty states to be more helpful ("Changes will appear here once your API sources are crawled"); improved error message wording
+- **Sources page** (`apps/web/src/app/(dashboard)/dashboard/sources/page.tsx`): Improved subtitle; rewrote empty state CTA to "Paste a changelog URL and DriftWatch starts monitoring within minutes"; changed modal submit button from "Add Source" to "Add and Start Monitoring" (communicates what happens); improved all error messages to be more helpful with recovery guidance; improved delete confirmation copy
+- **Changes page** (`apps/web/src/app/(dashboard)/dashboard/changes/page.tsx`): Improved subtitle with "classified by severity"; tightened empty state and filter-miss copy; improved error message
+- **Alerts page** (`apps/web/src/app/(dashboard)/dashboard/alerts/page.tsx`): Improved subtitle; rewrote all empty states with more context; changed "Create your first rule" to "Create your first alert rule"; improved keyword helper text; improved all error messages; changed modal submit to "Create Alert Rule"
+- **Settings page** (`apps/web/src/app/(dashboard)/dashboard/settings/page.tsx`): Improved subtitle to "Manage your plan, billing, and team limits"; tightened success/error messages; updated plan feature lists with "Up to N" prefix and consistent "AI-powered classification" wording
+- **Email template** (`apps/api/src/modules/alerts/transports/email.transport.ts`): Improved subject line to "change in {source}" instead of "— {source}"; improved email heading to include source name; changed CTA button to "View Full Details in Dashboard"; updated color to match brand violet; improved "None specified" to "No specific endpoints identified"
+- **Slack template** (`apps/api/src/modules/alerts/transports/slack.transport.ts`): Updated header to "Change in" pattern; improved button text to "View Full Details"; improved empty endpoints text
+### Audit results
+- Build: PASS
+- Skills used: copywriting
+- Polish gates: 2/10 passed
+### What's next
+- Polish gate 3/10: seo-audit
+### Blockers
+- None

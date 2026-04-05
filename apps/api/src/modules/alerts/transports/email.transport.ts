@@ -40,7 +40,7 @@ export class EmailTransport {
   }
 
   async send(payload: AlertEmailPayload): Promise<boolean> {
-    const subject = `[DriftWatch] ${payload.severity} ${payload.changeType} — ${payload.sourceName}`;
+    const subject = `[DriftWatch] ${payload.severity} ${payload.changeType} change in ${payload.sourceName}`;
     const html = this.buildHtml(payload);
 
     if (!this.transporter) {
@@ -71,7 +71,7 @@ export class EmailTransport {
     const endpoints =
       payload.affectedEndpoints.length > 0
         ? payload.affectedEndpoints.map((e) => `<li><code>${e}</code></li>`).join('')
-        : '<li>None specified</li>';
+        : '<li>No specific endpoints identified</li>';
 
     return `
 <!DOCTYPE html>
@@ -79,8 +79,8 @@ export class EmailTransport {
 <head><meta charset="utf-8"></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
   <div style="border-left: 4px solid ${this.severityColor(payload.severity)}; padding-left: 16px; margin-bottom: 24px;">
-    <h2 style="margin: 0 0 4px 0; color: #1a1a1a;">${payload.changeType} Change Detected</h2>
-    <p style="margin: 0; color: #666; font-size: 14px;">${payload.sourceName} &middot; Severity: <strong style="color: ${this.severityColor(payload.severity)}">${payload.severity}</strong></p>
+    <h2 style="margin: 0 0 4px 0; color: #1a1a1a;">${payload.changeType} Change in ${payload.sourceName}</h2>
+    <p style="margin: 0; color: #666; font-size: 14px;">Severity: <strong style="color: ${this.severityColor(payload.severity)}">${payload.severity}</strong></p>
   </div>
 
   <h3 style="margin: 0 0 8px 0;">${payload.title}</h3>
@@ -90,7 +90,7 @@ export class EmailTransport {
   <ul style="padding-left: 20px;">${endpoints}</ul>
 
   <div style="margin-top: 24px;">
-    <a href="${payload.dashboardUrl}" style="display: inline-block; padding: 10px 20px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 6px;">View in Dashboard</a>
+    <a href="${payload.dashboardUrl}" style="display: inline-block; padding: 10px 20px; background: #7c3aed; color: #fff; text-decoration: none; border-radius: 6px;">View Full Details in Dashboard</a>
   </div>
 
   <hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
