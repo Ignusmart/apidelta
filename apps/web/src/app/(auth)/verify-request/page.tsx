@@ -10,7 +10,7 @@ export default function VerifyRequestPage() {
   return (
     <div className="w-full max-w-sm">
       <div className="rounded-xl border border-gray-800 bg-gray-900 p-8 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/10">
+        <div aria-hidden="true" className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-500/10">
           <Mail className="h-6 w-6 text-violet-400" />
         </div>
         <h1 className="mb-2 text-2xl font-bold text-white">
@@ -24,7 +24,7 @@ export default function VerifyRequestPage() {
           Didn&apos;t get the email? Check your spam folder or{' '}
           <a
             href="/sign-in"
-            className="text-violet-400 hover:text-violet-300"
+            className="rounded text-violet-400 hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
           >
             try again
           </a>

@@ -166,8 +166,9 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="flex h-96 items-center justify-center" role="status">
+        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+        <span className="sr-only">Loading settings...</span>
       </div>
     );
   }
@@ -188,16 +189,16 @@ export default function SettingsPage() {
 
       {/* Success message */}
       {successMessage && (
-        <div className="rounded-lg border border-emerald-900/50 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-400">
-          <Check className="mr-2 inline h-4 w-4" />
+        <div role="status" className="rounded-lg border border-emerald-900/50 bg-emerald-950/30 px-4 py-3 text-sm text-emerald-400">
+          <Check aria-hidden="true" className="mr-2 inline h-4 w-4" />
           {successMessage}
         </div>
       )}
 
       {/* Error message */}
       {error && (
-        <div className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
-          <AlertTriangle className="mr-2 inline h-4 w-4" />
+        <div role="alert" className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
+          <AlertTriangle aria-hidden="true" className="mr-2 inline h-4 w-4" />
           {error}
         </div>
       )}
@@ -227,15 +228,15 @@ export default function SettingsPage() {
             <button
               onClick={handlePortal}
               disabled={portalLoading}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900/50 px-4 py-2.5 text-sm text-gray-300 transition hover:border-gray-700 hover:text-white disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900/50 px-4 py-2.5 text-sm text-gray-300 transition hover:border-gray-700 hover:text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
             >
               {portalLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
               ) : (
-                <CreditCard className="h-4 w-4" />
+                <CreditCard aria-hidden="true" className="h-4 w-4" />
               )}
               Manage Subscription
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink aria-hidden="true" className="h-3 w-3" />
             </button>
           )}
         </div>
@@ -273,7 +274,7 @@ export default function SettingsPage() {
 
                 <div className="mb-4 flex items-center gap-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-800/80">
-                    <Icon className="h-4 w-4 text-gray-400" />
+                    <Icon aria-hidden="true" className="h-4 w-4 text-gray-400" />
                   </div>
                   <h3 className="font-semibold">{plan.name}</h3>
                 </div>
@@ -286,7 +287,7 @@ export default function SettingsPage() {
                 <ul className="mb-6 space-y-2.5">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-center gap-2 text-sm text-gray-400">
-                      <Check className="h-4 w-4 shrink-0 text-violet-400" />
+                      <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-violet-400" />
                       {feature}
                     </li>
                   ))}
@@ -300,10 +301,13 @@ export default function SettingsPage() {
                   <button
                     onClick={() => handleCheckout(plan.tier as 'STARTER' | 'PRO')}
                     disabled={checkoutLoading !== null}
-                    className="w-full rounded-lg bg-violet-600 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50"
+                    className="w-full rounded-lg bg-violet-600 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
                   >
                     {checkoutLoading === plan.tier ? (
-                      <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                      <>
+                        <Loader2 aria-hidden="true" className="mx-auto h-4 w-4 animate-spin" />
+                        <span className="sr-only">Starting checkout...</span>
+                      </>
                     ) : (
                       `Upgrade to ${plan.name}`
                     )}
@@ -312,7 +316,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handlePortal}
                     disabled={portalLoading}
-                    className="w-full rounded-lg border border-gray-800 py-2.5 text-sm text-gray-400 transition hover:border-gray-700 hover:text-white disabled:opacity-50"
+                    className="w-full rounded-lg border border-gray-800 py-2.5 text-sm text-gray-400 transition hover:border-gray-700 hover:text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                   >
                     Manage Plan
                   </button>

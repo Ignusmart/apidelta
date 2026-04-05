@@ -143,8 +143,9 @@ export default function SourcesPage() {
 
   if (loading && !sources.length) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="flex h-96 items-center justify-center" role="status">
+        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+        <span className="sr-only">Loading API sources...</span>
       </div>
     );
   }
@@ -168,9 +169,9 @@ export default function SourcesPage() {
           <button
             onClick={() => setShowAddForm(true)}
             disabled={sourceLimit !== null && !sourceLimit.allowed}
-            className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
           >
-            <Plus className="h-4 w-4" />
+            <Plus aria-hidden="true" className="h-4 w-4" />
             Add Source
           </button>
         </div>
@@ -194,32 +195,34 @@ export default function SourcesPage() {
       )}
 
       {error && (
-        <div className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
-          <AlertTriangle className="mr-2 inline h-4 w-4" />
+        <div role="alert" className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
+          <AlertTriangle aria-hidden="true" className="mr-2 inline h-4 w-4" />
           {error}
-          <button onClick={() => setError(null)} className="ml-2 text-red-500 hover:text-red-300">
-            <X className="inline h-3 w-3" />
+          <button onClick={() => setError(null)} aria-label="Dismiss error" className="ml-2 rounded text-red-500 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+            <X aria-hidden="true" className="inline h-3 w-3" />
           </button>
         </div>
       )}
 
       {/* Add source form (modal overlay) */}
       {showAddForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="add-source-title" onClick={(e) => { if (e.target === e.currentTarget) setShowAddForm(false); }} onKeyDown={(e) => { if (e.key === 'Escape') setShowAddForm(false); }}>
           <div className="w-full max-w-md rounded-xl border border-gray-800 bg-gray-950 p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Add API Source</h2>
+              <h2 id="add-source-title" className="text-lg font-semibold">Add API Source</h2>
               <button
                 onClick={() => setShowAddForm(false)}
-                className="rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-800 hover:text-white"
+                aria-label="Close dialog"
+                className="rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
-                <X className="h-4 w-4" />
+                <X aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
             <form onSubmit={handleAdd} className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-300">Name</label>
+                <label htmlFor="source-name" className="mb-1.5 block text-sm font-medium text-gray-300">Name</label>
                 <input
+                  id="source-name"
                   type="text"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
@@ -229,8 +232,9 @@ export default function SourcesPage() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-300">Changelog URL</label>
+                <label htmlFor="source-url" className="mb-1.5 block text-sm font-medium text-gray-300">Changelog URL</label>
                 <input
+                  id="source-url"
                   type="url"
                   value={formUrl}
                   onChange={(e) => setFormUrl(e.target.value)}
@@ -240,8 +244,9 @@ export default function SourcesPage() {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-300">Source Type</label>
+                <label htmlFor="source-type" className="mb-1.5 block text-sm font-medium text-gray-300">Source Type</label>
                 <select
+                  id="source-type"
                   value={formType}
                   onChange={(e) => setFormType(e.target.value as SourceType)}
                   className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
@@ -254,10 +259,11 @@ export default function SourcesPage() {
                 </select>
               </div>
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                <label htmlFor="source-interval" className="mb-1.5 block text-sm font-medium text-gray-300">
                   Crawl Interval (hours)
                 </label>
                 <input
+                  id="source-interval"
                   type="number"
                   min={1}
                   max={168}
@@ -270,17 +276,20 @@ export default function SourcesPage() {
                 <button
                   type="button"
                   onClick={() => setShowAddForm(false)}
-                  className="flex-1 rounded-lg border border-gray-800 px-4 py-2.5 text-sm text-gray-400 transition hover:border-gray-700 hover:text-white"
+                  className="flex-1 rounded-lg border border-gray-800 px-4 py-2.5 text-sm text-gray-400 transition hover:border-gray-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50"
+                  className="flex-1 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
                 >
                   {submitting ? (
-                    <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                    <>
+                      <Loader2 aria-hidden="true" className="mx-auto h-4 w-4 animate-spin" />
+                      <span className="sr-only">Adding source...</span>
+                    </>
                   ) : (
                     'Add and Start Monitoring'
                   )}
@@ -294,16 +303,16 @@ export default function SourcesPage() {
       {/* Sources table */}
       {sources.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-800 py-16 text-center">
-          <Rss className="mx-auto h-10 w-10 text-gray-700" />
+          <Rss aria-hidden="true" className="mx-auto h-10 w-10 text-gray-700" />
           <p className="mt-4 text-sm text-gray-500">No API sources yet.</p>
           <p className="mt-1 text-xs text-gray-600">
             Paste a changelog URL and DriftWatch starts monitoring within minutes.
           </p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
+            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
           >
-            <Plus className="h-4 w-4" />
+            <Plus aria-hidden="true" className="h-4 w-4" />
             Add your first API source
           </button>
         </div>
@@ -382,25 +391,25 @@ export default function SourcesPage() {
                       <button
                         onClick={() => handleCrawl(src.id)}
                         disabled={crawlingId === src.id}
-                        title="Trigger crawl"
-                        className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-violet-400 disabled:opacity-50"
+                        aria-label={`Trigger crawl for ${src.name}`}
+                        className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-violet-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                       >
                         {crawlingId === src.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Play className="h-4 w-4" />
+                          <Play aria-hidden="true" className="h-4 w-4" />
                         )}
                       </button>
                       <button
                         onClick={() => handleDelete(src.id)}
                         disabled={deletingId === src.id}
-                        title="Delete source"
-                        className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-red-400 disabled:opacity-50"
+                        aria-label={`Delete ${src.name}`}
+                        className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-red-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                       >
                         {deletingId === src.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 aria-hidden="true" className="h-4 w-4" />
                         )}
                       </button>
                     </div>

@@ -162,8 +162,9 @@ export default function AlertsPage() {
 
   if (loading && !rules.length && !alerts.length) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="flex h-96 items-center justify-center" role="status">
+        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+        <span className="sr-only">Loading alerts...</span>
       </div>
     );
   }
@@ -180,31 +181,36 @@ export default function AlertsPage() {
         </div>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500"
+          className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
         >
-          <Plus className="h-4 w-4" />
+          <Plus aria-hidden="true" className="h-4 w-4" />
           Create Rule
         </button>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
-          <AlertTriangle className="mr-2 inline h-4 w-4" />
+        <div role="alert" className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
+          <AlertTriangle aria-hidden="true" className="mr-2 inline h-4 w-4" />
           {error}
           <button
             onClick={() => setError(null)}
-            className="ml-2 text-red-500 hover:text-red-300"
+            aria-label="Dismiss error"
+            className="ml-2 rounded text-red-500 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
           >
-            <X className="inline h-3 w-3" />
+            <X aria-hidden="true" className="inline h-3 w-3" />
           </button>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 rounded-lg border border-gray-800 bg-gray-900/30 p-1">
+      <div role="tablist" aria-label="Alert views" className="flex gap-1 rounded-lg border border-gray-800 bg-gray-900/30 p-1">
         <button
+          role="tab"
+          aria-selected={activeTab === 'rules'}
+          aria-controls="tabpanel-rules"
+          id="tab-rules"
           onClick={() => setActiveTab('rules')}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
             activeTab === 'rules'
               ? 'bg-gray-800 text-white'
               : 'text-gray-500 hover:text-gray-300'
@@ -213,8 +219,12 @@ export default function AlertsPage() {
           Alert Rules ({rules.length})
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === 'history'}
+          aria-controls="tabpanel-history"
+          id="tab-history"
           onClick={() => setActiveTab('history')}
-          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
+          className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
             activeTab === 'history'
               ? 'bg-gray-800 text-white'
               : 'text-gray-500 hover:text-gray-300'
@@ -226,24 +236,26 @@ export default function AlertsPage() {
 
       {/* Create rule modal */}
       {showCreateForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="create-rule-title" onClick={(e) => { if (e.target === e.currentTarget) setShowCreateForm(false); }} onKeyDown={(e) => { if (e.key === 'Escape') setShowCreateForm(false); }}>
           <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-950 p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Create Alert Rule</h2>
+              <h2 id="create-rule-title" className="text-lg font-semibold">Create Alert Rule</h2>
               <button
                 onClick={() => setShowCreateForm(false)}
-                className="rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-800 hover:text-white"
+                aria-label="Close dialog"
+                className="rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
-                <X className="h-4 w-4" />
+                <X aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
             <form onSubmit={handleCreateRule} className="space-y-4">
               {/* Name */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                <label htmlFor="rule-name" className="mb-1.5 block text-sm font-medium text-gray-300">
                   Rule Name
                 </label>
                 <input
+                  id="rule-name"
                   type="text"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
@@ -256,11 +268,12 @@ export default function AlertsPage() {
               {/* Channel + Destination */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                  <label htmlFor="rule-channel" className="mb-1.5 block text-sm font-medium text-gray-300">
                     Channel
                   </label>
                   <div className="relative">
                     <select
+                      id="rule-channel"
                       value={formChannel}
                       onChange={(e) =>
                         setFormChannel(e.target.value as AlertChannel)
@@ -270,14 +283,15 @@ export default function AlertsPage() {
                       <option value="EMAIL">Email</option>
                       <option value="SLACK">Slack Webhook</option>
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                    <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                  <label htmlFor="rule-destination" className="mb-1.5 block text-sm font-medium text-gray-300">
                     Destination
                   </label>
                   <input
+                    id="rule-destination"
                     type={formChannel === 'EMAIL' ? 'email' : 'url'}
                     value={formDestination}
                     onChange={(e) => setFormDestination(e.target.value)}
@@ -295,11 +309,12 @@ export default function AlertsPage() {
               {/* Min severity + Source filter */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                  <label htmlFor="rule-min-severity" className="mb-1.5 block text-sm font-medium text-gray-300">
                     Minimum Severity
                   </label>
                   <div className="relative">
                     <select
+                      id="rule-min-severity"
                       value={formMinSeverity}
                       onChange={(e) =>
                         setFormMinSeverity(e.target.value as Severity)
@@ -312,15 +327,16 @@ export default function AlertsPage() {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                    <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                  <label htmlFor="rule-source-filter" className="mb-1.5 block text-sm font-medium text-gray-300">
                     Source (optional)
                   </label>
                   <div className="relative">
                     <select
+                      id="rule-source-filter"
                       value={formSourceFilter}
                       onChange={(e) => setFormSourceFilter(e.target.value)}
                       className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
@@ -332,17 +348,18 @@ export default function AlertsPage() {
                         </option>
                       ))}
                     </select>
-                    <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                    <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                   </div>
                 </div>
               </div>
 
               {/* Keyword filter */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-gray-300">
+                <label htmlFor="rule-keywords" className="mb-1.5 block text-sm font-medium text-gray-300">
                   Keywords (optional)
                 </label>
                 <input
+                  id="rule-keywords"
                   type="text"
                   value={formKeywordFilter}
                   onChange={(e) => setFormKeywordFilter(e.target.value)}
@@ -359,17 +376,20 @@ export default function AlertsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateForm(false)}
-                  className="flex-1 rounded-lg border border-gray-800 px-4 py-2.5 text-sm text-gray-400 transition hover:border-gray-700 hover:text-white"
+                  className="flex-1 rounded-lg border border-gray-800 px-4 py-2.5 text-sm text-gray-400 transition hover:border-gray-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50"
+                  className="flex-1 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
                 >
                   {submitting ? (
-                    <Loader2 className="mx-auto h-4 w-4 animate-spin" />
+                    <>
+                      <Loader2 aria-hidden="true" className="mx-auto h-4 w-4 animate-spin" />
+                      <span className="sr-only">Creating rule...</span>
+                    </>
                   ) : (
                     'Create Alert Rule'
                   )}
@@ -382,10 +402,10 @@ export default function AlertsPage() {
 
       {/* Tab content */}
       {activeTab === 'rules' && (
-        <>
+        <div role="tabpanel" id="tabpanel-rules" aria-labelledby="tab-rules">
           {rules.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-800 py-16 text-center">
-              <Bell className="mx-auto h-10 w-10 text-gray-700" />
+              <Bell aria-hidden="true" className="mx-auto h-10 w-10 text-gray-700" />
               <p className="mt-4 text-sm text-gray-500">
                 No alert rules yet.
               </p>
@@ -394,9 +414,9 @@ export default function AlertsPage() {
               </p>
               <button
                 onClick={() => setShowCreateForm(true)}
-                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
+                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
               >
-                <Plus className="h-4 w-4" />
+                <Plus aria-hidden="true" className="h-4 w-4" />
                 Create your first alert rule
               </button>
             </div>
@@ -476,13 +496,13 @@ export default function AlertsPage() {
                     <button
                       onClick={() => handleDeleteRule(rule.id)}
                       disabled={deletingId === rule.id}
-                      title="Delete rule"
-                      className="shrink-0 rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-red-400 disabled:opacity-50"
+                      aria-label={`Delete rule ${rule.name}`}
+                      className="shrink-0 rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-red-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                     >
                       {deletingId === rule.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 aria-hidden="true" className="h-4 w-4" />
                       )}
                     </button>
                   </div>
@@ -490,14 +510,14 @@ export default function AlertsPage() {
               })}
             </div>
           )}
-        </>
+        </div>
       )}
 
       {activeTab === 'history' && (
-        <>
+        <div role="tabpanel" id="tabpanel-history" aria-labelledby="tab-history">
           {alerts.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-800 py-16 text-center">
-              <Clock className="mx-auto h-10 w-10 text-gray-700" />
+              <Clock aria-hidden="true" className="mx-auto h-10 w-10 text-gray-700" />
               <p className="mt-4 text-sm text-gray-500">
                 No alerts sent yet.
               </p>
@@ -568,9 +588,9 @@ export default function AlertsPage() {
                         <td className="px-5 py-4">
                           <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
                             {alert.alertRule?.channel === 'SLACK' ? (
-                              <MessageSquare className="h-3.5 w-3.5" />
+                              <MessageSquare aria-hidden="true" className="h-3.5 w-3.5" />
                             ) : (
-                              <Mail className="h-3.5 w-3.5" />
+                              <Mail aria-hidden="true" className="h-3.5 w-3.5" />
                             )}
                             {alert.alertRule?.channel ?? '—'}
                           </span>
@@ -585,7 +605,7 @@ export default function AlertsPage() {
               </table>
             </div>
           )}
-        </>
+        </div>
       )}
     </div>
   );

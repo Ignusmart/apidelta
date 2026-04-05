@@ -506,3 +506,28 @@
 - Polish gate 4/10: a11y-audit
 ### Blockers
 - None
+
+## Iteration 14 — 2026-04-05 [POLISH]
+### Polish gate 4/10: a11y-audit — Accessibility
+### What was done
+- `apps/web/src/app/layout.tsx` — Added "Skip to main content" link for keyboard users (sr-only, visible on focus, z-100)
+- `apps/web/src/app/globals.css` — Added `prefers-reduced-motion: reduce` media query to disable all animations/transitions; added `.sr-only` utility class for Tailwind v4 compatibility
+- `apps/web/src/app/page.tsx` — Wrapped content in `<main id="main-content">`; added `aria-label="Main navigation"` and `aria-label="Footer navigation"` to nav landmarks; added `aria-hidden="true"` to all decorative Lucide icons (Zap, ArrowRight, Shield, Check, ChevronDown, MessageSquare, Mail); added `focus-visible:ring-2 focus-visible:ring-violet-500` to all interactive elements (nav links, CTAs, FAQ summaries, footer links); added `aria-hidden` to decorative background gradients; added `motion-reduce:animate-none` to hero badge ping animation; added `role="img"` with descriptive `aria-label` to mock Slack message preview; wrapped footer links in `<nav>` with aria-label
+- `apps/web/src/app/(auth)/layout.tsx` — Added `aria-hidden` to Zap icon; wrapped children in `<main id="main-content">`; added focus-visible ring to logo link
+- `apps/web/src/app/(auth)/sign-in/page.tsx` — Added `role="alert"` to error message; added `aria-hidden` to GitHub SVG and Mail icon; added `role="separator"` to divider; added focus-visible rings to all buttons and links
+- `apps/web/src/app/(auth)/sign-up/page.tsx` — Same fixes as sign-in: aria-hidden on SVG/icons, role="separator" on divider, focus-visible rings on buttons and links
+- `apps/web/src/app/(auth)/verify-request/page.tsx` — Added `aria-hidden` to decorative Mail icon container; added focus-visible ring to "try again" link
+- `apps/web/src/app/(dashboard)/layout.tsx` — Added `aria-label="Dashboard sidebar"` to aside; added `aria-label="Dashboard navigation"` to nav; added `aria-hidden` to all nav item icons and LogOut icon; added `id="main-content"` to main element; added focus-visible rings to all nav links, logo link, and sign-out button
+- `apps/web/src/app/(dashboard)/dashboard/page.tsx` — Added `role="status"` and sr-only text to loading spinners; added `role="alert"` to error messages; added `aria-hidden` to all decorative icons; added focus-visible rings to Refresh button and all links
+- `apps/web/src/app/(dashboard)/dashboard/sources/page.tsx` — Added `role="dialog" aria-modal="true" aria-labelledby` to Add Source modal with Escape key and backdrop click to dismiss; added `aria-label="Close dialog"` to close button; associated all form labels with inputs via htmlFor/id pairs; added `role="status"` to loading state; added `role="alert"` to error with dismiss `aria-label`; replaced `title` with `aria-label` on crawl/delete buttons (includes source name); added sr-only loading text; added `aria-hidden` to all decorative icons; added focus-visible rings
+- `apps/web/src/app/(dashboard)/dashboard/changes/page.tsx` — Added `role="status"` to loading; added `role="alert"` to error; added `aria-expanded` to filter toggle; associated filter labels with inputs via htmlFor/id; added `aria-hidden` to all decorative icons; added focus-visible rings
+- `apps/web/src/app/(dashboard)/dashboard/alerts/page.tsx` — Added `role="tablist"` with aria-label; added `role="tab"`, `aria-selected`, `aria-controls`, `id` to tab buttons; added `role="tabpanel"`, `id`, `aria-labelledby` to tab content; added `role="dialog" aria-modal="true" aria-labelledby` to Create Rule modal with Escape/backdrop dismiss; associated all form labels via htmlFor/id; added `role="alert"` to error; added contextual `aria-label` to delete buttons; added sr-only loading text; added `aria-hidden` to all decorative icons; added focus-visible rings
+- `apps/web/src/app/(dashboard)/dashboard/settings/page.tsx` — Added `role="status"` to loading and success; added `role="alert"` to error; added `aria-hidden` to all decorative icons; added sr-only loading text; added focus-visible rings to all buttons
+### Audit results
+- Build: PASS
+- Skills used: a11y-audit
+- Polish gates: 4/10 passed
+### What's next
+- Polish gate 5/10: frontend-design (UI polish pass)
+### Blockers
+- None

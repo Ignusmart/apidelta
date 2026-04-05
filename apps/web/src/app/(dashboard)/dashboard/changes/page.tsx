@@ -142,8 +142,9 @@ export default function ChangesPage() {
 
   if (loading && !changes.length) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="flex h-96 items-center justify-center" role="status">
+        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+        <span className="sr-only">Loading changes...</span>
       </div>
     );
   }
@@ -160,13 +161,14 @@ export default function ChangesPage() {
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-sm transition ${
+          aria-expanded={showFilters}
+          className={`inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
             showFilters || activeFilterCount > 0
               ? 'border-violet-500/50 bg-violet-500/10 text-violet-300'
               : 'border-gray-800 bg-gray-900/50 text-gray-300 hover:border-gray-700 hover:text-white'
           }`}
         >
-          <Filter className="h-4 w-4" />
+          <Filter aria-hidden="true" className="h-4 w-4" />
           Filters
           {activeFilterCount > 0 && (
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-500 text-[10px] font-bold text-white">
@@ -177,8 +179,8 @@ export default function ChangesPage() {
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
-          <AlertTriangle className="mr-2 inline h-4 w-4" />
+        <div role="alert" className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
+          <AlertTriangle aria-hidden="true" className="mr-2 inline h-4 w-4" />
           {error}
         </div>
       )}
@@ -189,12 +191,13 @@ export default function ChangesPage() {
           <div className="flex flex-wrap items-end gap-4">
             {/* Search */}
             <div className="min-w-[200px] flex-1">
-              <label className="mb-1.5 block text-xs font-medium text-gray-500">
+              <label htmlFor="changes-search" className="mb-1.5 block text-xs font-medium text-gray-500">
                 Search
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                <Search aria-hidden="true" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
                 <input
+                  id="changes-search"
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -206,11 +209,12 @@ export default function ChangesPage() {
 
             {/* Severity */}
             <div className="w-44">
-              <label className="mb-1.5 block text-xs font-medium text-gray-500">
+              <label htmlFor="changes-severity" className="mb-1.5 block text-xs font-medium text-gray-500">
                 Severity
               </label>
               <div className="relative">
                 <select
+                  id="changes-severity"
                   value={severityFilter}
                   onChange={(e) =>
                     setSeverityFilter(e.target.value as Severity | '')
@@ -224,17 +228,18 @@ export default function ChangesPage() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
               </div>
             </div>
 
             {/* Source */}
             <div className="w-52">
-              <label className="mb-1.5 block text-xs font-medium text-gray-500">
+              <label htmlFor="changes-source" className="mb-1.5 block text-xs font-medium text-gray-500">
                 Source
               </label>
               <div className="relative">
                 <select
+                  id="changes-source"
                   value={sourceFilter}
                   onChange={(e) => setSourceFilter(e.target.value)}
                   className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
@@ -246,7 +251,7 @@ export default function ChangesPage() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
               </div>
             </div>
 
@@ -258,9 +263,9 @@ export default function ChangesPage() {
                   setSourceFilter('');
                   setSearchQuery('');
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-gray-500 transition hover:text-white"
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-gray-500 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
-                <X className="h-3.5 w-3.5" />
+                <X aria-hidden="true" className="h-3.5 w-3.5" />
                 Clear
               </button>
             )}
@@ -277,7 +282,7 @@ export default function ChangesPage() {
       {/* Changes list */}
       {filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-800 py-16 text-center">
-          <GitCompareArrows className="mx-auto h-10 w-10 text-gray-700" />
+          <GitCompareArrows aria-hidden="true" className="mx-auto h-10 w-10 text-gray-700" />
           <p className="mt-4 text-sm text-gray-500">
             {changes.length === 0
               ? 'No changes detected yet.'
@@ -338,7 +343,7 @@ export default function ChangesPage() {
                     )}
                     {change.changeDate && (
                       <span className="inline-flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
+                        <Calendar aria-hidden="true" className="h-3 w-3" />
                         {new Date(change.changeDate).toLocaleDateString()}
                       </span>
                     )}

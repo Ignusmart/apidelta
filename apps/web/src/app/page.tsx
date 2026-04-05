@@ -226,36 +226,36 @@ export default function HomePage() {
       {/* ----------------------------------------------------------------- */}
       {/* NAV                                                                */}
       {/* ----------------------------------------------------------------- */}
-      <nav className="fixed top-0 z-50 w-full border-b border-gray-800/60 bg-gray-950/80 backdrop-blur-md">
+      <nav aria-label="Main navigation" className="fixed top-0 z-50 w-full border-b border-gray-800/60 bg-gray-950/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2 text-lg font-bold tracking-tight">
-            <Zap className="h-5 w-5 text-violet-400" />
+            <Zap aria-hidden="true" className="h-5 w-5 text-violet-400" />
             DriftWatch
           </div>
           <div className="hidden items-center gap-8 text-sm text-gray-400 md:flex">
-            <a href="#features" className="transition hover:text-white">
+            <a href="#features" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               Features
             </a>
-            <a href="#pricing" className="transition hover:text-white">
+            <a href="#pricing" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               Pricing
             </a>
-            <a href="#faq" className="transition hover:text-white">
+            <a href="#faq" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               FAQ
             </a>
           </div>
           <div className="flex items-center gap-3">
             <a
               href="/sign-in"
-              className="hidden text-sm text-gray-400 transition hover:text-white sm:inline"
+              className="hidden text-sm text-gray-400 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:rounded-md sm:inline"
             >
               Sign in
             </a>
             <a
               href="/sign-up"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-500"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
             >
               Start free trial
-              <ArrowRight className="h-3.5 w-3.5" />
+              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
             </a>
           </div>
         </div>
@@ -264,16 +264,17 @@ export default function HomePage() {
       {/* ----------------------------------------------------------------- */}
       {/* HERO — PAS: Problem headline, agitate in subhead, solution CTA   */}
       {/* ----------------------------------------------------------------- */}
+      <main id="main-content">
       <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20 text-center">
         {/* Background effects */}
-        <div className="absolute inset-0 bg-gradient-to-b from-violet-900/20 to-transparent" />
-        <div className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-violet-900/20 to-transparent" />
+        <div aria-hidden="true" className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl" />
 
         <div className="relative z-10 max-w-4xl">
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-sm text-violet-300">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+            <span aria-hidden="true" className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75 motion-reduce:animate-none" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
             </span>
             Monitoring 50+ API changelogs in real time
@@ -304,21 +305,21 @@ export default function HomePage() {
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <a
               href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30"
+              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
             >
               Monitor your first API free
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </a>
             <a
               href="#how-it-works"
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-700 px-8 py-3.5 text-base font-medium text-gray-300 transition hover:border-gray-600 hover:text-white"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-700 px-8 py-3.5 text-base font-medium text-gray-300 transition hover:border-gray-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
             >
               See how it works
             </a>
           </div>
 
           <p className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
-            <Shield className="h-3.5 w-3.5" />
+            <Shield aria-hidden="true" className="h-3.5 w-3.5" />
             No credit card required &middot; 14-day free trial &middot; Setup
             in under 2 minutes
           </p>
@@ -371,7 +372,7 @@ export default function HomePage() {
                 className="rounded-xl border border-gray-800 bg-gray-900 p-6 transition hover:border-gray-700"
               >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-violet-500/10">
-                  <feature.icon className="h-5 w-5 text-violet-400" />
+                  <feature.icon aria-hidden="true" className="h-5 w-5 text-violet-400" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">{feature.title}</h3>
                 <p className="text-sm leading-relaxed text-gray-400">
@@ -418,10 +419,10 @@ export default function HomePage() {
           <div className="mt-14 text-center">
             <a
               href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500"
+              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
             >
               Try it free — monitor 3 APIs for 14 days
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </a>
           </div>
         </div>
@@ -446,10 +447,10 @@ export default function HomePage() {
           </div>
 
           {/* Mock Slack message */}
-          <div className="mx-auto max-w-xl rounded-xl border border-gray-800 bg-gray-900 p-6">
+          <div className="mx-auto max-w-xl rounded-xl border border-gray-800 bg-gray-900 p-6" role="img" aria-label="Example DriftWatch Slack alert showing a critical breaking change from Stripe API">
             <div className="mb-3 flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded bg-violet-500/20">
-                <Zap className="h-4 w-4 text-violet-400" />
+                <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
               </div>
               <span className="font-semibold">DriftWatch</span>
               <span className="text-xs text-gray-500">2:34 PM</span>
@@ -485,10 +486,10 @@ export default function HomePage() {
 
           <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
-              <MessageSquare className="h-4 w-4" /> Slack
+              <MessageSquare aria-hidden="true" className="h-4 w-4" /> Slack
             </span>
             <span className="flex items-center gap-1.5">
-              <Mail className="h-4 w-4" /> Email
+              <Mail aria-hidden="true" className="h-4 w-4" /> Email
             </span>
           </div>
 
@@ -496,7 +497,7 @@ export default function HomePage() {
             Get alerts like this for every API you depend on.{" "}
             <a
               href="/sign-up"
-              className="font-medium text-violet-400 underline underline-offset-2 transition hover:text-violet-300"
+              className="rounded font-medium text-violet-400 underline underline-offset-2 transition hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
             >
               Start your free trial
             </a>
@@ -561,7 +562,7 @@ export default function HomePage() {
 
                 <a
                   href="/sign-up"
-                  className={`mb-6 block rounded-lg py-2.5 text-center text-sm font-medium transition ${
+                  className={`mb-6 block rounded-lg py-2.5 text-center text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 ${
                     plan.highlighted
                       ? "bg-violet-600 text-white hover:bg-violet-500"
                       : "border border-gray-700 text-gray-300 hover:border-gray-600 hover:text-white"
@@ -576,7 +577,7 @@ export default function HomePage() {
                       key={feature}
                       className="flex items-start gap-2 text-sm text-gray-300"
                     >
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
+                      <Check aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
                       {feature}
                     </li>
                   ))}
@@ -626,9 +627,9 @@ export default function HomePage() {
                 key={faq.q}
                 className="group rounded-xl border border-gray-800 bg-gray-900"
               >
-                <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-left font-medium transition hover:text-violet-300 [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-left font-medium transition hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-violet-500 focus-visible:rounded-xl [&::-webkit-details-marker]:hidden">
                   {faq.q}
-                  <ChevronDown className="h-4 w-4 shrink-0 text-gray-500 transition group-open:rotate-180" />
+                  <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-500 transition group-open:rotate-180" />
                 </summary>
                 <div className="px-6 pb-4 text-sm leading-relaxed text-gray-400">
                   {faq.a}
@@ -654,17 +655,18 @@ export default function HomePage() {
           </p>
           <a
             href="/sign-up"
-            className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30"
+            className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
           >
             Monitor your first API free
-            <ArrowRight className="h-4 w-4" />
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
           </a>
           <p className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
-            <Shield className="h-3.5 w-3.5" />
+            <Shield aria-hidden="true" className="h-3.5 w-3.5" />
             14-day free trial &middot; 3 APIs included &middot; Cancel anytime
           </p>
         </div>
       </section>
+      </main>
 
       {/* ----------------------------------------------------------------- */}
       {/* FOOTER                                                             */}
@@ -672,20 +674,20 @@ export default function HomePage() {
       <footer className="border-t border-gray-800/60 py-12">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 sm:flex-row">
           <div className="flex items-center gap-2 text-sm font-bold">
-            <Zap className="h-4 w-4 text-violet-400" />
+            <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
             DriftWatch
           </div>
-          <div className="flex gap-6 text-sm text-gray-500">
-            <a href="#features" className="transition hover:text-gray-300">
+          <nav aria-label="Footer navigation" className="flex gap-6 text-sm text-gray-500">
+            <a href="#features" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               Features
             </a>
-            <a href="#pricing" className="transition hover:text-gray-300">
+            <a href="#pricing" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               Pricing
             </a>
-            <a href="#faq" className="transition hover:text-gray-300">
+            <a href="#faq" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               FAQ
             </a>
-          </div>
+          </nav>
           <p className="text-xs text-gray-600">
             &copy; {new Date().getFullYear()} DriftWatch. All rights reserved.
           </p>

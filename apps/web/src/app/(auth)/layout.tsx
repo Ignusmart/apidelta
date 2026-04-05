@@ -10,12 +10,14 @@ export default function AuthLayout({
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 px-4">
       <Link
         href="/"
-        className="mb-8 flex items-center gap-2 text-xl font-bold tracking-tight text-white"
+        className="mb-8 flex items-center gap-2 text-xl font-bold tracking-tight text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:rounded-lg"
       >
-        <Zap className="h-6 w-6 text-violet-400" />
+        <Zap aria-hidden="true" className="h-6 w-6 text-violet-400" />
         DriftWatch
       </Link>
-      {children}
+      <main id="main-content">
+        {children}
+      </main>
     </div>
   );
 }

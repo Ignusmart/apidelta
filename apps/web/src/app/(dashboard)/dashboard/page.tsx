@@ -55,7 +55,7 @@ function StatCard({
           <p className="mt-1.5 text-3xl font-bold tracking-tight">{value}</p>
         </div>
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gray-800/80`}>
-          <Icon className="h-5 w-5 text-gray-400" />
+          <Icon aria-hidden="true" className="h-5 w-5 text-gray-400" />
         </div>
       </div>
     </div>
@@ -123,8 +123,9 @@ export default function DashboardPage() {
 
   if (loading && !sources.length) {
     return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="flex h-96 items-center justify-center" role="status">
+        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+        <span className="sr-only">Loading dashboard data...</span>
       </div>
     );
   }
@@ -142,16 +143,16 @@ export default function DashboardPage() {
         <button
           onClick={fetchData}
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900/50 px-3.5 py-2 text-sm text-gray-300 transition hover:border-gray-700 hover:text-white disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900/50 px-3.5 py-2 text-sm text-gray-300 transition hover:border-gray-700 hover:text-white disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw aria-hidden="true" className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </button>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
-          <AlertTriangle className="mr-2 inline h-4 w-4" />
+        <div role="alert" className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
+          <AlertTriangle aria-hidden="true" className="mr-2 inline h-4 w-4" />
           {error}
         </div>
       )}
@@ -173,9 +174,9 @@ export default function DashboardPage() {
               <h2 className="text-sm font-semibold">Recent Changes</h2>
               <Link
                 href="/dashboard/changes"
-                className="inline-flex items-center gap-1 text-xs text-violet-400 transition hover:text-violet-300"
+                className="inline-flex items-center gap-1 rounded text-xs text-violet-400 transition hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
-                View all <ArrowRight className="h-3 w-3" />
+                View all <ArrowRight aria-hidden="true" className="h-3 w-3" />
               </Link>
             </div>
             {recentChangeEntries.length === 0 ? (
@@ -215,9 +216,9 @@ export default function DashboardPage() {
               <h2 className="text-sm font-semibold">Monitored APIs</h2>
               <Link
                 href="/dashboard/sources"
-                className="inline-flex items-center gap-1 text-xs text-violet-400 transition hover:text-violet-300"
+                className="inline-flex items-center gap-1 rounded text-xs text-violet-400 transition hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
-                Manage <ArrowRight className="h-3 w-3" />
+                Manage <ArrowRight aria-hidden="true" className="h-3 w-3" />
               </Link>
             </div>
             {sources.length === 0 ? (
@@ -225,7 +226,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-gray-600">No APIs monitored yet.</p>
                 <Link
                   href="/dashboard/sources"
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
                 >
                   Add your first API source
                 </Link>

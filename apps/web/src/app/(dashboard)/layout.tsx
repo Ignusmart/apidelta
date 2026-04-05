@@ -27,24 +27,24 @@ export default async function DashboardLayout({
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-gray-800 bg-gray-950">
+      <aside aria-label="Dashboard sidebar" className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-gray-800 bg-gray-950">
         {/* Logo */}
         <div className="flex h-16 items-center gap-2 border-b border-gray-800 px-6">
-          <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
-            <Zap className="h-5 w-5 text-violet-400" />
+          <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:rounded-lg">
+            <Zap aria-hidden="true" className="h-5 w-5 text-violet-400" />
             DriftWatch
           </Link>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav aria-label="Dashboard navigation" className="flex-1 space-y-1 px-3 py-4">
           {NAV_ITEMS.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-400 transition hover:bg-gray-900 hover:text-white"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-400 transition hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon aria-hidden="true" className="h-4 w-4" />
               {item.label}
             </Link>
           ))}
@@ -73,9 +73,9 @@ export default async function DashboardLayout({
           >
             <button
               type="submit"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 transition hover:bg-gray-900 hover:text-white"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 transition hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut aria-hidden="true" className="h-4 w-4" />
               Sign out
             </button>
           </form>
@@ -83,7 +83,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main content */}
-      <main className="ml-64 flex-1 p-8">{children}</main>
+      <main id="main-content" className="ml-64 flex-1 p-8">{children}</main>
     </div>
   );
 }
