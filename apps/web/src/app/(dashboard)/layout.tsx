@@ -1,11 +1,12 @@
 import { redirect } from 'next/navigation';
 import { auth, signOut } from '@/auth';
-import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings } from 'lucide-react';
+import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows } from 'lucide-react';
 import Link from 'next/link';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/sources', label: 'API Sources', icon: Rss },
+  { href: '/dashboard/changes', label: 'Changes', icon: GitCompareArrows },
   { href: '/dashboard/alerts', label: 'Alerts', icon: Bell },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];

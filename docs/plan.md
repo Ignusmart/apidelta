@@ -68,7 +68,7 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
   - `sign-in/page.tsx`, `sign-up/page.tsx`, `verify-request/page.tsx`
   - JWT session stored in cookie
   - Middleware protects `/dashboard/*` routes, redirects to sign-in
-- [ ] **Dashboard** (`apps/web/app/(dashboard)/`)
+- [x] **Dashboard** (`apps/web/app/(dashboard)/`)
   - `dashboard/page.tsx` — overview: monitored APIs, recent changes, alert count
   - `dashboard/sources/page.tsx` — list/add/remove monitored APIs
   - `dashboard/changes/page.tsx` — filterable change feed with severity badges
@@ -131,7 +131,7 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
 4. [ ] Slack alerts sent on breaking changes
 5. [ ] Landing page with pricing and sign-up CTA
 6. [x] Auth (sign up / sign in / sign out)
-7. [ ] Dashboard showing monitored APIs and change feed
+7. [x] Dashboard showing monitored APIs and change feed
 8. [ ] Stripe billing (Starter + Pro tiers)
 9. [ ] Deployed to production (web + API + DB)
 10. [ ] Onboarding flow guides new user to first alert

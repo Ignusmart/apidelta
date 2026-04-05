@@ -262,3 +262,39 @@
 - Or Stripe billing integration
 ### Blockers
 - None (DATABASE_URL needed for Prisma migration; migration will be created when DB is available)
+
+## Iteration 8 — 2026-04-05
+### What was done
+- Built Changes feed page at `apps/web/src/app/(dashboard)/dashboard/changes/page.tsx`:
+  - Filterable list of all detected changes across all monitored sources
+  - Filters panel: search (titles, descriptions, endpoints), severity dropdown, source dropdown, clear filters button
+  - Active filter count badge on Filters button
+  - Each change card: severity badge, change type badge (BREAKING/DEPRECATION/NON_BREAKING/INFO with color coding), title, description, affected endpoints as code chips, source name, change date, detection date
+  - Empty states for no data and no filter matches
+- Built Alerts page at `apps/web/src/app/(dashboard)/dashboard/alerts/page.tsx`:
+  - Tab navigation: Alert Rules / History
+  - Alert rules list: channel icon (email/Slack), rule name, active status indicator, destination, severity threshold badge, source filter, keyword filter
+  - "Create Rule" modal form: name, channel (Email/Slack), destination, minimum severity, source filter dropdown, keyword filter (comma-separated)
+  - Delete rule with confirmation dialog
+  - Alert history table: status icon (Sent/Failed/Pending), change title + severity, rule name, channel, sent timestamp
+  - Empty states for both tabs
+- Dashboard overview page and Sources page already existed from previous iteration (verified working)
+### What works now
+- `pnpm build:web` — compiles with no errors, all 4 dashboard routes generated
+- Dashboard overview (`/dashboard`): summary stat cards, recent changes feed, monitored APIs sidebar
+- Sources page (`/dashboard/sources`): full CRUD table with add modal, delete, manual crawl trigger
+- Changes page (`/dashboard/changes`): filterable feed with severity/source/search filters, change detail cards with endpoints
+- Alerts page (`/dashboard/alerts`): alert rule management with create/delete, alert history table
+- All pages use consistent dark theme (gray-950 bg, violet accents, gray-800 borders)
+- All pages use client-side data fetching via `apiFetch` helper with team-scoped API calls
+- All pages handle loading states (spinner), error states (red banner), and empty states
+### Audit results
+- Build: PASS (apps/web: pass, apps/api: pass)
+- Feature works: YES — all 4 dashboard pages render and wire to backend API endpoints
+- Security: No issues — session-based auth required via middleware, team-scoped data access, no secrets in client code
+- Skills used: none (followed existing design patterns from iteration 7 dashboard/sources pages)
+- MVP checklist: 7/10 complete (items 1-6 from previous + item 7: dashboard showing monitored APIs and change feed)
+### What's next
+- Stripe billing integration (`apps/api/src/modules/billing/`) — Checkout session, webhook handler, plan enforcement
+### Blockers
+- None
