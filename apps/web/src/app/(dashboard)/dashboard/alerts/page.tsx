@@ -15,6 +15,7 @@ import {
   XCircle,
   Clock,
   ChevronDown,
+  Filter,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import type {
@@ -81,7 +82,10 @@ export default function AlertsPage() {
   const [formMinSeverity, setFormMinSeverity] = useState<Severity>('MEDIUM');
   const [formSourceFilter, setFormSourceFilter] = useState('');
   const [formKeywordFilter, setFormKeywordFilter] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [ruleFormErrors, setRuleFormErrors] = useState<Record<string, string>>({});
+  const [ruleFieldsTouched, setRuleFieldsTouched] = useState<Record<string, boolean>>({});
 
   const fetchData = useCallback(async () => {
     if (!teamId) return;
@@ -109,9 +113,49 @@ export default function AlertsPage() {
     fetchData();
   }, [fetchData]);
 
+  const SEVERITY_DESCRIPTIONS: Record<Severity, string> = {
+    CRITICAL: 'Only critical breaking changes',
+    HIGH: 'Critical + high-impact changes',
+    MEDIUM: 'Most breaking changes and deprecations',
+    LOW: 'All changes including minor updates',
+  };
+
+  function validateRuleForm(): boolean {
+    const errors: Record<string, string> = {};
+    if (!formName.trim()) errors.name = 'Give this rule a name to identify it later';
+    if (!formDestination.trim()) {
+      errors.destination = formChannel === 'EMAIL' ? 'Enter the email address to receive alerts' : 'Enter your Slack webhook URL';
+    } else if (formChannel === 'EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formDestination)) {
+      errors.destination = 'Enter a valid email address';
+    } else if (formChannel === 'SLACK') {
+      try { new URL(formDestination); } catch { errors.destination = 'Enter a valid Slack webhook URL (starts with https://)'; }
+    }
+    setRuleFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
+  function resetRuleForm() {
+    setFormName('');
+    setFormChannel('EMAIL');
+    setFormDestination('');
+    setFormMinSeverity('MEDIUM');
+    setFormSourceFilter('');
+    setFormKeywordFilter('');
+    setShowAdvancedFilters(false);
+    setRuleFormErrors({});
+    setRuleFieldsTouched({});
+  }
+
+  function touchRuleField(field: string) {
+    setRuleFieldsTouched((prev) => ({ ...prev, [field]: true }));
+  }
+
   async function handleCreateRule(e: React.FormEvent) {
     e.preventDefault();
     if (!teamId) return;
+    // Touch all fields to show errors
+    setRuleFieldsTouched({ name: true, destination: true });
+    if (!validateRuleForm()) return;
     setSubmitting(true);
     try {
       const keywords = formKeywordFilter
@@ -130,13 +174,7 @@ export default function AlertsPage() {
           keywordFilter: keywords,
         }),
       });
-      // Reset form
-      setFormName('');
-      setFormChannel('EMAIL');
-      setFormDestination('');
-      setFormMinSeverity('MEDIUM');
-      setFormSourceFilter('');
-      setFormKeywordFilter('');
+      resetRuleForm();
       setShowCreateForm(false);
       await fetchData();
     } catch (e) {
@@ -261,20 +299,23 @@ export default function AlertsPage() {
 
       {/* Create rule modal */}
       {showCreateForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="create-rule-title" onClick={(e) => { if (e.target === e.currentTarget) setShowCreateForm(false); }} onKeyDown={(e) => { if (e.key === 'Escape') setShowCreateForm(false); }}>
-          <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-950 p-6 shadow-2xl animate-modal-content">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-modal-backdrop p-4" role="dialog" aria-modal="true" aria-labelledby="create-rule-title" onClick={(e) => { if (e.target === e.currentTarget) { resetRuleForm(); setShowCreateForm(false); } }} onKeyDown={(e) => { if (e.key === 'Escape') { resetRuleForm(); setShowCreateForm(false); } }}>
+          <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-950 p-6 shadow-2xl animate-modal-content max-h-[90vh] overflow-y-auto">
             <div className="mb-5 flex items-center justify-between">
-              <h2 id="create-rule-title" className="text-lg font-semibold">Create Alert Rule</h2>
+              <div>
+                <h2 id="create-rule-title" className="text-lg font-semibold">Create Alert Rule</h2>
+                <p className="mt-0.5 text-xs text-gray-500">Get notified when API changes match your criteria.</p>
+              </div>
               <button
-                onClick={() => setShowCreateForm(false)}
+                onClick={() => { resetRuleForm(); setShowCreateForm(false); }}
                 aria-label="Close dialog"
                 className="rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
                 <X aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
-            <form onSubmit={handleCreateRule} className="space-y-4">
-              {/* Name */}
+            <form onSubmit={handleCreateRule} className="space-y-4" noValidate>
+              {/* Rule Name */}
               <div>
                 <label htmlFor="rule-name" className="mb-1.5 block text-sm font-medium text-gray-300">
                   Rule Name
@@ -283,124 +324,189 @@ export default function AlertsPage() {
                   id="rule-name"
                   type="text"
                   value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
+                  onChange={(e) => { setFormName(e.target.value); setRuleFormErrors((prev) => ({ ...prev, name: '' })); }}
+                  onBlur={() => touchRuleField('name')}
                   placeholder="e.g. Critical Stripe changes"
-                  required
-                  className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                  autoFocus
+                  aria-describedby={ruleFieldsTouched.name && ruleFormErrors.name ? 'rule-name-error' : undefined}
+                  aria-invalid={ruleFieldsTouched.name && !!ruleFormErrors.name}
+                  className={`w-full rounded-lg border bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:ring-1 ${
+                    ruleFieldsTouched.name && ruleFormErrors.name
+                      ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/30'
+                      : 'border-gray-800 focus:border-violet-500 focus:ring-violet-500/30'
+                  }`}
                 />
+                {ruleFieldsTouched.name && ruleFormErrors.name && (
+                  <p id="rule-name-error" className="mt-1 text-xs text-red-400">{ruleFormErrors.name}</p>
+                )}
               </div>
 
-              {/* Channel + Destination */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="rule-channel" className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Channel
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="rule-channel"
-                      value={formChannel}
-                      onChange={(e) =>
-                        setFormChannel(e.target.value as AlertChannel)
-                      }
-                      className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
-                    >
-                      <option value="EMAIL">Email</option>
-                      <option value="SLACK">Slack Webhook</option>
-                    </select>
-                    <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="rule-destination" className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Destination
-                  </label>
-                  <input
-                    id="rule-destination"
-                    type={formChannel === 'EMAIL' ? 'email' : 'url'}
-                    value={formDestination}
-                    onChange={(e) => setFormDestination(e.target.value)}
-                    placeholder={
-                      formChannel === 'EMAIL'
-                        ? 'team@example.com'
-                        : 'https://hooks.slack.com/...'
-                    }
-                    required
-                    className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
-                  />
-                </div>
-              </div>
-
-              {/* Min severity + Source filter */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="rule-min-severity" className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Minimum Severity
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="rule-min-severity"
-                      value={formMinSeverity}
-                      onChange={(e) =>
-                        setFormMinSeverity(e.target.value as Severity)
-                      }
-                      className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
-                    >
-                      {SEVERITY_ORDER.map((s) => (
-                        <option key={s} value={s}>
-                          {s} and above
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor="rule-source-filter" className="mb-1.5 block text-sm font-medium text-gray-300">
-                    Source (optional)
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="rule-source-filter"
-                      value={formSourceFilter}
-                      onChange={(e) => setFormSourceFilter(e.target.value)}
-                      className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
-                    >
-                      <option value="">All sources</option>
-                      {sources.map((src) => (
-                        <option key={src.id} value={src.id}>
-                          {src.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Keyword filter */}
+              {/* Channel — full-width select with icon indicators */}
               <div>
-                <label htmlFor="rule-keywords" className="mb-1.5 block text-sm font-medium text-gray-300">
-                  Keywords (optional)
+                <label htmlFor="rule-channel" className="mb-1.5 block text-sm font-medium text-gray-300">
+                  Notify via
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setFormChannel('EMAIL'); setFormDestination(''); setRuleFormErrors((prev) => ({ ...prev, destination: '' })); }}
+                    className={`flex items-center gap-2 rounded-lg border px-3.5 py-2.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
+                      formChannel === 'EMAIL'
+                        ? 'border-violet-500/50 bg-violet-500/10 text-white'
+                        : 'border-gray-800 bg-gray-900 text-gray-400 hover:border-gray-700 hover:text-white'
+                    }`}
+                  >
+                    <Mail aria-hidden="true" className="h-4 w-4" />
+                    Email
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setFormChannel('SLACK'); setFormDestination(''); setRuleFormErrors((prev) => ({ ...prev, destination: '' })); }}
+                    className={`flex items-center gap-2 rounded-lg border px-3.5 py-2.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
+                      formChannel === 'SLACK'
+                        ? 'border-violet-500/50 bg-violet-500/10 text-white'
+                        : 'border-gray-800 bg-gray-900 text-gray-400 hover:border-gray-700 hover:text-white'
+                    }`}
+                  >
+                    <MessageSquare aria-hidden="true" className="h-4 w-4" />
+                    Slack
+                  </button>
+                </div>
+              </div>
+
+              {/* Destination — dynamic label and input type */}
+              <div>
+                <label htmlFor="rule-destination" className="mb-1.5 block text-sm font-medium text-gray-300">
+                  {formChannel === 'EMAIL' ? 'Email Address' : 'Slack Webhook URL'}
                 </label>
                 <input
-                  id="rule-keywords"
-                  type="text"
-                  value={formKeywordFilter}
-                  onChange={(e) => setFormKeywordFilter(e.target.value)}
-                  placeholder="e.g. authentication, billing, v2 (comma-separated)"
-                  className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                  id="rule-destination"
+                  type={formChannel === 'EMAIL' ? 'email' : 'url'}
+                  inputMode={formChannel === 'EMAIL' ? 'email' : 'url'}
+                  value={formDestination}
+                  onChange={(e) => { setFormDestination(e.target.value); setRuleFormErrors((prev) => ({ ...prev, destination: '' })); }}
+                  onBlur={() => touchRuleField('destination')}
+                  placeholder={
+                    formChannel === 'EMAIL'
+                      ? 'team@company.com'
+                      : 'https://hooks.slack.com/services/...'
+                  }
+                  aria-describedby={ruleFieldsTouched.destination && ruleFormErrors.destination ? 'rule-dest-error' : 'rule-dest-hint'}
+                  aria-invalid={ruleFieldsTouched.destination && !!ruleFormErrors.destination}
+                  className={`w-full rounded-lg border bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:ring-1 ${
+                    ruleFieldsTouched.destination && ruleFormErrors.destination
+                      ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/30'
+                      : 'border-gray-800 focus:border-violet-500 focus:ring-violet-500/30'
+                  }`}
                 />
-                <p className="mt-1 text-xs text-gray-600">
-                  Only notify when changes mention these keywords. Leave blank to match all changes.
-                </p>
+                {ruleFieldsTouched.destination && ruleFormErrors.destination ? (
+                  <p id="rule-dest-error" className="mt-1 text-xs text-red-400">{ruleFormErrors.destination}</p>
+                ) : (
+                  <p id="rule-dest-hint" className="mt-1 text-xs text-gray-600">
+                    {formChannel === 'EMAIL'
+                      ? 'Alerts are sent to this address when a matching change is detected'
+                      : 'Create a webhook in your Slack workspace settings'}
+                  </p>
+                )}
+              </div>
+
+              {/* Minimum Severity — full-width with description */}
+              <div>
+                <label htmlFor="rule-min-severity" className="mb-1.5 block text-sm font-medium text-gray-300">
+                  Minimum Severity
+                </label>
+                <div className="relative">
+                  <select
+                    id="rule-min-severity"
+                    value={formMinSeverity}
+                    onChange={(e) =>
+                      setFormMinSeverity(e.target.value as Severity)
+                    }
+                    className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                  >
+                    {SEVERITY_ORDER.map((s) => (
+                      <option key={s} value={s}>
+                        {s} and above
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                </div>
+                <p className="mt-1 text-xs text-gray-600">{SEVERITY_DESCRIPTIONS[formMinSeverity]}</p>
+              </div>
+
+              {/* Advanced filters — progressive disclosure */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className="inline-flex items-center gap-1.5 text-xs text-gray-500 transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded"
+                  aria-expanded={showAdvancedFilters}
+                >
+                  <Filter aria-hidden="true" className="h-3.5 w-3.5" />
+                  Advanced filters
+                  <ChevronDown aria-hidden="true" className={`h-3 w-3 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
+                </button>
+                {showAdvancedFilters && (
+                  <div className="mt-3 space-y-4">
+                    {/* Source filter */}
+                    <div>
+                      <label htmlFor="rule-source-filter" className="mb-1.5 block text-sm font-medium text-gray-300">
+                        Limit to Source
+                      </label>
+                      <div className="relative">
+                        <select
+                          id="rule-source-filter"
+                          value={formSourceFilter}
+                          onChange={(e) => setFormSourceFilter(e.target.value)}
+                          className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                        >
+                          <option value="">All sources (default)</option>
+                          {sources.map((src) => (
+                            <option key={src.id} value={src.id}>
+                              {src.name}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                      </div>
+                    </div>
+
+                    {/* Keyword filter */}
+                    <div>
+                      <label htmlFor="rule-keywords" className="mb-1.5 block text-sm font-medium text-gray-300">
+                        Keyword Filter
+                      </label>
+                      <input
+                        id="rule-keywords"
+                        type="text"
+                        value={formKeywordFilter}
+                        onChange={(e) => setFormKeywordFilter(e.target.value)}
+                        placeholder="authentication, billing, v2"
+                        className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                      />
+                      <p className="mt-1 text-xs text-gray-600">
+                        Comma-separated. Only triggers when changes mention at least one keyword. Leave blank to match all.
+                      </p>
+                      {formKeywordFilter && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {formKeywordFilter.split(',').map((k) => k.trim()).filter(Boolean).map((keyword, i) => (
+                            <span key={i} className="inline-flex items-center rounded-full bg-gray-800 px-2.5 py-0.5 text-xs text-gray-300">
+                              {keyword}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowCreateForm(false)}
+                  onClick={() => { resetRuleForm(); setShowCreateForm(false); }}
                   className="flex-1 rounded-lg border border-gray-800 px-4 py-2.5 text-sm text-gray-400 transition hover:border-gray-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                 >
                   Cancel

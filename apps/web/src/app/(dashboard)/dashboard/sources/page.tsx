@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Plus,
@@ -14,6 +14,8 @@ import {
   Globe,
   Github,
   ArrowUpRight,
+  ChevronDown,
+  Settings2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
@@ -24,6 +26,39 @@ const SOURCE_TYPE_OPTIONS: { value: SourceType; label: string; icon: React.Eleme
   { value: 'RSS_FEED', label: 'RSS / Atom Feed', icon: Rss },
   { value: 'GITHUB_RELEASES', label: 'GitHub Releases', icon: Github },
 ];
+
+/** Try to auto-detect source type from URL */
+function detectSourceType(url: string): SourceType | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname === 'github.com' && /\/releases/i.test(u.pathname)) return 'GITHUB_RELEASES';
+    if (/\.(rss|xml|atom)$/i.test(u.pathname) || /\/feed/i.test(u.pathname) || /\/rss/i.test(u.pathname)) return 'RSS_FEED';
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** Try to derive a friendly name from the URL */
+function deriveNameFromUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    // GitHub: "owner/repo" -> "Repo"
+    if (u.hostname === 'github.com') {
+      const parts = u.pathname.split('/').filter(Boolean);
+      if (parts.length >= 2) {
+        const repo = parts[1].replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+        return `${repo} (GitHub)`;
+      }
+    }
+    // Otherwise derive from hostname — e.g. "stripe.com" -> "Stripe"
+    const host = u.hostname.replace(/^www\./, '');
+    const name = host.split('.')[0];
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  } catch {
+    return '';
+  }
+}
 
 function timeAgo(dateStr: string | null): string {
   if (!dateStr) return 'Never';
@@ -58,10 +93,60 @@ export default function SourcesPage() {
 
   // Form state
   const [formName, setFormName] = useState('');
+  const [formNameTouched, setFormNameTouched] = useState(false);
   const [formUrl, setFormUrl] = useState('');
+  const [formUrlTouched, setFormUrlTouched] = useState(false);
   const [formType, setFormType] = useState<SourceType>('HTML_CHANGELOG');
+  const [formTypeAutoDetected, setFormTypeAutoDetected] = useState(false);
   const [formInterval, setFormInterval] = useState(6);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const urlInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-detect source type and name when URL changes
+  function handleUrlChange(url: string) {
+    setFormUrl(url);
+    setFormErrors((prev) => ({ ...prev, url: '' }));
+
+    if (url.length > 10) {
+      // Auto-detect source type
+      const detected = detectSourceType(url);
+      if (detected) {
+        setFormType(detected);
+        setFormTypeAutoDetected(true);
+      } else {
+        setFormTypeAutoDetected(false);
+      }
+
+      // Auto-fill name if user hasn't manually typed one
+      if (!formNameTouched) {
+        const derived = deriveNameFromUrl(url);
+        if (derived) setFormName(derived);
+      }
+    }
+  }
+
+  function validateSourceForm(): boolean {
+    const errors: Record<string, string> = {};
+    if (!formUrl.trim()) {
+      errors.url = 'Changelog URL is required';
+    } else {
+      try {
+        new URL(formUrl);
+      } catch {
+        errors.url = 'Enter a valid URL (e.g. https://stripe.com/docs/changelog)';
+      }
+    }
+    if (!formName.trim()) {
+      errors.name = 'Give this source a name so you can find it later';
+    }
+    if (formInterval < 1 || formInterval > 168) {
+      errors.interval = 'Interval must be between 1 and 168 hours';
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
 
   const fetchSources = useCallback(async () => {
     if (!teamId) return;
@@ -87,9 +172,22 @@ export default function SourcesPage() {
     fetchSources();
   }, [fetchSources]);
 
+  function resetSourceForm() {
+    setFormName('');
+    setFormNameTouched(false);
+    setFormUrl('');
+    setFormUrlTouched(false);
+    setFormType('HTML_CHANGELOG');
+    setFormTypeAutoDetected(false);
+    setFormInterval(6);
+    setShowAdvanced(false);
+    setFormErrors({});
+  }
+
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!teamId) return;
+    if (!validateSourceForm()) return;
     setSubmitting(true);
     try {
       await apiFetch('/sources', {
@@ -102,10 +200,7 @@ export default function SourcesPage() {
           crawlIntervalHours: formInterval,
         }),
       });
-      setFormName('');
-      setFormUrl('');
-      setFormType('HTML_CHANGELOG');
-      setFormInterval(6);
+      resetSourceForm();
       setShowAddForm(false);
       await fetchSources();
     } catch (e) {
@@ -242,76 +337,147 @@ export default function SourcesPage() {
 
       {/* Add source form (modal overlay) */}
       {showAddForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="add-source-title" onClick={(e) => { if (e.target === e.currentTarget) setShowAddForm(false); }} onKeyDown={(e) => { if (e.key === 'Escape') setShowAddForm(false); }}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-modal-backdrop p-4" role="dialog" aria-modal="true" aria-labelledby="add-source-title" onClick={(e) => { if (e.target === e.currentTarget) { resetSourceForm(); setShowAddForm(false); } }} onKeyDown={(e) => { if (e.key === 'Escape') { resetSourceForm(); setShowAddForm(false); } }}>
           <div className="w-full max-w-md rounded-xl border border-gray-800 bg-gray-950 p-6 shadow-2xl animate-modal-content">
             <div className="mb-5 flex items-center justify-between">
-              <h2 id="add-source-title" className="text-lg font-semibold">Add API Source</h2>
+              <div>
+                <h2 id="add-source-title" className="text-lg font-semibold">Add API Source</h2>
+                <p className="mt-0.5 text-xs text-gray-500">Paste a changelog URL and we&apos;ll start monitoring it.</p>
+              </div>
               <button
-                onClick={() => setShowAddForm(false)}
+                onClick={() => { resetSourceForm(); setShowAddForm(false); }}
                 aria-label="Close dialog"
                 className="rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
                 <X aria-hidden="true" className="h-4 w-4" />
               </button>
             </div>
-            <form onSubmit={handleAdd} className="space-y-4">
+            <form onSubmit={handleAdd} className="space-y-4" noValidate>
+              {/* URL first — the primary input */}
               <div>
-                <label htmlFor="source-name" className="mb-1.5 block text-sm font-medium text-gray-300">Name</label>
+                <label htmlFor="source-url" className="mb-1.5 block text-sm font-medium text-gray-300">Changelog URL</label>
+                <input
+                  ref={urlInputRef}
+                  id="source-url"
+                  type="url"
+                  value={formUrl}
+                  onChange={(e) => handleUrlChange(e.target.value)}
+                  onBlur={() => setFormUrlTouched(true)}
+                  placeholder="https://stripe.com/docs/changelog"
+                  autoFocus
+                  aria-describedby={formErrors.url ? 'source-url-error' : 'source-url-hint'}
+                  aria-invalid={formUrlTouched && !!formErrors.url}
+                  className={`w-full rounded-lg border bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:ring-1 ${
+                    formUrlTouched && formErrors.url
+                      ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/30'
+                      : 'border-gray-800 focus:border-violet-500 focus:ring-violet-500/30'
+                  }`}
+                />
+                {formUrlTouched && formErrors.url ? (
+                  <p id="source-url-error" className="mt-1 text-xs text-red-400">{formErrors.url}</p>
+                ) : (
+                  <p id="source-url-hint" className="mt-1 text-xs text-gray-600">HTML changelog page, RSS feed, or GitHub releases URL</p>
+                )}
+              </div>
+
+              {/* Name — auto-filled from URL, editable */}
+              <div>
+                <label htmlFor="source-name" className="mb-1.5 block text-sm font-medium text-gray-300">Display Name</label>
                 <input
                   id="source-name"
                   type="text"
                   value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
+                  onChange={(e) => { setFormName(e.target.value); setFormNameTouched(true); setFormErrors((prev) => ({ ...prev, name: '' })); }}
+                  onBlur={() => setFormNameTouched(true)}
                   placeholder="e.g. Stripe API"
-                  required
-                  className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                  aria-describedby={formErrors.name ? 'source-name-error' : 'source-name-hint'}
+                  aria-invalid={formNameTouched && !!formErrors.name}
+                  className={`w-full rounded-lg border bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:ring-1 ${
+                    formNameTouched && formErrors.name
+                      ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/30'
+                      : 'border-gray-800 focus:border-violet-500 focus:ring-violet-500/30'
+                  }`}
                 />
+                {formNameTouched && formErrors.name ? (
+                  <p id="source-name-error" className="mt-1 text-xs text-red-400">{formErrors.name}</p>
+                ) : (
+                  <p id="source-name-hint" className="mt-1 text-xs text-gray-600">
+                    {formName && !formNameTouched ? 'Auto-detected from URL — edit if you prefer a different name' : 'A short name to identify this source in your dashboard'}
+                  </p>
+                )}
               </div>
-              <div>
-                <label htmlFor="source-url" className="mb-1.5 block text-sm font-medium text-gray-300">Changelog URL</label>
-                <input
-                  id="source-url"
-                  type="url"
-                  value={formUrl}
-                  onChange={(e) => setFormUrl(e.target.value)}
-                  placeholder="https://stripe.com/docs/changelog"
-                  required
-                  className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
-                />
-              </div>
+
+              {/* Source type — with auto-detection indicator */}
               <div>
                 <label htmlFor="source-type" className="mb-1.5 block text-sm font-medium text-gray-300">Source Type</label>
-                <select
-                  id="source-type"
-                  value={formType}
-                  onChange={(e) => setFormType(e.target.value as SourceType)}
-                  className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
-                >
-                  {SOURCE_TYPE_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    id="source-type"
+                    value={formType}
+                    onChange={(e) => { setFormType(e.target.value as SourceType); setFormTypeAutoDetected(false); }}
+                    className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                  >
+                    {SOURCE_TYPE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+                </div>
+                {formTypeAutoDetected && (
+                  <p className="mt-1 text-xs text-violet-400">Auto-detected from URL</p>
+                )}
               </div>
+
+              {/* Advanced settings — progressive disclosure */}
               <div>
-                <label htmlFor="source-interval" className="mb-1.5 block text-sm font-medium text-gray-300">
-                  Crawl Interval (hours)
-                </label>
-                <input
-                  id="source-interval"
-                  type="number"
-                  min={1}
-                  max={168}
-                  value={formInterval}
-                  onChange={(e) => setFormInterval(Number(e.target.value))}
-                  className="w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
-                />
+                <button
+                  type="button"
+                  onClick={() => setShowAdvanced(!showAdvanced)}
+                  className="inline-flex items-center gap-1.5 text-xs text-gray-500 transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 rounded"
+                  aria-expanded={showAdvanced}
+                >
+                  <Settings2 aria-hidden="true" className="h-3.5 w-3.5" />
+                  Advanced settings
+                  <ChevronDown aria-hidden="true" className={`h-3 w-3 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+                </button>
+                {showAdvanced && (
+                  <div className="mt-3">
+                    <label htmlFor="source-interval" className="mb-1.5 block text-sm font-medium text-gray-300">
+                      Crawl Interval
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="source-interval"
+                        type="number"
+                        min={1}
+                        max={168}
+                        value={formInterval}
+                        onChange={(e) => { setFormInterval(Number(e.target.value)); setFormErrors((prev) => ({ ...prev, interval: '' })); }}
+                        aria-describedby={formErrors.interval ? 'source-interval-error' : 'source-interval-hint'}
+                        aria-invalid={!!formErrors.interval}
+                        className={`w-24 rounded-lg border bg-gray-900 px-3.5 py-2.5 text-sm text-white outline-none transition focus:ring-1 ${
+                          formErrors.interval
+                            ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/30'
+                            : 'border-gray-800 focus:border-violet-500 focus:ring-violet-500/30'
+                        }`}
+                      />
+                      <span className="text-sm text-gray-500">hours</span>
+                    </div>
+                    {formErrors.interval ? (
+                      <p id="source-interval-error" className="mt-1 text-xs text-red-400">{formErrors.interval}</p>
+                    ) : (
+                      <p id="source-interval-hint" className="mt-1 text-xs text-gray-600">Default: every 6 hours. Most changelogs update daily at most.</p>
+                    )}
+                  </div>
+                )}
               </div>
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowAddForm(false)}
+                  onClick={() => { resetSourceForm(); setShowAddForm(false); }}
                   className="flex-1 rounded-lg border border-gray-800 px-4 py-2.5 text-sm text-gray-400 transition hover:border-gray-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                 >
                   Cancel

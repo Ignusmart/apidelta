@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   GitCompareArrows,
@@ -84,8 +84,26 @@ export default function ChangesPage() {
   // Filters
   const [severityFilter, setSeverityFilter] = useState<Severity | ''>('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced search — 300ms delay to avoid filtering on every keystroke
+  function handleSearchChange(value: string) {
+    setSearchInput(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setSearchQuery(value);
+    }, 300);
+  }
+
+  // Clear debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, []);
 
   const fetchData = useCallback(async () => {
     if (!teamId) return;
@@ -140,7 +158,7 @@ export default function ChangesPage() {
   });
 
   const activeFilterCount =
-    (severityFilter ? 1 : 0) + (sourceFilter ? 1 : 0) + (searchQuery ? 1 : 0);
+    (severityFilter ? 1 : 0) + (sourceFilter ? 1 : 0) + (searchInput ? 1 : 0);
 
   if (loading && !changes.length) {
     return (
@@ -216,27 +234,29 @@ export default function ChangesPage() {
       {/* Filters panel */}
       {showFilters && (
         <div className="rounded-xl border border-gray-800 bg-gray-900/30 p-5">
-          <div className="flex flex-wrap items-end gap-4">
-            {/* Search */}
-            <div className="min-w-[200px] flex-1">
-              <label htmlFor="changes-search" className="mb-1.5 block text-xs font-medium text-gray-500">
-                Search
-              </label>
-              <div className="relative">
-                <Search aria-hidden="true" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
-                <input
-                  id="changes-search"
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search titles, endpoints..."
-                  className="w-full rounded-lg border border-gray-800 bg-gray-950 py-2 pl-9 pr-3.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
-                />
-              </div>
+          {/* Search — full width on its own row */}
+          <div className="mb-4">
+            <label htmlFor="changes-search" className="mb-1.5 block text-xs font-medium text-gray-500">
+              Search
+            </label>
+            <div className="relative">
+              <Search aria-hidden="true" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-600" />
+              <input
+                id="changes-search"
+                type="search"
+                inputMode="search"
+                value={searchInput}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search titles, descriptions, endpoints..."
+                autoFocus
+                className="w-full rounded-lg border border-gray-800 bg-gray-950 py-2.5 pl-9 pr-3.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+              />
             </div>
+          </div>
 
+          <div className="flex flex-wrap items-end gap-4">
             {/* Severity */}
-            <div className="w-44">
+            <div className="w-full sm:w-44">
               <label htmlFor="changes-severity" className="mb-1.5 block text-xs font-medium text-gray-500">
                 Severity
               </label>
@@ -247,7 +267,7 @@ export default function ChangesPage() {
                   onChange={(e) =>
                     setSeverityFilter(e.target.value as Severity | '')
                   }
-                  className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                  className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
                 >
                   <option value="">All severities</option>
                   {SEVERITY_ORDER.map((s) => (
@@ -261,7 +281,7 @@ export default function ChangesPage() {
             </div>
 
             {/* Source */}
-            <div className="w-52">
+            <div className="w-full sm:w-52">
               <label htmlFor="changes-source" className="mb-1.5 block text-xs font-medium text-gray-500">
                 Source
               </label>
@@ -270,7 +290,7 @@ export default function ChangesPage() {
                   id="changes-source"
                   value={sourceFilter}
                   onChange={(e) => setSourceFilter(e.target.value)}
-                  className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                  className="w-full appearance-none rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 pr-8 text-sm text-white outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
                 >
                   <option value="">All sources</option>
                   {sources.map((src) => (
@@ -289,12 +309,13 @@ export default function ChangesPage() {
                 onClick={() => {
                   setSeverityFilter('');
                   setSourceFilter('');
+                  setSearchInput('');
                   setSearchQuery('');
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-gray-500 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm text-gray-500 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
                 <X aria-hidden="true" className="h-3.5 w-3.5" />
-                Clear
+                Clear all
               </button>
             )}
           </div>

@@ -589,3 +589,49 @@
 - Polish gate 7/10: form-cro
 ### Blockers
 - None
+
+## Iteration 17 — 2026-04-05 [POLISH]
+### Polish gate 7/10: form-cro
+### What was done
+- **Add API Source form** (`apps/web/src/app/(dashboard)/dashboard/sources/page.tsx`):
+  - Reordered fields: URL first (primary input), name second — URL is the critical action, name is metadata
+  - Auto-detect source name from URL (e.g. `stripe.com/docs/changelog` -> "Stripe", `github.com/owner/repo/releases` -> "Repo (GitHub)")
+  - Auto-detect source type from URL (GitHub releases URLs -> GITHUB_RELEASES, RSS/feed URLs -> RSS_FEED) with "Auto-detected from URL" indicator
+  - Moved crawl interval behind "Advanced settings" toggle (progressive disclosure) — most users never change the default 6h
+  - Added inline field-level validation with red border + error messages on blur (URL format, name required, interval range)
+  - Added `noValidate` to form for custom validation UX instead of browser defaults
+  - Added helper text under each field explaining what it does
+  - Added modal subtitle "Paste a changelog URL and we'll start monitoring it."
+  - URL input auto-focused on modal open
+  - Interval input now uses inline "hours" label instead of burying it in the field label
+  - Proper `aria-describedby`, `aria-invalid` on all fields
+  - Reset form state on close/cancel (was persisting stale data)
+- **Create Alert Rule form** (`apps/web/src/app/(dashboard)/dashboard/alerts/page.tsx`):
+  - Replaced channel dropdown with visual toggle buttons (Email/Slack) with icons — reduces cognitive load, clearer which is selected
+  - Dynamic label on destination field: "Email Address" or "Slack Webhook URL" based on channel selection
+  - Added `inputMode` hints for mobile keyboards (email, url)
+  - Added severity description text that updates when selection changes (e.g. "Most breaking changes and deprecations" for MEDIUM)
+  - Moved Source filter and Keywords into "Advanced filters" progressive disclosure section — reduces visible fields from 6 to 4
+  - Keywords now show tag-style preview chips below input as user types
+  - Added inline field-level validation for rule name and destination (email regex, URL validation)
+  - Added modal subtitle "Get notified when API changes match your criteria."
+  - Added `max-h-[90vh] overflow-y-auto` on modal for small screens
+  - Helper text on destination field changes based on channel
+  - Reset form state on close/cancel
+- **Changes filter form** (`apps/web/src/app/(dashboard)/dashboard/changes/page.tsx`):
+  - Added 300ms debounced search — prevents filtering on every keystroke, smoother UX
+  - Search input now full-width on its own row (was crammed with dropdowns)
+  - Search input uses `type="search"` and `inputMode="search"` for mobile keyboard optimization
+  - Search input auto-focused when filter panel opens
+  - Severity and Source dropdowns now full-width on mobile (`w-full sm:w-44/sm:w-52`)
+  - Increased touch targets on all filter inputs (py-2 -> py-2.5)
+  - Clear button text changed from "Clear" to "Clear all" for clarity
+  - Proper cleanup of debounce timer on component unmount
+### Audit results
+- Build: PASS
+- Skills used: form-cro
+- Polish gates: 7/10 passed
+### What's next
+- Polish gate 8/10: onboarding-cro
+### Blockers
+- None
