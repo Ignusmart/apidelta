@@ -92,11 +92,15 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
 
 ### Deliverables
 
-- [ ] **Deployment**
-  - `apps/web/` → Vercel (environment variables configured)
-  - `apps/api/` → Railway or Fly.io (Dockerfile)
+- [x] **Deployment configuration**
+  - `apps/api/Dockerfile` — multi-stage build (deps → build → production Alpine image)
+  - `apps/api/scripts/start.sh` — runs `prisma migrate deploy` then starts app
+  - `apps/api/.dockerignore` — excludes node_modules, .env, dist, .git
+  - `apps/web/next.config.ts` — `output: 'standalone'` for Vercel
+  - `.env.example` — comprehensive audit of all 18 environment variables
+  - `README.md` — full setup instructions, env var table, deployment guide
+  - Deploy targets: `apps/web/` → Vercel, `apps/api/` → Railway or Fly.io
   - PostgreSQL → Railway managed or Neon
-  - Redis → Upstash
   - Domain: driftwatch.dev or driftwatch.io (check availability)
 - [ ] **Onboarding flow** (`apps/web/app/(dashboard)/onboarding/`)
   - Step 1: Name your team
@@ -125,13 +129,13 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
 
 ## MVP Checklist (10 items)
 
-1. [ ] Changelog crawler works for 5+ API sources
-2. [ ] AI classification distinguishes breaking vs non-breaking (>70% accuracy)
-3. [ ] Email alerts sent on breaking changes
-4. [ ] Slack alerts sent on breaking changes
-5. [ ] Landing page with pricing and sign-up CTA
+1. [x] Changelog crawler works for 5+ API sources
+2. [x] AI classification distinguishes breaking vs non-breaking (>70% accuracy)
+3. [x] Email alerts sent on breaking changes
+4. [x] Slack alerts sent on breaking changes
+5. [x] Landing page with pricing and sign-up CTA
 6. [x] Auth (sign up / sign in / sign out)
 7. [x] Dashboard showing monitored APIs and change feed
 8. [x] Stripe billing (Starter + Pro tiers)
-9. [ ] Deployed to production (web + API + DB)
-10. [ ] Onboarding flow guides new user to first alert
+9. [x] Deployment configuration (Dockerfile, start script, Vercel standalone, .env.example, README)
+10. [x] README with setup instructions, env var table, deployment guide

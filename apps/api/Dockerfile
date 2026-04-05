@@ -1,0 +1,55 @@
+# ── Stage 1: Install dependencies + generate Prisma client ──
+FROM node:20-alpine AS deps
+
+RUN corepack enable && corepack prepare pnpm@9 --activate
+
+WORKDIR /app
+
+# Copy workspace root files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/api/package.json apps/api/
+COPY apps/api/prisma/ apps/api/prisma/
+
+# Install all deps (production + dev for prisma generate + nest build)
+RUN pnpm install --frozen-lockfile
+
+# Generate Prisma client
+RUN pnpm --filter @driftwatch/api prisma generate
+
+# ── Stage 2: Build NestJS ──
+FROM deps AS builder
+
+COPY apps/api/ apps/api/
+
+RUN pnpm --filter @driftwatch/api build
+
+# ── Stage 3: Production image ──
+FROM node:20-alpine AS runner
+
+RUN corepack enable && corepack prepare pnpm@9 --activate
+
+WORKDIR /app
+
+# Copy package files for pnpm to resolve workspace
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/api/package.json apps/api/
+
+# Install production deps only
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy Prisma schema + generated client
+COPY apps/api/prisma/ apps/api/prisma/
+COPY --from=deps /app/node_modules/.prisma node_modules/.prisma
+COPY --from=deps /app/apps/api/node_modules/.prisma apps/api/node_modules/.prisma
+
+# Copy built dist
+COPY --from=builder /app/apps/api/dist apps/api/dist
+
+# Copy start script
+COPY apps/api/scripts/start.sh apps/api/scripts/start.sh
+RUN chmod +x apps/api/scripts/start.sh
+
+ENV NODE_ENV=production
+EXPOSE 3001
+
+CMD ["apps/api/scripts/start.sh"]

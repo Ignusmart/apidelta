@@ -20,7 +20,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: process.env.NODE_ENV === 'production'
-      ? ['https://driftwatch.dev']
+      ? [process.env.NEXTAUTH_URL ?? 'https://driftwatch.dev']
       : ['http://localhost:3000'],
     credentials: true,
   });
