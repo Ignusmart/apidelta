@@ -178,6 +178,45 @@ const FAQ_SCHEMA = {
   })),
 };
 
+const ORGANIZATION_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "DriftWatch",
+  url: "https://driftwatch.dev",
+  description:
+    "AI-powered API changelog monitoring and breaking change alerts for engineering teams.",
+  // TODO: Add logo when available — logo: "https://driftwatch.dev/logo.png",
+};
+
+const SOFTWARE_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "DriftWatch",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Web",
+  url: "https://driftwatch.dev",
+  description:
+    "Monitor third-party API changelogs, classify breaking changes with AI, and alert your team via Slack and email.",
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Starter",
+      price: "49",
+      priceCurrency: "USD",
+      priceValidUntil: "2027-12-31",
+      url: "https://driftwatch.dev/sign-up",
+    },
+    {
+      "@type": "Offer",
+      name: "Pro",
+      price: "99",
+      priceCurrency: "USD",
+      priceValidUntil: "2027-12-31",
+      url: "https://driftwatch.dev/sign-up",
+    },
+  ],
+};
+
 // ---------------------------------------------------------------------------
 // Page component
 // ---------------------------------------------------------------------------
@@ -556,6 +595,16 @@ export default function HomePage() {
       {/* ----------------------------------------------------------------- */}
       {/* FAQ                                                                */}
       {/* ----------------------------------------------------------------- */}
+      {/* Structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_SCHEMA) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(SOFTWARE_SCHEMA) }}
+      />
+
       <section id="faq" className="py-24">
         <script
           type="application/ld+json"

@@ -3,6 +3,7 @@ import { Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Check your email',
+  robots: { index: false, follow: false },
 };
 
 export default function VerifyRequestPage() {

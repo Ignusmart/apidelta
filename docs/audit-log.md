@@ -485,3 +485,24 @@
 - Polish gate 3/10: seo-audit
 ### Blockers
 - None
+
+## Iteration 13 — 2026-04-05 [POLISH]
+### Polish gate 3/10: seo-audit — Technical SEO
+### What was done
+- `apps/web/src/app/layout.tsx` — Added `next/font/google` Inter import with `display: 'swap'` for optimized font loading; expanded keywords to include target terms ("API changelog monitoring", "breaking change alerts", "API dependency monitoring", "API change detection"); added default OpenGraph metadata (type, locale, siteName, url); added default Twitter card metadata; added TODO comments for custom OG image
+- `apps/web/src/app/page.tsx` — Added Organization JSON-LD structured data schema; added SoftwareApplication JSON-LD schema with pricing Offers for Starter ($49) and Pro ($99) plans; moved structured data script tags above FAQ section for cleaner placement
+- `apps/web/src/app/(auth)/sign-in/page.tsx` — Added meta description, OpenGraph tags (title, description, url), and canonical URL
+- `apps/web/src/app/(auth)/sign-up/page.tsx` — Added meta description with free trial CTA, OpenGraph tags, and canonical URL
+- `apps/web/src/app/(auth)/verify-request/page.tsx` — Added `noindex, nofollow` robots directive (transient page, no SEO value)
+- `apps/web/src/app/(dashboard)/layout.tsx` — Added `noindex, nofollow` robots directive to all dashboard pages (behind auth, should not be indexed)
+- `apps/web/src/app/sitemap.ts` — Created Next.js App Router sitemap generator; includes landing page (priority 1), sign-up (priority 0.7), sign-in (priority 0.5); excludes dashboard and API routes
+- `apps/web/src/app/robots.ts` — Created Next.js App Router robots.txt generator; allows all public pages; disallows /dashboard/ and /api/; references sitemap URL
+- `apps/web/src/app/globals.css` — Updated font-sans variable to reference `--font-inter` from next/font instead of hardcoded "Inter" string for proper font optimization (subsetting, preloading)
+### Audit results
+- Build: PASS
+- Skills used: seo-audit
+- Polish gates: 3/10 passed
+### What's next
+- Polish gate 4/10: a11y-audit
+### Blockers
+- None

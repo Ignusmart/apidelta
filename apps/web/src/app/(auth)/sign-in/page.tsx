@@ -5,6 +5,15 @@ import { Mail } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Sign in',
+  description:
+    'Sign in to your DriftWatch account to monitor API changelogs and manage breaking change alerts.',
+  openGraph: {
+    title: 'Sign in | DriftWatch',
+    description:
+      'Sign in to your DriftWatch account to monitor API changelogs and manage breaking change alerts.',
+    url: 'https://driftwatch.dev/sign-in',
+  },
+  alternates: { canonical: 'https://driftwatch.dev/sign-in' },
 };
 
 export default async function SignInPage({
