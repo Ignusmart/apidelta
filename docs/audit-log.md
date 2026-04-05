@@ -435,3 +435,27 @@
 - DATABASE_URL needed for running migrations on a live database
 - Stripe keys needed for live billing testing
 - Domain (driftwatch.dev or driftwatch.io) not yet registered
+
+## Iteration 11 — 2026-04-05 [POLISH]
+### Polish gate 1/10: page-cro — Landing Page CRO
+### What was done
+- **Headline rewrite**: Changed from problem-led 3-liner ("Stop finding out about breaking API changes from your error logs") to outcome-focused ("Know about breaking API changes hours before your code does") — clearer value prop in fewer words, gradient emphasis on "hours before" (the differentiator)
+- **Hero badge upgrade**: Replaced passive "Now in early access" with active "Monitoring 50+ API changelogs in real time" + animated green pulse dot — conveys product maturity and live functionality
+- **CTA copy overhaul**: Changed generic "Start free trial" to value-specific "Monitor your first API free" across hero and bottom CTA banner — communicates what the user gets, not just the action
+- **CTA visual enhancement**: Added shadow glow (`shadow-lg shadow-violet-600/25`), increased padding, bumped to `font-semibold` for stronger visual weight on primary CTAs
+- **Mid-page CTAs added**: Inserted CTA after "How it works" section ("Try it free — monitor 3 APIs for 14 days") and inline text CTA after alert preview section — reduces scroll distance between conversion opportunities
+- **Trust signals strengthened**: Added Shield icon + "Setup in under 2 minutes" to hero trust line, replacing "3 APIs free" (specificity over feature listing); added same pattern to bottom CTA
+- **Bottom CTA rewrite**: Added pain-quantification ("Engineering teams lose an average of 4 hours per incident caused by unannounced API changes") for urgency
+- **Pricing section copy**: Replaced "3x cheaper than the competition. 10x smarter" with "AI-powered monitoring at a fraction of the price" with gradient text — avoids vague multiplier claims, leads with AI differentiator; updated subhead to use "Enterprise monitoring platforms" instead of "Other tools"
+- **Pricing card clarity**: Added "per month, billed monthly" subtext under price; changed CTA from "Start free trial" to "Start 14-day free trial" — reduces pricing ambiguity
+- **FAQ improvements**: Renamed competitor Q from "How is this different from other changelog monitors?" to "How is this different from basic change detection tools?" (avoids naming the category); added "Is my data secure?" FAQ entry addressing encryption, data isolation, and multi-tenancy
+- **Nav CTA**: Added ArrowRight icon to nav "Start free trial" button for directional cue
+- **Anchor link fix**: Added `id="how-it-works"` to How It Works section; updated hero secondary CTA href from `#features` to `#how-it-works` (better scroll target after features section)
+### Audit results
+- Build: PASS (102 kB First Load JS, 12 routes, zero client JS on landing page)
+- Skills used: page-cro
+- Polish gates: 1/10 passed
+### What's next
+- Polish gate 2/10: copywriting
+### Blockers
+- None

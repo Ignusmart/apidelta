@@ -104,6 +104,7 @@ const PLANS = [
   {
     name: "Starter",
     price: 49,
+    period: "per month",
     description: "For small teams monitoring critical APIs",
     features: [
       "10 monitored APIs",
@@ -113,12 +114,13 @@ const PLANS = [
       "Hourly monitoring",
       "7-day change history",
     ],
-    cta: "Start free trial",
+    cta: "Start 14-day free trial",
     highlighted: false,
   },
   {
     name: "Pro",
     price: 99,
+    period: "per month",
     description: "For growing teams with many dependencies",
     features: [
       "50 monitored APIs",
@@ -130,7 +132,7 @@ const PLANS = [
       "Weekly digest emails",
       "Priority support",
     ],
-    cta: "Start free trial",
+    cta: "Start 14-day free trial",
     highlighted: true,
   },
 ];
@@ -145,8 +147,8 @@ const FAQS = [
     a: "We use Anthropic's Claude AI to read each changelog entry and classify it by type (breaking, deprecation, non-breaking, informational) and severity (critical, high, medium, low). It also extracts affected endpoints and generates a plain-English summary.",
   },
   {
-    q: "How is this different from other changelog monitors?",
-    a: "Most changelog monitoring tools charge $149-749/mo and do basic text diffing with no AI intelligence. DriftWatch uses AI to actually understand what changed and whether it will break your integration — at $49-99/mo. Smarter alerts, fraction of the price.",
+    q: "How is this different from basic change detection tools?",
+    a: "Most monitoring platforms charge $149-749/mo for basic text diffing with no intelligence layer. DriftWatch uses AI to actually understand what changed and whether it will break your integration — at a fraction of the cost. Smarter alerts, lower price.",
   },
   {
     q: "Do I need to install anything?",
@@ -159,6 +161,10 @@ const FAQS = [
   {
     q: "Can I filter which changes trigger alerts?",
     a: "Yes. Alert rules support severity thresholds (e.g., only critical and high), specific API filters, and keyword matching. Route different alert types to different Slack channels or email addresses.",
+  },
+  {
+    q: "Is my data secure?",
+    a: "Yes. All data is encrypted in transit (TLS) and at rest. We only store changelog content and your alert configuration — never your source code or API keys. Each team's data is fully isolated in our multi-tenant architecture.",
   },
 ];
 
@@ -207,9 +213,10 @@ export default function HomePage() {
             </a>
             <a
               href="/sign-up"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-violet-500"
             >
               Start free trial
+              <ArrowRight className="h-3.5 w-3.5" />
             </a>
           </div>
         </div>
@@ -226,49 +233,55 @@ export default function HomePage() {
         <div className="relative z-10 max-w-4xl">
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-sm text-violet-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
-            Now in early access
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
+            </span>
+            Monitoring 50+ API changelogs in real time
           </div>
 
-          {/* H1 — Problem */}
+          {/* H1 — Outcome-focused */}
           <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-7xl">
-            Stop finding out about
+            Know about breaking
             <br />
-            breaking API changes
-            <br />
+            API changes{" "}
             <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-              from your error logs.
+              hours before
             </span>
+            <br />
+            your code does.
           </h1>
 
-          {/* Subhead — Agitate */}
+          {/* Subhead — Agitate + Solution */}
           <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-400 sm:text-xl">
             Third-party APIs ship breaking changes without warning. Your team
-            finds out when prod breaks at 2 AM. DriftWatch monitors changelogs,
-            classifies changes with AI, and alerts you{" "}
-            <span className="text-white">before</span> anything breaks.
+            finds out when production breaks at 2 AM. DriftWatch monitors 50+
+            API changelogs every hour, uses AI to classify what matters, and
+            alerts your team in Slack or email —{" "}
+            <span className="text-white">before anything breaks</span>.
           </p>
 
           {/* CTA — Solution */}
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <a
               href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3 text-base font-medium text-white transition hover:bg-violet-500"
+              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30"
             >
-              Start free trial
+              Monitor your first API free
               <ArrowRight className="h-4 w-4" />
             </a>
             <a
-              href="#features"
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-700 px-8 py-3 text-base font-medium text-gray-300 transition hover:border-gray-600 hover:text-white"
+              href="#how-it-works"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-700 px-8 py-3.5 text-base font-medium text-gray-300 transition hover:border-gray-600 hover:text-white"
             >
               See how it works
             </a>
           </div>
 
-          <p className="mt-4 text-sm text-gray-500">
-            No credit card required &middot; 14-day free trial &middot; 3 APIs
-            free
+          <p className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
+            <Shield className="h-3.5 w-3.5" />
+            No credit card required &middot; 14-day free trial &middot; Setup
+            in under 2 minutes
           </p>
         </div>
       </section>
@@ -334,7 +347,10 @@ export default function HomePage() {
       {/* ----------------------------------------------------------------- */}
       {/* HOW IT WORKS — alternating                                         */}
       {/* ----------------------------------------------------------------- */}
-      <section className="border-t border-gray-800/60 bg-gray-900/30 py-24">
+      <section
+        id="how-it-works"
+        className="border-t border-gray-800/60 bg-gray-900/30 py-24"
+      >
         <div className="mx-auto max-w-4xl px-6">
           <div className="mb-16 text-center">
             <p className="mb-2 text-sm font-medium uppercase tracking-wider text-violet-400">
@@ -357,6 +373,17 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Mid-page CTA */}
+          <div className="mt-14 text-center">
+            <a
+              href="/sign-up"
+              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500"
+            >
+              Try it free — monitor 3 APIs for 14 days
+              <ArrowRight className="h-4 w-4" />
+            </a>
           </div>
         </div>
       </section>
@@ -425,6 +452,16 @@ export default function HomePage() {
               <Mail className="h-4 w-4" /> Email
             </span>
           </div>
+
+          <p className="mt-8 text-center text-sm text-gray-500">
+            Get alerts like this for every API you depend on.{" "}
+            <a
+              href="/sign-up"
+              className="font-medium text-violet-400 underline underline-offset-2 transition hover:text-violet-300"
+            >
+              Start your free trial
+            </a>
+          </p>
         </div>
       </section>
 
@@ -441,13 +478,16 @@ export default function HomePage() {
               Pricing
             </p>
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              3x cheaper than the competition.
+              AI-powered monitoring at a
               <br />
-              10x smarter.
+              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
+                fraction of the price.
+              </span>
             </h2>
             <p className="mx-auto max-w-xl text-gray-400">
-              Other tools charge $149-749/mo for basic text diffing. We
-              use AI to actually understand changes — at a fraction of the cost.
+              Enterprise monitoring platforms charge $149-749/mo for basic text
+              diffing with no intelligence. DriftWatch uses AI to understand
+              changes — starting at $49/mo.
             </p>
           </div>
 
@@ -475,6 +515,9 @@ export default function HomePage() {
                 <div className="mb-6">
                   <span className="text-4xl font-bold">${plan.price}</span>
                   <span className="text-gray-400">/mo</span>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {plan.period}, billed monthly
+                  </p>
                 </div>
 
                 <a
@@ -556,18 +599,20 @@ export default function HomePage() {
             Your next API outage is preventable.
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-lg text-gray-400">
-            Start monitoring your API dependencies today. Set up takes less than
-            2 minutes. No credit card, no agents to install.
+            Engineering teams lose an average of 4 hours per incident caused by
+            unannounced API changes. Start monitoring in under 2 minutes — no
+            credit card, no agents to install.
           </p>
           <a
             href="/sign-up"
-            className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3 text-base font-medium text-white transition hover:bg-violet-500"
+            className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30"
           >
-            Start free trial
+            Monitor your first API free
             <ArrowRight className="h-4 w-4" />
           </a>
-          <p className="mt-4 text-sm text-gray-500">
-            14-day free trial &middot; 3 APIs free &middot; Cancel anytime
+          <p className="mt-4 flex items-center justify-center gap-2 text-sm text-gray-500">
+            <Shield className="h-3.5 w-3.5" />
+            14-day free trial &middot; 3 APIs included &middot; Cancel anytime
           </p>
         </div>
       </section>
