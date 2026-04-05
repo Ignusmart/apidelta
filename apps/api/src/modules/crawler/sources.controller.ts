@@ -8,9 +8,11 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { CrawlerService } from './crawler.service';
 import { CreateSourceDto } from './dto/create-source.dto';
+import { SourceLimitGuard } from '../billing/billing.guard';
 
 @Controller('sources')
 export class SourcesController {
@@ -22,6 +24,7 @@ export class SourcesController {
   }
 
   @Post()
+  @UseGuards(SourceLimitGuard)
   async createSource(@Body() dto: CreateSourceDto) {
     return this.crawlerService.createSource(dto);
   }

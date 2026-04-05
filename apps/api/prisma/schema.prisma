@@ -43,6 +43,12 @@ enum AlertChannel {
   SLACK
 }
 
+enum PlanStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+}
+
 enum AlertStatus {
   SENT
   FAILED
@@ -62,7 +68,8 @@ enum PlanTier {
 model Team {
   id        String   @id @default(cuid())
   name      String
-  plan      PlanTier @default(FREE_TRIAL)
+  plan       PlanTier   @default(FREE_TRIAL)
+  planStatus PlanStatus @default(ACTIVE)
   stripeCustomerId   String?  @unique
   stripeSubscriptionId String? @unique
   trialEndsAt DateTime?

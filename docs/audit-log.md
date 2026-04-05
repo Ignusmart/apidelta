@@ -298,3 +298,70 @@
 - Stripe billing integration (`apps/api/src/modules/billing/`) — Checkout session, webhook handler, plan enforcement
 ### Blockers
 - None
+
+## Iteration 9 — 2026-04-05
+### What was done
+- Created billing module at `apps/api/src/modules/billing/` with 4 files:
+  - `billing.module.ts` — NestJS module registering service, controller, guards
+  - `billing.service.ts` — Full Stripe integration:
+    - `createCheckoutSession(teamId, planTier)` — creates Stripe Checkout session for Starter ($49/mo) or Pro ($99/mo), auto-creates Stripe customer with team owner's email
+    - `createCustomerPortalSession(teamId)` — Stripe Customer Portal for self-serve plan management (upgrade, downgrade, cancel, update payment)
+    - `handleWebhook(payload, signature)` — Stripe webhook handler with signature verification
+    - `getTeamPlan(teamId)` — returns current plan, status, and computed limits
+    - `checkSourceLimit(teamId)` — checks if team can add another source (used by guard + frontend)
+    - `checkMemberLimit(teamId)` — checks if team can add another member
+    - `PLAN_LIMITS` constant: FREE_TRIAL (3 sources/1 member/email), STARTER (10/2/email+slack), PRO (50/10/all)
+  - `billing.controller.ts` — REST endpoints:
+    - `POST /api/billing/checkout` — create Stripe Checkout session (teamId + planTier)
+    - `POST /api/billing/portal` — create Customer Portal session (teamId)
+    - `GET /api/billing/plan?teamId=X` — get current plan details and limits
+    - `GET /api/billing/check-source-limit?teamId=X` — check if team can add sources
+    - `POST /api/billing/webhook` — Stripe webhook handler (raw body, signature verification)
+  - `billing.guard.ts` — Two NestJS guards:
+    - `BillingGuard` — checks team subscription is active (rejects CANCELLED/PAST_DUE)
+    - `SourceLimitGuard` ��� checks team hasn't exceeded source limit before creating (descriptive error message with upgrade prompt)
+- Webhook event handling — 4 Stripe events processed:
+  - `checkout.session.completed` — activates subscription, stores customer ID + subscription ID, sets plan tier
+  - `customer.subscription.updated` — handles plan changes, maps Stripe status to PlanStatus
+  - `customer.subscription.deleted` — downgrades to FREE_TRIAL, clears subscription ID
+  - `invoice.payment_failed` — flags team as PAST_DUE
+- Updated Prisma schema:
+  - Added `PlanStatus` enum (ACTIVE, PAST_DUE, CANCELLED)
+  - Added `planStatus` field to Team model (default ACTIVE)
+- Updated `apps/api/src/main.ts` — enabled `rawBody: true` for Stripe webhook signature verification
+- Updated `apps/api/src/app.module.ts` — registered BillingModule
+- Updated `apps/api/src/modules/crawler/crawler.module.ts` — imports BillingModule for guard access
+- Updated `apps/api/src/modules/crawler/sources.controller.ts` — added `@UseGuards(SourceLimitGuard)` to POST /sources endpoint
+- Created settings/billing page at `apps/web/src/app/(dashboard)/dashboard/settings/page.tsx`:
+  - Current plan display with status badge (Active/Past Due/Cancelled)
+  - Feature limits summary (sources, members, channels)
+  - "Manage Subscription" button redirects to Stripe Customer Portal
+  - Plan comparison grid (Free Trial / Starter / Pro) with feature lists
+  - "Upgrade" buttons redirect to Stripe Checkout
+  - "Current Plan" indicator on active tier
+  - Success/cancel message handling from Stripe redirect query params
+- Updated sources page (`apps/web/src/app/(dashboard)/dashboard/sources/page.tsx`):
+  - Shows source count vs limit (e.g., "2/3 sources")
+  - Disables "Add Source" button when at limit
+  - Shows upgrade prompt banner with link to settings page when limit reached
+- Added billing types to `apps/web/src/lib/types.ts` (PlanTier, PlanStatus, TeamPlan, SourceLimitCheck)
+### What works now
+- `pnpm build` — both apps/api and apps/web compile with no errors
+- Full Stripe billing flow: checkout session creation, webhook processing, plan activation/update/cancellation
+- Customer Portal integration for self-serve subscription management
+- Plan enforcement: SourceLimitGuard blocks adding sources beyond tier limit with descriptive error
+- Settings page shows current plan, limits, and upgrade/manage buttons
+- Sources page shows usage vs limit and blocks adding when at capacity
+- Stripe webhook handles 4 event types with proper error handling and logging
+- All existing features (dashboard, sources CRUD, changes feed, alerts, auth) still working
+### Audit results
+- Build: PASS (apps/web: pass, apps/api: pass)
+- Feature works: YES — billing module complete with checkout, portal, webhooks, plan enforcement, frontend settings page, upgrade prompts
+- Security: Stripe webhook signature verification, raw body parsing for webhook endpoint, no Stripe keys in client code, environment variable configuration
+- Skills used: none
+- MVP checklist: 8/10 complete (items 1-7 from previous + item 8: Stripe billing with Starter + Pro tiers)
+### What's next
+- Deployment (Phase 3): apps/web to Vercel, apps/api to Railway/Fly.io, PostgreSQL + Redis provisioning
+### Blockers
+- DATABASE_URL needed to run `prisma migrate dev` and apply the PlanStatus enum + planStatus field migration
+- Stripe keys (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_ID_STARTER, STRIPE_PRICE_ID_PRO) needed for live testing

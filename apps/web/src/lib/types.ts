@@ -86,3 +86,27 @@ export interface PaginatedAlerts {
   page: number;
   pageSize: number;
 }
+
+// ── Billing types ──
+
+export type PlanTier = 'FREE_TRIAL' | 'STARTER' | 'PRO';
+export type PlanStatus = 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
+
+export interface TeamPlan {
+  plan: PlanTier;
+  planStatus: PlanStatus;
+  stripeCustomerId: string | null;
+  stripeSubscriptionId: string | null;
+  limits: {
+    maxSources: number;
+    maxMembers: number;
+    channels: string[];
+  };
+}
+
+export interface SourceLimitCheck {
+  allowed: boolean;
+  current: number;
+  max: number;
+  plan: PlanTier;
+}

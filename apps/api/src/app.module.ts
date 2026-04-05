@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { CrawlerModule } from './modules/crawler/crawler.module';
 import { ClassifierModule } from './modules/classifier/classifier.module';
 import { AlertsModule } from './modules/alerts/alerts.module';
+import { BillingModule } from './modules/billing/billing.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -16,6 +17,7 @@ import { HealthController } from './health.controller';
     CrawlerModule,
     ClassifierModule,
     AlertsModule,
+    BillingModule,
   ],
   controllers: [HealthController],
 })

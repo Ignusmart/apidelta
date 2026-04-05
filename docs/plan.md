@@ -74,7 +74,7 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
   - `dashboard/changes/page.tsx` — filterable change feed with severity badges
   - `dashboard/alerts/page.tsx` — alert rules CRUD + alert history
   - `dashboard/settings/page.tsx` — Slack webhook config, email prefs, team members
-- [ ] **Stripe integration** (`apps/api/src/modules/billing/`)
+- [x] **Stripe integration** (`apps/api/src/modules/billing/`)
   - `billing.service.ts` — Stripe Checkout session creation
   - `billing.controller.ts` — webhook handler for subscription events
   - `billing.guard.ts` — NestJS guard checking subscription status
@@ -132,6 +132,6 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
 5. [ ] Landing page with pricing and sign-up CTA
 6. [x] Auth (sign up / sign in / sign out)
 7. [x] Dashboard showing monitored APIs and change feed
-8. [ ] Stripe billing (Starter + Pro tiers)
+8. [x] Stripe billing (Starter + Pro tiers)
 9. [ ] Deployed to production (web + API + DB)
 10. [ ] Onboarding flow guides new user to first alert

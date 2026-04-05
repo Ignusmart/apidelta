@@ -13,7 +13,9 @@ import {
   Rss,
   Globe,
   Github,
+  ArrowUpRight,
 } from 'lucide-react';
+import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
 import type { ApiSource, SourceType } from '@/lib/types';
 
@@ -52,6 +54,7 @@ export default function SourcesPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [crawlingId, setCrawlingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [sourceLimit, setSourceLimit] = useState<{ allowed: boolean; current: number; max: number; plan: string } | null>(null);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -64,8 +67,14 @@ export default function SourcesPage() {
     if (!teamId) return;
     setLoading(true);
     try {
-      const data = await apiFetch<ApiSource[]>(`/sources?teamId=${teamId}`);
+      const [data, limitData] = await Promise.all([
+        apiFetch<ApiSource[]>(`/sources?teamId=${teamId}`),
+        apiFetch<{ allowed: boolean; current: number; max: number; plan: string }>(
+          `/billing/check-source-limit?teamId=${teamId}`,
+        ),
+      ]);
       setSources(data);
+      setSourceLimit(limitData);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load sources');
@@ -150,14 +159,39 @@ export default function SourcesPage() {
             Manage the APIs and changelogs DriftWatch monitors for you.
           </p>
         </div>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500"
-        >
-          <Plus className="h-4 w-4" />
-          Add Source
-        </button>
+        <div className="flex items-center gap-3">
+          {sourceLimit && (
+            <span className="text-xs text-gray-500">
+              {sourceLimit.current}/{sourceLimit.max} sources
+            </span>
+          )}
+          <button
+            onClick={() => setShowAddForm(true)}
+            disabled={sourceLimit !== null && !sourceLimit.allowed}
+            className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Plus className="h-4 w-4" />
+            Add Source
+          </button>
+        </div>
       </div>
+
+      {/* Upgrade prompt when at source limit */}
+      {sourceLimit && !sourceLimit.allowed && (
+        <div className="rounded-lg border border-violet-900/50 bg-violet-950/20 px-4 py-3 text-sm">
+          <span className="text-violet-300">
+            You&apos;ve reached the limit of {sourceLimit.max} API sources on your{' '}
+            {sourceLimit.plan === 'FREE_TRIAL' ? 'free trial' : sourceLimit.plan.toLowerCase()} plan.
+          </span>{' '}
+          <Link
+            href="/dashboard/settings"
+            className="inline-flex items-center gap-1 font-medium text-violet-400 transition hover:text-violet-300"
+          >
+            Upgrade to monitor more APIs
+            <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
+      )}
 
       {error && (
         <div className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
