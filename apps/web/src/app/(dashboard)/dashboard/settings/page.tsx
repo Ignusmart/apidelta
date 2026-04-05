@@ -166,9 +166,50 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex h-96 items-center justify-center" role="status">
-        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="space-y-8" role="status">
         <span className="sr-only">Loading settings...</span>
+        {/* Header skeleton */}
+        <div>
+          <div className="h-7 w-24 animate-pulse rounded-lg bg-gray-800" />
+          <div className="mt-2 h-4 w-56 animate-pulse rounded-md bg-gray-800/60" />
+        </div>
+        {/* Current plan card skeleton */}
+        <div className="rounded-xl border border-gray-800 bg-gray-900/30 p-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="h-4 w-20 animate-pulse rounded bg-gray-800/60" />
+              <div className="h-6 w-32 animate-pulse rounded-lg bg-gray-800" />
+              <div className="h-4 w-48 animate-pulse rounded bg-gray-800/40" />
+            </div>
+            <div className="h-10 w-40 animate-pulse rounded-lg bg-gray-800" />
+          </div>
+        </div>
+        {/* Plan cards skeleton */}
+        <div>
+          <div className="mb-4 h-5 w-16 animate-pulse rounded bg-gray-800" />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="rounded-xl border border-gray-800 bg-gray-900/30 p-6">
+                <div className="mb-4 flex items-center gap-2">
+                  <div className="h-8 w-8 animate-pulse rounded-lg bg-gray-800/60" />
+                  <div className="h-5 w-20 animate-pulse rounded bg-gray-800" />
+                </div>
+                <div className="mb-5">
+                  <div className="h-8 w-16 animate-pulse rounded-lg bg-gray-800" />
+                </div>
+                <div className="mb-6 space-y-2.5">
+                  {[1, 2, 3, 4].map((j) => (
+                    <div key={j} className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-pulse rounded bg-gray-800/40" />
+                      <div className="h-4 w-32 animate-pulse rounded bg-gray-800/40" />
+                    </div>
+                  ))}
+                </div>
+                <div className="h-10 w-full animate-pulse rounded-lg bg-gray-800" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -263,7 +304,7 @@ export default function SettingsPage() {
                 className={`relative rounded-xl border p-6 transition ${
                   isCurrent
                     ? 'border-violet-500/50 bg-violet-500/5'
-                    : 'border-gray-800 bg-gray-900/30 hover:border-gray-700'
+                    : 'border-gray-800 bg-gray-900/30 hover:border-gray-700 hover:bg-gray-900/50'
                 }`}
               >
                 {plan.popular && (

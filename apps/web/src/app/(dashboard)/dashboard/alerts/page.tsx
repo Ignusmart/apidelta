@@ -162,9 +162,34 @@ export default function AlertsPage() {
 
   if (loading && !rules.length && !alerts.length) {
     return (
-      <div className="flex h-96 items-center justify-center" role="status">
-        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="space-y-6" role="status">
         <span className="sr-only">Loading alerts...</span>
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-7 w-20 animate-pulse rounded-lg bg-gray-800" />
+            <div className="mt-2 h-4 w-72 animate-pulse rounded-md bg-gray-800/60" />
+          </div>
+          <div className="h-10 w-28 animate-pulse rounded-lg bg-gray-800" />
+        </div>
+        {/* Tabs skeleton */}
+        <div className="flex gap-1 rounded-lg border border-gray-800 bg-gray-900/30 p-1">
+          <div className="h-9 flex-1 animate-pulse rounded-md bg-gray-800" />
+          <div className="h-9 flex-1 animate-pulse rounded-md bg-gray-800/40" />
+        </div>
+        {/* Rule cards skeleton */}
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-4 rounded-xl border border-gray-800 bg-gray-900/30 p-5">
+              <div className="h-10 w-10 animate-pulse rounded-lg bg-gray-800/60" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-40 animate-pulse rounded bg-gray-800" />
+                <div className="h-3 w-64 animate-pulse rounded bg-gray-800/40" />
+              </div>
+              <div className="h-8 w-8 animate-pulse rounded-lg bg-gray-800/60" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -236,8 +261,8 @@ export default function AlertsPage() {
 
       {/* Create rule modal */}
       {showCreateForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="create-rule-title" onClick={(e) => { if (e.target === e.currentTarget) setShowCreateForm(false); }} onKeyDown={(e) => { if (e.key === 'Escape') setShowCreateForm(false); }}>
-          <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-950 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="create-rule-title" onClick={(e) => { if (e.target === e.currentTarget) setShowCreateForm(false); }} onKeyDown={(e) => { if (e.key === 'Escape') setShowCreateForm(false); }}>
+          <div className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-950 p-6 shadow-2xl animate-modal-content">
             <div className="mb-5 flex items-center justify-between">
               <h2 id="create-rule-title" className="text-lg font-semibold">Create Alert Rule</h2>
               <button
@@ -429,7 +454,7 @@ export default function AlertsPage() {
                 return (
                   <div
                     key={rule.id}
-                    className="flex items-center gap-4 rounded-xl border border-gray-800 bg-gray-900/30 p-5 transition hover:border-gray-700"
+                    className="flex items-center gap-4 rounded-xl border border-gray-800 bg-gray-900/30 p-5 transition-colors duration-150 hover:border-gray-700 hover:bg-gray-900/50"
                   >
                     {/* Channel icon */}
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-800/80">
@@ -526,8 +551,8 @@ export default function AlertsPage() {
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-gray-800">
-              <table className="w-full">
+            <div className="overflow-x-auto rounded-xl border border-gray-800">
+              <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b border-gray-800 bg-gray-900/50">
                     <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -556,7 +581,7 @@ export default function AlertsPage() {
                     return (
                       <tr
                         key={alert.id}
-                        className="transition hover:bg-gray-900/30"
+                        className="transition-colors duration-150 hover:bg-gray-900/40"
                       >
                         <td className="px-5 py-4">
                           <span

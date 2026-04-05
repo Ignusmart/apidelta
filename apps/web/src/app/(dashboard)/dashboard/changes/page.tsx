@@ -11,7 +11,9 @@ import {
   X,
   ChevronDown,
   Search,
+  Plus,
 } from 'lucide-react';
+import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
 import type {
   ApiSource,
@@ -142,9 +144,35 @@ export default function ChangesPage() {
 
   if (loading && !changes.length) {
     return (
-      <div className="flex h-96 items-center justify-center" role="status">
-        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="space-y-6" role="status">
         <span className="sr-only">Loading changes...</span>
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-7 w-28 animate-pulse rounded-lg bg-gray-800" />
+            <div className="mt-2 h-4 w-80 animate-pulse rounded-md bg-gray-800/60" />
+          </div>
+          <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-800" />
+        </div>
+        {/* Results count skeleton */}
+        <div className="h-4 w-24 animate-pulse rounded bg-gray-800/40" />
+        {/* Change cards skeleton */}
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-xl border border-gray-800 bg-gray-900/30 p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="h-5 w-16 animate-pulse rounded-full bg-gray-800/60" />
+                <div className="h-5 w-20 animate-pulse rounded bg-gray-800/40" />
+              </div>
+              <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-gray-800" />
+              <div className="mt-2 h-4 w-1/2 animate-pulse rounded bg-gray-800/40" />
+              <div className="mt-3 flex gap-2">
+                <div className="h-5 w-24 animate-pulse rounded bg-gray-800/60" />
+                <div className="h-5 w-20 animate-pulse rounded bg-gray-800/60" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -285,12 +313,27 @@ export default function ChangesPage() {
           <GitCompareArrows aria-hidden="true" className="mx-auto h-10 w-10 text-gray-700" />
           <p className="mt-4 text-sm text-gray-500">
             {changes.length === 0
-              ? 'No changes detected yet.'
-              : 'No changes match your current filters.'}
+              ? 'No changes detected yet'
+              : 'No changes match your current filters'}
           </p>
-          {changes.length === 0 && (
+          {changes.length === 0 ? (
+            <>
+              <p className="mt-1 text-xs text-gray-600">
+                Changes appear here automatically after DriftWatch crawls your API sources.
+              </p>
+              {sources.length === 0 && (
+                <Link
+                  href="/dashboard/sources"
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-150 hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
+                >
+                  <Plus aria-hidden="true" className="h-4 w-4" />
+                  Add your first API source
+                </Link>
+              )}
+            </>
+          ) : (
             <p className="mt-1 text-xs text-gray-600">
-              Changes will appear here after DriftWatch crawls your API sources.
+              Try adjusting your filters or search query.
             </p>
           )}
         </div>
@@ -299,7 +342,7 @@ export default function ChangesPage() {
           {filtered.map((change) => (
             <div
               key={change.id}
-              className="rounded-xl border border-gray-800 bg-gray-900/30 p-5 transition hover:border-gray-700"
+              className="rounded-xl border border-gray-800 bg-gray-900/30 p-5 transition-colors duration-150 hover:border-gray-700 hover:bg-gray-900/50"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">

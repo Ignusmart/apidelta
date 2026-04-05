@@ -47,7 +47,7 @@ function StatCard({
   accent: string;
 }) {
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-gray-800 bg-gray-900/50 p-5 transition-colors hover:border-gray-700">
+    <div className="group relative overflow-hidden rounded-xl border border-gray-800 bg-gray-900/50 p-5 transition-all duration-150 hover:border-gray-700 hover:bg-gray-900/70">
       <div className={`absolute -right-4 -top-4 h-20 w-20 rounded-full opacity-[0.07] blur-2xl ${accent}`} />
       <div className="flex items-start justify-between">
         <div>
@@ -123,9 +123,69 @@ export default function DashboardPage() {
 
   if (loading && !sources.length) {
     return (
-      <div className="flex h-96 items-center justify-center" role="status">
-        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="space-y-8" role="status">
         <span className="sr-only">Loading dashboard data...</span>
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-7 w-32 animate-pulse rounded-lg bg-gray-800" />
+            <div className="mt-2 h-4 w-56 animate-pulse rounded-md bg-gray-800/60" />
+          </div>
+          <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-800" />
+        </div>
+        {/* Stat cards skeleton */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-xl border border-gray-800 bg-gray-900/50 p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="h-4 w-24 animate-pulse rounded bg-gray-800/60" />
+                  <div className="mt-3 h-8 w-16 animate-pulse rounded-lg bg-gray-800" />
+                </div>
+                <div className="h-10 w-10 animate-pulse rounded-lg bg-gray-800/60" />
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Two-column skeleton */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <div className="rounded-xl border border-gray-800 bg-gray-900/30">
+              <div className="border-b border-gray-800 px-5 py-4">
+                <div className="h-4 w-32 animate-pulse rounded bg-gray-800" />
+              </div>
+              <div className="divide-y divide-gray-800/50">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex items-center gap-4 px-5 py-4">
+                    <div className="h-5 w-16 animate-pulse rounded-full bg-gray-800/60" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-3/4 animate-pulse rounded bg-gray-800" />
+                      <div className="h-3 w-1/2 animate-pulse rounded bg-gray-800/40" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="lg:col-span-2">
+            <div className="rounded-xl border border-gray-800 bg-gray-900/30">
+              <div className="border-b border-gray-800 px-5 py-4">
+                <div className="h-4 w-28 animate-pulse rounded bg-gray-800" />
+              </div>
+              <div className="divide-y divide-gray-800/50">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-3 px-5 py-3.5">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-gray-800" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-4 w-28 animate-pulse rounded bg-gray-800" />
+                      <div className="h-3 w-40 animate-pulse rounded bg-gray-800/40" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -180,13 +240,17 @@ export default function DashboardPage() {
               </Link>
             </div>
             {recentChangeEntries.length === 0 ? (
-              <div className="px-5 py-12 text-center text-sm text-gray-600">
-                No changes detected yet. Changes will appear here once your API sources are crawled.
+              <div className="px-5 py-14 text-center">
+                <GitCompareArrows aria-hidden="true" className="mx-auto h-8 w-8 text-gray-700" />
+                <p className="mt-3 text-sm text-gray-500">No changes detected yet</p>
+                <p className="mt-1 text-xs text-gray-600">
+                  Changes will appear here once DriftWatch crawls your API sources.
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-gray-800/50">
                 {recentChangeEntries.map((change) => (
-                  <div key={change.id} className="flex items-start gap-4 px-5 py-3.5 transition hover:bg-gray-900/40">
+                  <div key={change.id} className="flex items-start gap-4 px-5 py-3.5 transition-colors duration-150 hover:bg-gray-900/50">
                     <div className="mt-0.5 shrink-0">
                       <SeverityBadge severity={change.severity} />
                     </div>
@@ -222,11 +286,15 @@ export default function DashboardPage() {
               </Link>
             </div>
             {sources.length === 0 ? (
-              <div className="px-5 py-12 text-center">
-                <p className="text-sm text-gray-600">No APIs monitored yet.</p>
+              <div className="px-5 py-14 text-center">
+                <Rss aria-hidden="true" className="mx-auto h-8 w-8 text-gray-700" />
+                <p className="mt-3 text-sm text-gray-500">No APIs monitored yet</p>
+                <p className="mt-1 text-xs text-gray-600">
+                  Add a changelog URL and start getting alerts in minutes.
+                </p>
                 <Link
                   href="/dashboard/sources"
-                  className="mt-3 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
+                  className="mt-4 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-150 hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
                 >
                   Add your first API source
                 </Link>
@@ -234,7 +302,7 @@ export default function DashboardPage() {
             ) : (
               <div className="divide-y divide-gray-800/50">
                 {sources.slice(0, 6).map((src) => (
-                  <div key={src.id} className="flex items-center gap-3 px-5 py-3 transition hover:bg-gray-900/40">
+                  <div key={src.id} className="flex items-center gap-3 px-5 py-3 transition-colors duration-150 hover:bg-gray-900/50">
                     <div className={`h-2 w-2 rounded-full ${src.isActive ? 'bg-emerald-500' : 'bg-gray-600'}`} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{src.name}</p>

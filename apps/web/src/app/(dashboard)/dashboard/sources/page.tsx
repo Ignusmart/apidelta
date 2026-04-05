@@ -143,9 +143,45 @@ export default function SourcesPage() {
 
   if (loading && !sources.length) {
     return (
-      <div className="flex h-96 items-center justify-center" role="status">
-        <Loader2 aria-hidden="true" className="h-6 w-6 animate-spin text-violet-400" />
+      <div className="space-y-6" role="status">
         <span className="sr-only">Loading API sources...</span>
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-7 w-36 animate-pulse rounded-lg bg-gray-800" />
+            <div className="mt-2 h-4 w-72 animate-pulse rounded-md bg-gray-800/60" />
+          </div>
+          <div className="h-10 w-28 animate-pulse rounded-lg bg-gray-800" />
+        </div>
+        {/* Table skeleton */}
+        <div className="overflow-hidden rounded-xl border border-gray-800">
+          <div className="border-b border-gray-800 bg-gray-900/50 px-5 py-3">
+            <div className="flex gap-16">
+              {[80, 60, 48, 64, 48, 40].map((w, i) => (
+                <div key={i} className="h-3 animate-pulse rounded bg-gray-800/60" style={{ width: `${w}px` }} />
+              ))}
+            </div>
+          </div>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-center gap-6 border-b border-gray-800/50 px-5 py-4">
+              <div className="flex items-center gap-3 flex-1">
+                <div className="h-4 w-4 animate-pulse rounded bg-gray-800/60" />
+                <div className="space-y-1.5">
+                  <div className="h-4 w-28 animate-pulse rounded bg-gray-800" />
+                  <div className="h-3 w-48 animate-pulse rounded bg-gray-800/40" />
+                </div>
+              </div>
+              <div className="h-5 w-20 animate-pulse rounded bg-gray-800/60" />
+              <div className="h-4 w-16 animate-pulse rounded bg-gray-800/40" />
+              <div className="h-4 w-14 animate-pulse rounded bg-gray-800/40" />
+              <div className="h-4 w-12 animate-pulse rounded bg-gray-800/40" />
+              <div className="flex gap-1">
+                <div className="h-8 w-8 animate-pulse rounded-lg bg-gray-800/60" />
+                <div className="h-8 w-8 animate-pulse rounded-lg bg-gray-800/60" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -206,8 +242,8 @@ export default function SourcesPage() {
 
       {/* Add source form (modal overlay) */}
       {showAddForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="add-source-title" onClick={(e) => { if (e.target === e.currentTarget) setShowAddForm(false); }} onKeyDown={(e) => { if (e.key === 'Escape') setShowAddForm(false); }}>
-          <div className="w-full max-w-md rounded-xl border border-gray-800 bg-gray-950 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="add-source-title" onClick={(e) => { if (e.target === e.currentTarget) setShowAddForm(false); }} onKeyDown={(e) => { if (e.key === 'Escape') setShowAddForm(false); }}>
+          <div className="w-full max-w-md rounded-xl border border-gray-800 bg-gray-950 p-6 shadow-2xl animate-modal-content">
             <div className="mb-5 flex items-center justify-between">
               <h2 id="add-source-title" className="text-lg font-semibold">Add API Source</h2>
               <button
@@ -317,8 +353,8 @@ export default function SourcesPage() {
           </button>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-800">
-          <table className="w-full">
+        <div className="overflow-x-auto rounded-xl border border-gray-800">
+          <table className="w-full min-w-[700px]">
             <thead>
               <tr className="border-b border-gray-800 bg-gray-900/50">
                 <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
@@ -343,7 +379,7 @@ export default function SourcesPage() {
             </thead>
             <tbody className="divide-y divide-gray-800/50">
               {sources.map((src) => (
-                <tr key={src.id} className="transition hover:bg-gray-900/30">
+                <tr key={src.id} className="transition-colors duration-150 hover:bg-gray-900/40">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <SourceTypeIcon type={src.sourceType} />

@@ -531,3 +531,23 @@
 - Polish gate 5/10: frontend-design (UI polish pass)
 ### Blockers
 - None
+
+## Iteration 15 — 2026-04-05 [POLISH]
+### Polish gate 5/10: frontend-design — UI Polish
+### What was done
+- `apps/web/src/app/globals.css` — Added CSS keyframe animations for modal backdrop fade-in and content slide-up/scale (animate-modal-backdrop, animate-modal-content)
+- `apps/web/src/app/(dashboard)/layout.tsx` — Made sidebar responsive: hidden on mobile with -translate-x-full, slides in via toggle; added mobile topbar with hamburger; main content uses min-w-0 to prevent overflow; imported SidebarToggle client component
+- `apps/web/src/app/(dashboard)/sidebar-toggle.tsx` — New client component for mobile sidebar toggle: hamburger button, backdrop overlay, auto-closes on route change
+- `apps/web/src/app/(dashboard)/dashboard/page.tsx` — Replaced spinner loading with full skeleton UI (stat cards, two-column layout with shimmer placeholders); improved empty states with icons and descriptive copy for both "Recent Changes" and "Monitored APIs" sections; added transition-colors duration-150 to all hover states
+- `apps/web/src/app/(dashboard)/dashboard/sources/page.tsx` — Replaced spinner with skeleton loading (header, table rows); made table horizontally scrollable on narrow screens (overflow-x-auto, min-w-[700px]); added modal open animation; improved table row hover transitions
+- `apps/web/src/app/(dashboard)/dashboard/changes/page.tsx` — Replaced spinner with skeleton loading (header, count, change cards); improved empty state with CTA to add sources when none exist, and "adjust filters" hint when filtered to zero; added hover bg effect on change cards; added Link import for CTA
+- `apps/web/src/app/(dashboard)/dashboard/alerts/page.tsx` — Replaced spinner with skeleton loading (header, tabs, rule cards); made history table horizontally scrollable (min-w-[640px]); added modal open animation; improved hover transitions on rule cards and table rows
+- `apps/web/src/app/(dashboard)/dashboard/settings/page.tsx` — Replaced spinner with full skeleton (header, current plan card, 3 plan comparison cards with feature list placeholders); added hover bg effect on non-current plan cards
+### Audit results
+- Build: PASS
+- Skills used: none
+- Polish gates: 5/10 passed
+### What's next
+- Polish gate 6/10: signup-flow-cro
+### Blockers
+- None

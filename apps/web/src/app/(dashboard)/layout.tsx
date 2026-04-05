@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { auth, signOut } from '@/auth';
-import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows } from 'lucide-react';
+import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows, Menu, X } from 'lucide-react';
 import Link from 'next/link';
+import { SidebarToggle } from './sidebar-toggle';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -26,8 +27,15 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
+      {/* Mobile topbar */}
+      <SidebarToggle />
+
       {/* Sidebar */}
-      <aside aria-label="Dashboard sidebar" className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-gray-800 bg-gray-950">
+      <aside
+        aria-label="Dashboard sidebar"
+        id="dashboard-sidebar"
+        className="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col border-r border-gray-800 bg-gray-950 transition-transform duration-200 ease-in-out lg:translate-x-0"
+      >
         {/* Logo */}
         <div className="flex h-16 items-center gap-2 border-b border-gray-800 px-6">
           <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:rounded-lg">
@@ -42,7 +50,7 @@ export default async function DashboardLayout({
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-400 transition hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-400 transition-colors duration-150 hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
             >
               <item.icon aria-hidden="true" className="h-4 w-4" />
               {item.label}
@@ -73,7 +81,7 @@ export default async function DashboardLayout({
           >
             <button
               type="submit"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 transition hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 transition-colors duration-150 hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
             >
               <LogOut aria-hidden="true" className="h-4 w-4" />
               Sign out
@@ -83,7 +91,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main content */}
-      <main id="main-content" className="ml-64 flex-1 p-8">{children}</main>
+      <main id="main-content" className="min-w-0 flex-1 p-6 pt-20 lg:ml-64 lg:p-8 lg:pt-8">{children}</main>
     </div>
   );
 }
