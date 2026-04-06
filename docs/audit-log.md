@@ -829,3 +829,29 @@
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
+
+## Iteration 25 — 2026-04-05 [LAUNCH]
+### Launch phase: SEO landing pages
+### What was done
+- **Built 5 SEO landing pages** as static server components for fast TTFB:
+  1. **`/use-cases/api-changelog-monitoring`** — primary keyword page. Pain section on manual checking problems, 6 features, how-it-works, pricing teaser, 5 FAQs with JSON-LD structured data.
+  2. **`/use-cases/breaking-change-detection`** — technical buyer keyword. Pain section on why breaking changes catch teams off guard, 6 features, cost comparison (reactive $400/incident vs proactive $49/mo), 5 FAQs.
+  3. **`/use-cases/api-dependency-management`** — engineering lead keyword. Pain section on the API dependency blind spot, 6 features (dashboard, ownership, audit trail, velocity tracking), 5 FAQs.
+  4. **`/compare/manual-vs-automated`** — 8-row comparison table (coverage, speed, classification, routing, format support, audit trail, cost, scalability), hidden cost analysis, 5 FAQs.
+  5. **`/compare/generic-vs-api-specific`** — 8-row comparison table (detection, classification, severity, endpoints, routing, false positives, formats, target user), false positive problem analysis, 5 FAQs.
+- **Created shared component library** (`apps/web/src/app/_components/seo-page-shell.tsx`):
+  - `SeoNav`, `SeoFooter`, `SeoCtaBanner`, `SeoHowItWorks`, `SeoFaqSection`, `SeoFeatureGrid`, `SeoInternalLinks`
+- **Updated `sitemap.ts`** — all 5 new pages added with priority 0.8
+- **All pages follow SEO best practices**: unique metadata, heading hierarchy, JSON-LD FAQPage, internal cross-linking, no competitor names
+### Audit results
+- `pnpm build:web` passes — all 5 pages statically generated (146 B each, 21 total routes)
+- No TypeScript errors, no build warnings
+### What's next
+- Build Tier 2 SEO pages in a future iteration
+- Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains)
+- Execute launch strategy week 1
+### Blockers
+- Domain not registered (driftwatch.dev or driftwatch.io)
+- Neon DB not provisioned
+- Stripe products/prices not created
+- All three are manual tasks for Jobelo
