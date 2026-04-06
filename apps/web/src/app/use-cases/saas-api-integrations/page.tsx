@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Layers, CreditCard, MessageSquare, Cloud, Bot, ArrowRight, Bell } from "lucide-react";
+import { Layers, CreditCard, MessageSquare, Cloud, Bot, Bell } from "lucide-react";
 import {
   SeoNav,
+  SeoHero,
   SeoCtaBanner,
   SeoFooter,
   SeoHowItWorks,
@@ -100,44 +101,12 @@ export default function SaasApiIntegrationsPage() {
       <SeoNav />
 
       <main id="main-content">
-        {/* Hero */}
-        <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden px-4 pt-20 text-center">
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-b from-violet-900/20 to-transparent"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl"
-          />
-
-          <div className="relative z-10 max-w-4xl">
-            <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              API Monitoring for{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-                SaaS Companies
-              </span>
-            </h1>
-
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-400 sm:text-xl">
-              Your SaaS product depends on Stripe for payments, Twilio for
-              messaging, OpenAI for intelligence, and a dozen more APIs. Each
-              one evolves independently. DriftWatch monitors all of them so a
-              breaking change never catches your team off guard.
-            </p>
-
-            <a
-              href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
-            >
-              Monitor your APIs free
-              <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </a>
-            <p className="mt-4 text-sm text-gray-500">
-              14-day free trial &middot; 3 APIs included &middot; No credit card
-            </p>
-          </div>
-        </section>
+        <SeoHero
+          title="API Monitoring for"
+          gradientText="SaaS Companies"
+          description="Your SaaS product depends on Stripe for payments, Twilio for messaging, OpenAI for intelligence, and a dozen more APIs. Each one evolves independently. DriftWatch monitors all of them so a breaking change never catches your team off guard."
+          ctaText="Monitor your APIs free"
+        />
 
         {/* Pain section */}
         <section className="py-24">

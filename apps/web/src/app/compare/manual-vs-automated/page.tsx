@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Check, X, ArrowRight } from "lucide-react";
 import {
   SeoNav,
+  SeoHero,
+  SeoComparisonTable,
   SeoCtaBanner,
   SeoFooter,
   SeoFaqSection,
@@ -33,43 +34,43 @@ export const metadata: Metadata = {
 const COMPARISON_ROWS = [
   {
     dimension: "Coverage",
-    manual: "Depends on whoever remembers to check",
-    automated: "Every configured API, every hour, automatically",
+    negative: "Depends on whoever remembers to check",
+    positive: "Every configured API, every hour, automatically",
   },
   {
     dimension: "Speed of detection",
-    manual: "Days to weeks — depends on checking frequency",
-    automated: "Within 60 minutes of changelog update",
+    negative: "Days to weeks — depends on checking frequency",
+    positive: "Within 60 minutes of changelog update",
   },
   {
     dimension: "Classification",
-    manual: "Human reads full release notes, hopes to catch breaking changes",
-    automated: "AI classifies each entry by type and severity in seconds",
+    negative: "Human reads full release notes, hopes to catch breaking changes",
+    positive: "AI classifies each entry by type and severity in seconds",
   },
   {
     dimension: "Alert routing",
-    manual: "Slack message to the team channel, hope the right person sees it",
-    automated: "Routed to the API owner via their preferred channel",
+    negative: "Slack message to the team channel, hope the right person sees it",
+    positive: "Routed to the API owner via their preferred channel",
   },
   {
     dimension: "Format support",
-    manual: "Works if you can find the changelog page",
-    automated: "HTML pages, RSS feeds, GitHub Releases — all handled automatically",
+    negative: "Works if you can find the changelog page",
+    positive: "HTML pages, RSS feeds, GitHub Releases — all handled automatically",
   },
   {
     dimension: "Audit trail",
-    manual: "None — no record of what was checked and when",
-    automated: "Full log of every crawl, classification, and alert",
+    negative: "None — no record of what was checked and when",
+    positive: "Full log of every crawl, classification, and alert",
   },
   {
     dimension: "Cost",
-    manual: "\"Free\" — but 2-4 hours of engineer time per week",
-    automated: "$49-99/mo — less than one hour of engineer time",
+    negative: "\"Free\" — but 2-4 hours of engineer time per week",
+    positive: "$49-99/mo — less than one hour of engineer time",
   },
   {
     dimension: "Scalability",
-    manual: "Breaks down at 10+ APIs",
-    automated: "Monitor 50+ APIs with zero additional effort",
+    negative: "Breaks down at 10+ APIs",
+    positive: "Monitor 50+ APIs with zero additional effort",
   },
 ];
 
@@ -102,101 +103,22 @@ export default function ManualVsAutomatedPage() {
       <SeoNav />
 
       <main id="main-content">
-        {/* Hero */}
-        <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden px-4 pt-20 text-center">
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-b from-violet-900/20 to-transparent"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl"
-          />
+        <SeoHero
+          title="Manual vs Automated"
+          gradientText="API Changelog Monitoring"
+          description="Most teams check API changelogs manually — when they remember. A rotating schedule, an RSS reader, a shared spreadsheet. It works until it does not. Here is how automated, AI-powered monitoring compares."
+          ctaText="Try automated monitoring free"
+        />
 
-          <div className="relative z-10 max-w-4xl">
-            <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Manual vs Automated{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-                API Changelog Monitoring
-              </span>
-            </h1>
-
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-400 sm:text-xl">
-              Most teams check API changelogs manually — when they remember. A
-              rotating schedule, an RSS reader, a shared spreadsheet. It works
-              until it does not. Here is how automated, AI-powered monitoring
-              compares.
-            </p>
-
-            <a
-              href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
-            >
-              Try automated monitoring free
-              <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </a>
-            <p className="mt-4 text-sm text-gray-500">
-              14-day free trial &middot; No credit card required
-            </p>
-          </div>
-        </section>
-
-        {/* Comparison table */}
-        <section className="py-24">
-          <div className="mx-auto max-w-5xl px-6">
-            <h2 className="mb-12 text-center text-3xl font-bold tracking-tight sm:text-4xl">
-              Side-by-side comparison
-            </h2>
-
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-gray-800">
-                    <th className="pb-4 pr-6 text-sm font-medium text-gray-500">
-                      Dimension
-                    </th>
-                    <th className="pb-4 pr-6 text-sm font-medium text-red-400">
-                      Manual Checking
-                    </th>
-                    <th className="pb-4 text-sm font-medium text-green-400">
-                      Automated Monitoring
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {COMPARISON_ROWS.map((row) => (
-                    <tr
-                      key={row.dimension}
-                      className="border-b border-gray-800/60"
-                    >
-                      <td className="py-4 pr-6 font-medium text-white">
-                        {row.dimension}
-                      </td>
-                      <td className="py-4 pr-6 text-gray-400">
-                        <span className="flex items-start gap-2">
-                          <X
-                            aria-hidden="true"
-                            className="mt-0.5 h-4 w-4 shrink-0 text-red-400"
-                          />
-                          {row.manual}
-                        </span>
-                      </td>
-                      <td className="py-4 text-gray-300">
-                        <span className="flex items-start gap-2">
-                          <Check
-                            aria-hidden="true"
-                            className="mt-0.5 h-4 w-4 shrink-0 text-green-400"
-                          />
-                          {row.automated}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+        <SeoComparisonTable
+          heading="Side-by-side comparison"
+          columns={{
+            dimension: "Dimension",
+            negative: "Manual Checking",
+            positive: "Automated Monitoring",
+          }}
+          rows={COMPARISON_ROWS}
+        />
 
         {/* The real cost */}
         <section className="border-t border-gray-800/60 bg-gray-900/30 py-24">

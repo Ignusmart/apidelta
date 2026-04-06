@@ -5,10 +5,10 @@ import {
   Bell,
   Clock,
   Shield,
-  ArrowRight,
 } from "lucide-react";
 import {
   SeoNav,
+  SeoHero,
   SeoCtaBanner,
   SeoFooter,
   SeoHowItWorks,
@@ -107,44 +107,12 @@ export default function BreakingChangeDetectionPage() {
       <SeoNav />
 
       <main id="main-content">
-        {/* Hero */}
-        <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden px-4 pt-20 text-center">
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-b from-violet-900/20 to-transparent"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl"
-          />
-
-          <div className="relative z-10 max-w-4xl">
-            <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Detect Breaking API Changes{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-                Before They Hit Production
-              </span>
-            </h1>
-
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-400 sm:text-xl">
-              The average engineering team loses 4+ hours per incident caused by
-              a surprise API breaking change. The changelog update was published
-              days ago — buried in a 40-item release note nobody had time to
-              read. DriftWatch uses AI to find those breaking changes for you.
-            </p>
-
-            <a
-              href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
-            >
-              Start detecting breaking changes
-              <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </a>
-            <p className="mt-4 text-sm text-gray-500">
-              14-day free trial &middot; No credit card required
-            </p>
-          </div>
-        </section>
+        <SeoHero
+          title="Detect Breaking API Changes"
+          gradientText="Before They Hit Production"
+          description="The average engineering team loses 4+ hours per incident caused by a surprise API breaking change. The changelog update was published days ago — buried in a 40-item release note nobody had time to read. DriftWatch uses AI to find those breaking changes for you."
+          ctaText="Start detecting breaking changes"
+        />
 
         {/* Pain section */}
         <section className="py-24">

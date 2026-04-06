@@ -3,11 +3,12 @@ import {
   ArrowRight,
   Shield,
   Check,
+  X,
   ChevronDown,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
-// Shared shell for SEO landing pages (nav + footer + CTA banner)
+// Shared shell for SEO landing pages (nav + footer + CTA banner + hero)
 // ---------------------------------------------------------------------------
 
 export function SeoNav() {
@@ -383,6 +384,137 @@ export function SeoInternalLinks({
               {link.label}
             </a>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shared SEO hero section (used by all use-case, compare, and guide pages)
+// ---------------------------------------------------------------------------
+
+export function SeoHero({
+  title,
+  gradientText,
+  description,
+  ctaText,
+  ctaHref = "/sign-up",
+  showArrow = true,
+}: {
+  title: string;
+  gradientText: string;
+  description: string;
+  ctaText: string;
+  ctaHref?: string;
+  showArrow?: boolean;
+}) {
+  return (
+    <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden px-4 pt-20 text-center">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-b from-violet-900/20 to-transparent"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl"
+      />
+
+      <div className="relative z-10 max-w-4xl">
+        <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+          {title}{" "}
+          <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
+            {gradientText}
+          </span>
+        </h1>
+
+        <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-400 sm:text-xl">
+          {description}
+        </p>
+
+        <a
+          href={ctaHref}
+          className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
+        >
+          {ctaText}
+          {showArrow && (
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          )}
+        </a>
+        <p className="mt-4 text-sm text-gray-500">
+          14-day free trial &middot; No credit card required
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Shared comparison table (used by /compare/* pages)
+// ---------------------------------------------------------------------------
+
+export function SeoComparisonTable({
+  heading,
+  columns,
+  rows,
+}: {
+  heading: string;
+  columns: { dimension: string; negative: string; positive: string };
+  rows: { dimension: string; negative: string; positive: string }[];
+}) {
+  return (
+    <section className="py-24">
+      <div className="mx-auto max-w-5xl px-6">
+        <h2 className="mb-12 text-center text-3xl font-bold tracking-tight sm:text-4xl">
+          {heading}
+        </h2>
+
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left text-sm">
+            <thead>
+              <tr className="border-b border-gray-800">
+                <th className="pb-4 pr-6 text-sm font-medium text-gray-500">
+                  {columns.dimension}
+                </th>
+                <th className="pb-4 pr-6 text-sm font-medium text-red-400">
+                  {columns.negative}
+                </th>
+                <th className="pb-4 text-sm font-medium text-green-400">
+                  {columns.positive}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr
+                  key={row.dimension}
+                  className="border-b border-gray-800/60"
+                >
+                  <td className="py-4 pr-6 font-medium text-white">
+                    {row.dimension}
+                  </td>
+                  <td className="py-4 pr-6 text-gray-400">
+                    <span className="flex items-start gap-2">
+                      <X
+                        aria-hidden="true"
+                        className="mt-0.5 h-4 w-4 shrink-0 text-red-400"
+                      />
+                      {row.negative}
+                    </span>
+                  </td>
+                  <td className="py-4 text-gray-300">
+                    <span className="flex items-start gap-2">
+                      <Check
+                        aria-hidden="true"
+                        className="mt-0.5 h-4 w-4 shrink-0 text-green-400"
+                      />
+                      {row.positive}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </section>

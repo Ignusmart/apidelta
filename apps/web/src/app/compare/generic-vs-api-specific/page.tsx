@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Check, X, ArrowRight } from "lucide-react";
 import {
   SeoNav,
+  SeoHero,
+  SeoComparisonTable,
   SeoCtaBanner,
   SeoFooter,
   SeoFaqSection,
@@ -33,43 +34,43 @@ export const metadata: Metadata = {
 const COMPARISON_ROWS = [
   {
     dimension: "Change detection",
-    generic: "Pixel diffs or text diffs — flags every cosmetic change",
-    specific: "Changelog-aware — extracts individual entries with dates and context",
+    negative: "Pixel diffs or text diffs — flags every cosmetic change",
+    positive: "Changelog-aware — extracts individual entries with dates and context",
   },
   {
     dimension: "Classification",
-    generic: "None — every change looks the same",
-    specific: "AI classifies each entry as breaking, deprecation, or informational",
+    negative: "None — every change looks the same",
+    positive: "AI classifies each entry as breaking, deprecation, or informational",
   },
   {
     dimension: "Severity scoring",
-    generic: "No severity — you get a binary alert: changed or not",
-    specific: "Four severity levels (critical, high, medium, low) based on impact",
+    negative: "No severity — you get a binary alert: changed or not",
+    positive: "Four severity levels (critical, high, medium, low) based on impact",
   },
   {
     dimension: "Affected endpoints",
-    generic: "Not extracted — you read the raw diff yourself",
-    specific: "AI identifies affected endpoints and includes them in alerts",
+    negative: "Not extracted — you read the raw diff yourself",
+    positive: "AI identifies affected endpoints and includes them in alerts",
   },
   {
     dimension: "Alert routing",
-    generic: "One alert for all changes to everyone",
-    specific: "Route alerts by severity and API to the right team member",
+    negative: "One alert for all changes to everyone",
+    positive: "Route alerts by severity and API to the right team member",
   },
   {
     dimension: "False positives",
-    generic: "High — CSS changes, footer updates, and ads trigger alerts",
-    specific: "Low — only changelog content changes trigger alerts",
+    negative: "High — CSS changes, footer updates, and ads trigger alerts",
+    positive: "Low — only changelog content changes trigger alerts",
   },
   {
     dimension: "Format support",
-    generic: "HTML pages only (some support visual comparison)",
-    specific: "HTML pages, RSS feeds, GitHub Releases — all changelog formats",
+    negative: "HTML pages only (some support visual comparison)",
+    positive: "HTML pages, RSS feeds, GitHub Releases — all changelog formats",
   },
   {
     dimension: "Target user",
-    generic: "Marketers, SEO teams, price watchers",
-    specific: "Engineering teams monitoring API dependencies",
+    negative: "Marketers, SEO teams, price watchers",
+    positive: "Engineering teams monitoring API dependencies",
   },
 ];
 
@@ -102,101 +103,22 @@ export default function GenericVsApiSpecificPage() {
       <SeoNav />
 
       <main id="main-content">
-        {/* Hero */}
-        <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden px-4 pt-20 text-center">
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-b from-violet-900/20 to-transparent"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl"
-          />
+        <SeoHero
+          title="Generic Website Monitors"
+          gradientText="vs API-Specific Tools"
+          description="Generic change detection tools were built for marketers watching competitor pages — not for engineers monitoring API dependencies. They detect that something changed. API-specific tools tell you what changed, how severe it is, and who needs to know."
+          ctaText="Try API-specific monitoring free"
+        />
 
-          <div className="relative z-10 max-w-4xl">
-            <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Generic Website Monitors{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-                vs API-Specific Tools
-              </span>
-            </h1>
-
-            <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-400 sm:text-xl">
-              Generic change detection tools were built for marketers watching
-              competitor pages — not for engineers monitoring API dependencies.
-              They detect that something changed. API-specific tools tell you
-              what changed, how severe it is, and who needs to know.
-            </p>
-
-            <a
-              href="/sign-up"
-              className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-8 py-3.5 text-base font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 hover:shadow-violet-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
-            >
-              Try API-specific monitoring free
-              <ArrowRight aria-hidden="true" className="h-4 w-4" />
-            </a>
-            <p className="mt-4 text-sm text-gray-500">
-              14-day free trial &middot; No credit card required
-            </p>
-          </div>
-        </section>
-
-        {/* Comparison table */}
-        <section className="py-24">
-          <div className="mx-auto max-w-5xl px-6">
-            <h2 className="mb-12 text-center text-3xl font-bold tracking-tight sm:text-4xl">
-              What you get with each approach
-            </h2>
-
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-gray-800">
-                    <th className="pb-4 pr-6 text-sm font-medium text-gray-500">
-                      Dimension
-                    </th>
-                    <th className="pb-4 pr-6 text-sm font-medium text-red-400">
-                      Generic Website Monitor
-                    </th>
-                    <th className="pb-4 text-sm font-medium text-green-400">
-                      API-Specific Tool
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {COMPARISON_ROWS.map((row) => (
-                    <tr
-                      key={row.dimension}
-                      className="border-b border-gray-800/60"
-                    >
-                      <td className="py-4 pr-6 font-medium text-white">
-                        {row.dimension}
-                      </td>
-                      <td className="py-4 pr-6 text-gray-400">
-                        <span className="flex items-start gap-2">
-                          <X
-                            aria-hidden="true"
-                            className="mt-0.5 h-4 w-4 shrink-0 text-red-400"
-                          />
-                          {row.generic}
-                        </span>
-                      </td>
-                      <td className="py-4 text-gray-300">
-                        <span className="flex items-start gap-2">
-                          <Check
-                            aria-hidden="true"
-                            className="mt-0.5 h-4 w-4 shrink-0 text-green-400"
-                          />
-                          {row.specific}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+        <SeoComparisonTable
+          heading="What you get with each approach"
+          columns={{
+            dimension: "Dimension",
+            negative: "Generic Website Monitor",
+            positive: "API-Specific Tool",
+          }}
+          rows={COMPARISON_ROWS}
+        />
 
         {/* The false positive problem */}
         <section className="border-t border-gray-800/60 bg-gray-900/30 py-24">

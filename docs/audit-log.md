@@ -941,3 +941,46 @@ Supporting changes:
 
 ### Blockers
 - Same as iteration 26: domain, Neon DB, Stripe — manual tasks for Jobelo
+
+---
+
+## Iteration 28 — 2026-04-05
+
+### What was done
+Code quality pass on the frontend (`apps/web/`) targeting code added in iterations 21-27 (SEO pages, OG images, shared components). Also checked `apps/api/` for dead code.
+
+**Dead code removed:**
+- Removed unused `Check` import from `seo-page-shell.tsx` (was imported but never used)
+- Removed unused `ArrowRight` import from 5 SEO pages (now handled by `SeoHero` component)
+- Removed unused `AlertTriangle`, `Clock`, `ListChecks`, `Users`, `Layers` imports from `guides/handling-breaking-api-changes/page.tsx` (were leftover from when icons were considered for the playbook steps)
+
+**Duplication consolidated:**
+- **OG/Twitter image**: `opengraph-image.tsx` and `twitter-image.tsx` were 100% identical (116 lines each, only function name differed). Extracted shared JSX into `_components/og-image-content.tsx`. Both image route files now import the shared component (~10 lines each vs 116).
+- **SEO hero section**: All 9 SEO pages (5 use-case, 2 compare, 2 guide) had identical 30-line hero markup (background effects, gradient heading, CTA button, trial text). Extracted `SeoHero` component with `title`, `gradientText`, `description`, `ctaText`, `showArrow` props. Each page now uses a single `<SeoHero />` call instead of duplicating the block.
+- **Comparison tables**: Both `/compare/*` pages had identical 40-line table markup with only column header text differing. Extracted `SeoComparisonTable` component with `heading`, `columns`, and `rows` props. Renamed data fields from `manual`/`automated` and `generic`/`specific` to generic `negative`/`positive`.
+
+**Bundle size:** No new dependencies. All SEO pages remain static at 159 B with zero client JS. First Load JS shared chunk unchanged at 102 kB. Dependencies are lean (lucide-react, next, react, next-auth, prisma-client, tailwindcss — nothing unnecessary).
+
+**API check:** No dead code found. All imports in `apps/api/src/` are used. The unused deps (`@nestjs/bull`, `bull`, `playwright`, `zod`, `clsx`, `tailwind-merge`) were already cleaned in iteration 20.
+
+**Performance:** No issues found. All SEO pages are server components with no client-side JS. No unnecessary re-renders possible since there is no interactivity on these pages.
+
+**Consistency:** All SEO pages now follow the same component composition pattern: `SeoNav` + `SeoHero` + page-specific content + shared sections (`SeoHowItWorks`, `SeoFeatureGrid`, `SeoFaqSection`, `SeoInternalLinks`) + `SeoCtaBanner` + `SeoFooter`. The terms/privacy pages intentionally use a simpler layout (no SeoNav/SeoFooter) since they are legal pages with different nav needs.
+
+### Lines of code impact
+- ~270 lines of duplicated hero/table markup removed from 9 page files
+- ~100 lines of duplicated OG image JSX removed
+- ~120 lines of shared components added (`SeoHero`, `SeoComparisonTable`, `OgImageContent`)
+- Net reduction: ~250 lines
+
+### Audit results
+- `pnpm build:web` PASS — 25 routes, all static pages at 159 B
+- `pnpm build:api` PASS
+- No TypeScript errors, no build warnings
+- All SEO pages render identically (verified via build output — same sizes)
+
+### What's next
+- Deploy to production (manual: Jobelo sets up domain, DB, Stripe)
+
+### Blockers
+- Same as iteration 27: domain, Neon DB, Stripe — manual tasks for Jobelo
