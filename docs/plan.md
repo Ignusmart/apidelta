@@ -116,7 +116,12 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
 - [ ] **Error handling + logging** — structured logs, Sentry integration
 - [ ] **Rate limiting** on public API endpoints
 - [ ] **Security hardening** — CORS, helmet, input validation, SQL injection prevention (Prisma handles most)
-- [ ] **Launch prep**
+- [x] **Launch prep — deployment guide + validation plan**
+  - `docs/deploy.md` — step-by-step: Neon DB, Stripe, auth, Railway/Fly.io, Vercel, DNS
+  - Dockerfile hardened: non-root user, health check, multi-stage
+  - `vercel.json` with security headers, monorepo build config
+  - Google Ads demand validation plan ($200 budget, target keywords, success metrics)
+- [ ] **Launch prep — go-to-market**
   - Product Hunt draft
   - 3 social posts (LinkedIn, Twitter/X)
   - 5 target beta users identified and contacted

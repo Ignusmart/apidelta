@@ -28,6 +28,10 @@ FROM node:20-alpine AS runner
 
 RUN corepack enable && corepack prepare pnpm@9 --activate
 
+# Create non-root user
+RUN addgroup --system --gid 1001 driftwatch && \
+    adduser --system --uid 1001 --ingroup driftwatch driftwatch
+
 WORKDIR /app
 
 # Copy package files for pnpm to resolve workspace
@@ -49,7 +53,14 @@ COPY --from=builder /app/apps/api/dist apps/api/dist
 COPY apps/api/scripts/start.sh apps/api/scripts/start.sh
 RUN chmod +x apps/api/scripts/start.sh
 
+# Switch to non-root user
+RUN chown -R driftwatch:driftwatch /app
+USER driftwatch
+
 ENV NODE_ENV=production
 EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
 
 CMD ["apps/api/scripts/start.sh"]

@@ -722,3 +722,33 @@
 - MVP_COMPLETE — proceed to LAUNCH phase
 ### Blockers
 - None
+
+## Iteration 21 — 2026-04-05 [LAUNCH]
+### Launch phase: demand validation setup
+### What was done
+- **Dockerfile hardened** (`apps/api/Dockerfile`):
+  - Added non-root user (`driftwatch`, uid 1001) — container no longer runs as root
+  - Added `HEALTHCHECK` instruction — checks `/api/health` every 30s with wget (Railway/Fly.io use this for readiness)
+  - Added `chown` before `USER` switch so non-root user owns app files
+  - Multi-stage build preserved (deps → builder → runner)
+- **Vercel config** (`apps/web/vercel.json`):
+  - Monorepo-aware build/install commands (runs from repo root)
+  - Security headers: X-Content-Type-Options (nosniff), X-Frame-Options (DENY), Referrer-Policy
+  - Region pinned to iad1 (US East, close to Neon)
+- **Deployment guide** (`docs/deploy.md`) — comprehensive step-by-step:
+  - Section 1: Neon PostgreSQL setup (region, connection string)
+  - Section 2: Stripe configuration (products, prices, webhooks with exact 4 events)
+  - Section 3: Auth providers (GitHub OAuth callback URLs, Resend SMTP, AUTH_SECRET generation)
+  - Section 4: API deployment on Railway (primary) and Fly.io (alternative) with full env var tables
+  - Section 5: Frontend deployment on Vercel with env var table
+  - Section 6: Domain and DNS records (CNAME for @, www, api)
+  - Section 7: Post-deploy verification checklist (11 items)
+  - Section 8: Google Ads demand validation plan ($200 budget, 6 keywords, campaign setup, success/kill metrics)
+- **Plan updated** (`docs/plan.md`) — marked launch prep deployment guide as complete, added go-to-market as next item
+### What's next
+- Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains) then run $200 Google Ads test
+### Blockers
+- Domain not registered (driftwatch.dev or driftwatch.io)
+- Neon DB not provisioned
+- Stripe products/prices not created
+- All three are manual tasks for Jobelo
