@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// Enums
+// ──────────────────────────────────────────────
+
+enum SourceType {
+  HTML_CHANGELOG  // Standard HTML changelog page (e.g. stripe.com/docs/changelog)
+  RSS_FEED        // RSS/Atom feed
+  GITHUB_RELEASES // GitHub releases page
+}
+
+enum CrawlStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum ChangeType {
+  BREAKING
+  DEPRECATION
+  NON_BREAKING
+  INFO
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum AlertChannel {
+  EMAIL
+  SLACK
+}
+
+enum PlanStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+}
+
+enum AlertStatus {
+  SENT
+  FAILED
+  PENDING
+}
+
+enum PlanTier {
+  FREE_TRIAL
+  STARTER
+  PRO
+}
+
+// ──────────────────────────────────────────────
+// Multi-tenancy: Team + User
+// ──────────────────────────────────────────────
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  plan       PlanTier   @default(FREE_TRIAL)
+  planStatus PlanStatus @default(ACTIVE)
+  stripeCustomerId   String?  @unique
+  stripeSubscriptionId String? @unique
+  trialEndsAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members    User[]
+  sources    ApiSource[]
+  alertRules AlertRule[]
+  alerts     Alert[]
+
+  @@index([plan])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  teamId        String?
+  isOwner       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  team     Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  accounts Account[]
+  sessions Session[]
+
+  @@index([teamId])
+  @@index([email])
+}
+
+// ──────────────────────────────────────────────
+// NextAuth.js required models
+// ──────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ──────────────────────────────────────────────
+// Crawler domain
+// ──────────────────────────────────────────────
+
+model ApiSource {
+  id          String     @id @default(cuid())
+  name        String     // e.g. "Stripe", "Twilio"
+  url         String     // Changelog URL to crawl
+  sourceType  SourceType
+  teamId      String
+  isActive    Boolean    @default(true)
+  crawlIntervalHours Int @default(6)
+  lastCrawledAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  team      Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  crawlRuns CrawlRun[]
+
+  @@unique([teamId, url])
+  @@index([teamId])
+  @@index([isActive])
+}
+
+model CrawlRun {
+  id          String      @id @default(cuid())
+  sourceId    String
+  status      CrawlStatus @default(PENDING)
+  rawHtml     String?     // Raw scraped content (stored for debugging)
+  extractedText String?   // Cleaned text sent to AI classifier
+  errorMessage String?
+  startedAt   DateTime    @default(now())
+  completedAt DateTime?
+  durationMs  Int?
+
+  source  ApiSource     @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  changes ChangeEntry[]
+
+  @@index([sourceId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model ChangeEntry {
+  id            String     @id @default(cuid())
+  crawlRunId    String
+  changeType    ChangeType
+  severity      Severity
+  title         String     // Short summary of the change
+  description   String     // Detailed description from AI
+  affectedEndpoints String[] // e.g. ["/v1/charges", "/v1/customers"]
+  rawExcerpt    String?    // Original changelog text this was extracted from
+  changeDate    DateTime?  // Date of the change (if parseable from changelog)
+  isNew         Boolean    @default(true) // False if seen in a previous crawl
+  createdAt     DateTime   @default(now())
+
+  crawlRun CrawlRun @relation(fields: [crawlRunId], references: [id], onDelete: Cascade)
+  alerts   Alert[]
+
+  @@index([crawlRunId])
+  @@index([changeType])
+  @@index([severity])
+  @@index([changeDate])
+  @@index([isNew])
+}
+
+// ──────────────────────────────────────────────
+// Alerting domain
+// ──────────────────────────────────────────────
+
+model AlertRule {
+  id              String       @id @default(cuid())
+  teamId          String
+  name            String       // e.g. "Critical Stripe changes"
+  channel         AlertChannel
+  destination     String       // Email address or Slack webhook URL
+  minSeverity     Severity     @default(MEDIUM) // Only alert on this severity or higher
+  sourceFilter    String?      // Optional: only alert for specific ApiSource ID
+  keywordFilter   String[]     // Optional: only alert if these keywords appear
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  team   Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  alerts Alert[]
+
+  @@index([teamId])
+  @@index([isActive])
+}
+
+model Alert {
+  id           String      @id @default(cuid())
+  alertRuleId  String
+  changeEntryId String
+  teamId       String
+  status       AlertStatus @default(PENDING)
+  sentAt       DateTime?
+  errorMessage String?
+  createdAt    DateTime    @default(now())
+
+  alertRule   AlertRule   @relation(fields: [alertRuleId], references: [id], onDelete: Cascade)
+  changeEntry ChangeEntry @relation(fields: [changeEntryId], references: [id], onDelete: Cascade)
+  team        Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([alertRuleId])
+  @@index([changeEntryId])
+  @@index([teamId])
+  @@index([status])
+  @@index([createdAt])
+}

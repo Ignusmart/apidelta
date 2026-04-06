@@ -1,7 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "cd ../.. && pnpm install",
-  "buildCommand": "npx prisma generate --schema=../api/prisma/schema.prisma && next build",
+  "installCommand": "cd ../.. && pnpm install --filter @apidelta/web...",
   "regions": ["iad1"],
   "headers": [
     {
