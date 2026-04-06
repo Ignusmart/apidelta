@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "postinstall": "prisma generate --schema=../api/prisma/schema.prisma"
+    "test:e2e:ui": "playwright test --ui"
   },
   "prisma": {
     "schema": "../api/prisma/schema.prisma"
