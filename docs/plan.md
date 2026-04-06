@@ -102,11 +102,12 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
   - Deploy targets: `apps/web/` → Vercel, `apps/api/` → Railway or Fly.io
   - PostgreSQL → Railway managed or Neon
   - Domain: driftwatch.dev or driftwatch.io (check availability)
-- [ ] **Onboarding flow** (`apps/web/app/(dashboard)/onboarding/`)
-  - Step 1: Name your team
-  - Step 2: Add your first API source (with suggestions: Stripe, Twilio, GitHub, etc.)
-  - Step 3: Configure Slack/email alerts
-  - Step 4: See first crawl results (trigger immediate crawl)
+- [x] **Onboarding flow** (`apps/web/src/app/(dashboard)/`)
+  - Activation checklist (3 steps: add source, create alert, see crawl results)
+  - Quick-add popular API sources (Stripe, Twilio, GitHub, OpenAI, Slack, SendGrid)
+  - Welcome hero for zero-state users on dashboard
+  - Context-aware empty states on alerts page
+  - Smart defaults (email + medium severity) on first alert creation
 - [ ] **Email templates**
   - Welcome email
   - Change alert email (with severity badge, affected endpoints, link to dashboard)

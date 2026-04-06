@@ -635,3 +635,39 @@
 - Polish gate 8/10: onboarding-cro
 ### Blockers
 - None
+
+## Iteration 18 — 2026-04-05 [POLISH]
+### Polish gate 8/10: onboarding-cro
+### What was done
+- Created `apps/web/src/app/(dashboard)/onboarding-checklist.tsx` — persistent activation checklist component:
+  - 3 steps: add first API source, set up alert rule, see first crawl results
+  - Fetches real data (sources, rules, alerts) to track completion
+  - Progress bar with percentage, collapsible, dismissable per user (localStorage)
+  - Highlights the next incomplete step with violet accent + arrow
+  - Completed steps show green checkmarks with strikethrough
+  - Shows celebration message when all steps complete, then auto-hides
+  - Each step links directly to the relevant dashboard page
+- Created `apps/web/src/app/(dashboard)/quick-add-sources.tsx` — one-click popular API suggestions:
+  - 6 popular APIs (Stripe, Twilio, GitHub, OpenAI, Slack API, SendGrid) with category labels
+  - Grid layout (2 cols mobile, 3 cols desktop) with hover effect
+  - `onSelect` callback pre-fills the add source form with URL, name, and type
+  - Respects source limit (disabled when at plan capacity)
+- **Dashboard overview** (`apps/web/src/app/(dashboard)/dashboard/page.tsx`):
+  - Added `OnboardingChecklist` between header and stat cards — visible on every dashboard visit until dismissed
+  - Added welcome hero for zero-state users: gradient card with icon, headline ("Welcome to DriftWatch"), description, primary CTA to add first source, and "Takes less than 30 seconds" micro-copy
+  - Improved Monitored APIs empty state: added Plus icon to CTA, added "Stripe, GitHub, Twilio, and more" hint below button
+- **Sources page** (`apps/web/src/app/(dashboard)/dashboard/sources/page.tsx`):
+  - Replaced flat empty state with two-section layout: empty state card + QuickAddGrid below
+  - Quick-add pre-fills the modal with URL, name, and auto-detected source type — user just clicks "Add and Start Monitoring"
+- **Alerts page** (`apps/web/src/app/(dashboard)/dashboard/alerts/page.tsx`):
+  - Empty state now context-aware: if no sources exist, directs user to add a source first (with link); if sources exist, shows "Create your first alert rule" CTA
+  - Added smart defaults hint: "Most teams start with an email rule for MEDIUM+ severity changes"
+  - Pre-fills form with EMAIL channel and MEDIUM severity when clicking CTA from empty state
+### Audit results
+- Build: PASS (apps/web: pass, apps/api: pass)
+- Skills used: onboarding-cro
+- Polish gates: 8/10 passed
+### What's next
+- Polish gate 9/10: webapp-testing
+### Blockers
+- None

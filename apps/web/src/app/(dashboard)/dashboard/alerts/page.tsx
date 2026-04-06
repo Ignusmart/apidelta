@@ -16,7 +16,9 @@ import {
   Clock,
   ChevronDown,
   Filter,
+  Rss,
 } from 'lucide-react';
+import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
 import type {
   AlertRule,
@@ -535,21 +537,43 @@ export default function AlertsPage() {
       {activeTab === 'rules' && (
         <div role="tabpanel" id="tabpanel-rules" aria-labelledby="tab-rules">
           {rules.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-800 py-16 text-center">
+            <div className="rounded-xl border border-dashed border-gray-800 px-6 py-12 text-center">
               <Bell aria-hidden="true" className="mx-auto h-10 w-10 text-gray-700" />
               <p className="mt-4 text-sm text-gray-500">
                 No alert rules yet.
               </p>
-              <p className="mt-1 text-xs text-gray-600">
-                Create a rule to start receiving Slack or email notifications when API changes are detected.
+              <p className="mt-1 max-w-sm mx-auto text-xs text-gray-600">
+                {sources.length === 0
+                  ? 'Add an API source first, then create an alert rule to get notified about changes.'
+                  : 'Create a rule to start receiving Slack or email notifications when API changes are detected.'}
               </p>
-              <button
-                onClick={() => setShowCreateForm(true)}
-                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
-              >
-                <Plus aria-hidden="true" className="h-4 w-4" />
-                Create your first alert rule
-              </button>
+              {sources.length === 0 ? (
+                <Link
+                  href="/dashboard/sources"
+                  className="mt-5 inline-flex items-center gap-2 rounded-lg border border-gray-800 px-4 py-2 text-sm font-medium text-gray-300 transition hover:border-gray-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                >
+                  <Rss aria-hidden="true" className="h-4 w-4" />
+                  Add an API source first
+                </Link>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      // Pre-fill with email channel and medium severity — sensible defaults
+                      setFormChannel('EMAIL');
+                      setFormMinSeverity('MEDIUM');
+                      setShowCreateForm(true);
+                    }}
+                    className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
+                  >
+                    <Plus aria-hidden="true" className="h-4 w-4" />
+                    Create your first alert rule
+                  </button>
+                  <p className="mt-3 text-[11px] text-gray-600">
+                    Most teams start with an email rule for MEDIUM+ severity changes.
+                  </p>
+                </>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
