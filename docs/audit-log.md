@@ -900,3 +900,44 @@ Full SEO audit of all 21 routes in the DriftWatch frontend. Findings and fixes:
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
+
+---
+
+## Iteration 27 — 2026-04-05
+
+### What was done
+Built 4 Tier 2 SEO content pages for additional long-tail keyword coverage:
+
+1. **`/guides/api-versioning-best-practices`** — Educational guide targeting "API versioning" keywords. Covers URL path, header, date-based, semantic, and rolling versioning strategies. Natural CTA to monitor version changes.
+
+2. **`/guides/handling-breaking-api-changes`** — How-to playbook targeting "breaking API changes" keywords. 6-step response playbook (detect, assess, check timeline, test, communicate, deploy). Positions DriftWatch as step 1 (detection).
+
+3. **`/use-cases/saas-api-integrations`** — Targets SaaS companies managing multiple third-party APIs. Covers payment, communication, AI, and cloud infrastructure API monitoring. Speaks to the dependency graph risk.
+
+4. **`/use-cases/devops-api-monitoring`** — Targets DevOps teams. Positions DriftWatch as the missing layer alongside Datadog, PagerDuty, Sentry. Differentiates changelog monitoring from uptime monitoring.
+
+Supporting changes:
+- `SeoInternalLinks` expanded with all 4 new pages (10 total internal link targets)
+- `SeoNav` and `SeoFooter` updated with "Guides" navigation link
+- `sitemap.ts` expanded from 10 to 14 pages (new pages at priority 0.7)
+
+### What works now
+- 14 public pages in sitemap (home, 5 use-case, 2 compare, 2 guide, sign-in, sign-up, terms, privacy)
+- All SEO pages cross-link via `SeoInternalLinks` (10 destinations)
+- All new pages have: unique metadata (title, description, OG, Twitter, canonical), FAQ section with JSON-LD structured data, CTA banners, hero sections
+- Nav and footer link to guides section
+
+### Audit results
+- `pnpm build:web` PASS — 25 routes, all 4 new pages static (159 B each, zero client JS)
+- All new pages have unique title, description, canonical URL, OG + Twitter metadata
+- All new pages include FAQPage JSON-LD structured data
+- Sitemap covers all 14 public pages
+- No competitor names in user-facing content
+- Internal linking: all SEO pages cross-link, nav and footer include Guides
+
+### What's next
+- Deploy to production (manual: Jobelo sets up domain, DB, Stripe)
+- Consider Tier 3 SEO pages if more keyword coverage needed post-launch
+
+### Blockers
+- Same as iteration 26: domain, Neon DB, Stripe — manual tasks for Jobelo

@@ -32,6 +32,12 @@ export function SeoNav() {
             Use Cases
           </a>
           <a
+            href="/guides/api-versioning-best-practices"
+            className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            Guides
+          </a>
+          <a
             href="/#pricing"
             className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
           >
@@ -134,6 +140,12 @@ export function SeoFooter() {
             className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
           >
             Compare
+          </a>
+          <a
+            href="/guides/api-versioning-best-practices"
+            className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            Guides
           </a>
           <a
             href="/terms"
@@ -328,12 +340,28 @@ export function SeoInternalLinks({
       label: "API Dependency Management",
     },
     {
+      href: "/use-cases/saas-api-integrations",
+      label: "SaaS API Integrations",
+    },
+    {
+      href: "/use-cases/devops-api-monitoring",
+      label: "DevOps API Monitoring",
+    },
+    {
       href: "/compare/manual-vs-automated",
       label: "Manual vs Automated Monitoring",
     },
     {
       href: "/compare/generic-vs-api-specific",
       label: "Generic vs API-Specific Tools",
+    },
+    {
+      href: "/guides/api-versioning-best-practices",
+      label: "API Versioning Best Practices",
+    },
+    {
+      href: "/guides/handling-breaking-api-changes",
+      label: "Handling Breaking API Changes",
     },
   ];
 

@@ -54,6 +54,32 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
+    // SEO: Tier 2 use-case pages
+    {
+      url: `${baseUrl}/use-cases/saas-api-integrations`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/use-cases/devops-api-monitoring`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    // SEO: Guide pages
+    {
+      url: `${baseUrl}/guides/api-versioning-best-practices`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/guides/handling-breaking-api-changes`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
     // Legal pages
     {
       url: `${baseUrl}/terms`,
