@@ -774,3 +774,33 @@
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
+
+## Iteration 23 — 2026-04-05 [LAUNCH]
+### Launch phase: distribution strategy
+### What was done
+- **Created `docs/launch-strategy.md`** — comprehensive 30-day launch and distribution plan covering 9 channels:
+  1. **Product Hunt launch plan**: tagline, description, maker comment draft, visual asset checklist (5 gallery images + GIF), timing advice, engagement plan
+  2. **Hacker News strategy**: Show HN post draft, best practices (timing, tone, technical depth), topics HN cares about
+  3. **Developer community outreach**: Reddit strategy for r/webdev, r/devops, r/programming, r/SaaS with angle and timing per sub; 3 Dev.to article outlines; Indie Hackers, Lobste.rs, Hashnode, Discord communities
+  4. **SEO content strategy**: 3-tier keyword plan (8 target pages), page template structure, `/use-cases/` and `/compare/` URL paths, blog strategy for month 2+
+  5. **Google Ads enhancements**: 3 ad copy variations (pain-led, solution-led, price-led) to A/B test, negative keywords list (7 terms to exclude), landing page optimization tips — builds on existing deploy.md Section 8
+  6. **Integration directory listings**: Slack App Directory (high priority), BetaList, SaaSHub, AlternativeTo, G2, StackShare; GitHub Marketplace for month 2+
+  7. **Newsletter & podcast outreach**: 9 target newsletters (TLDR, Changelog, Bytes.dev, DevOps Weekly, Console.dev, etc.) with submission info; outreach email template; 5 podcast targets for month 2+
+  8. **Social media strategy**: 3 LinkedIn post drafts, 2 Twitter/X thread drafts, engagement tactics (search for pain-point conversations)
+  9. **30-day timeline**: Week-by-week execution calendar with specific day/channel/action rows
+- **ORB channel map**: Categorized all channels as Owned/Rented/Borrowed with priority levels
+- **Launch day checklist**: Time-boxed morning/midday/evening actions
+- **Success metrics**: 30-day targets with kill signals (visitors, signups, conversion, MRR, PH upvotes, HN points); UTM parameter scheme for channel attribution; decision framework for day 30 (continue/optimize/investigate/kill)
+- **Competitive notes**: Internal-only section with positioning guidance — competitor names never appear in user-facing content
+### Audit results
+- No code changes — strategy document only
+- Skills used: launch-strategy
+### What's next
+- Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains)
+- Once deployed: execute launch strategy week 1 (Product Hunt, HN, Google Ads, social posts)
+- Build SEO pages (`/use-cases/api-changelog-monitoring`, etc.) as next coding iteration
+### Blockers
+- Domain not registered (driftwatch.dev or driftwatch.io)
+- Neon DB not provisioned
+- Stripe products/prices not created
+- All three are manual tasks for Jobelo

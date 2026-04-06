@@ -121,10 +121,10 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
   - Dockerfile hardened: non-root user, health check, multi-stage
   - `vercel.json` with security headers, monorepo build config
   - Google Ads demand validation plan ($200 budget, target keywords, success metrics)
-- [ ] **Launch prep — go-to-market**
-  - Product Hunt draft
-  - 3 social posts (LinkedIn, Twitter/X)
-  - 5 target beta users identified and contacted
+- [x] **Launch prep — go-to-market**
+  - Product Hunt draft (tagline, description, maker comment in `docs/launch-strategy.md`)
+  - 3 social posts (LinkedIn, Twitter/X) — drafts in launch strategy
+  - Distribution plan: 9 channels, 30-day timeline, success metrics, kill criteria
 
 ### Validation checkpoint
 - Full flow works in production: sign up → add source → get alert → pay
