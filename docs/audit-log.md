@@ -746,6 +746,28 @@
   - Section 8: Google Ads demand validation plan ($200 budget, 6 keywords, campaign setup, success/kill metrics)
 - **Plan updated** (`docs/plan.md`) — marked launch prep deployment guide as complete, added go-to-market as next item
 ### What's next
+- **FIX FIRST**: Terms of Service and Privacy Policy links return 404 — create placeholder pages at `/terms` and `/privacy` before deploy. Auth layout footer links to these.
+- Then: Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains) then run $200 Google Ads test
+### Blockers
+- **Bug**: /terms and /privacy pages are 404 (linked from auth layout footer) — must fix before launch
+- Domain not registered (driftwatch.dev or driftwatch.io)
+- Neon DB not provisioned
+- Stripe products/prices not created
+- All three are manual tasks for Jobelo
+
+## Iteration 22 — 2026-04-05 [LAUNCH]
+### What was done
+- **Created `/terms` page** (`apps/web/src/app/terms/page.tsx`) — full Terms of Service covering: agreement, service description, accounts, free trial/paid plans, acceptable use, IP, privacy link, availability, liability limitations, disclaimers, termination, changes, governing law, contact
+- **Created `/privacy` page** (`apps/web/src/app/privacy/page.tsx`) — full Privacy Policy covering: data collected (account, team, usage, payment via Stripe, changelog content), how data is used, third-party services (Stripe, Vercel, Anthropic, Slack), data retention by plan tier, security measures, GDPR user rights (access, rectification, erasure, portability, restriction, objection), cookies, international transfers, children's privacy, changes, contact
+- **Added Terms and Privacy links to landing page footer** (`apps/web/src/app/page.tsx`) — footer nav now includes Terms and Privacy alongside Features, Pricing, FAQ
+- **Verified auth layout links** — existing `/terms` and `/privacy` hrefs in `(auth)/layout.tsx` now resolve correctly
+- Both pages match the app's dark theme (gray-950 bg, violet accents, consistent nav/footer)
+- Both pages dated April 2026
+### Audit results
+- Build: PASS (16/16 static pages generated, `/terms` and `/privacy` included)
+- No other broken internal links found (scanned all href patterns across src/)
+- Skills used: none
+### What's next
 - Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains) then run $200 Google Ads test
 ### Blockers
 - Domain not registered (driftwatch.dev or driftwatch.io)

@@ -677,7 +677,7 @@ export default function HomePage() {
             <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
             DriftWatch
           </div>
-          <nav aria-label="Footer navigation" className="flex gap-6 text-sm text-gray-500">
+          <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
             <a href="#features" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               Features
             </a>
@@ -686,6 +686,12 @@ export default function HomePage() {
             </a>
             <a href="#faq" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               FAQ
+            </a>
+            <a href="/terms" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+              Terms
+            </a>
+            <a href="/privacy" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+              Privacy
             </a>
           </nav>
           <p className="text-xs text-gray-600">
