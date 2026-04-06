@@ -7,6 +7,8 @@
     "build": "prisma generate --schema=../api/prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "postinstall": "prisma generate --schema=../api/prisma/schema.prisma"
   },
   "prisma": {
@@ -27,6 +29,7 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

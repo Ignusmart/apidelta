@@ -671,3 +671,22 @@
 - Polish gate 9/10: webapp-testing
 ### Blockers
 - None
+
+## Iteration 19 — 2026-04-05 [POLISH]
+### Polish gate 9/10: webapp-testing
+### What was done
+- Installed Playwright (`@playwright/test`) and Chromium in `apps/web/`
+- Created `apps/web/playwright.config.ts` with Chromium project, dev server integration, and `reuseExistingServer`
+- Added `test:e2e` and `test:e2e:ui` scripts to `apps/web/package.json`
+- **`e2e/landing.spec.ts`** (19 tests): nav rendering, sign-in/sign-up links, hero section (headline, CTAs, trust signals), social proof strip, features grid (all 6), how-it-works (3 steps), pricing (Starter/Pro plans, CTA links), FAQ (rendering + accordion expand), CTA banner, footer, FAQ/Organization structured data, mobile responsive nav
+- **`e2e/auth.spec.ts`** (23 tests): sign-in page (heading, logo, GitHub OAuth, email form, input attrs, sign-up link, error states for AccessDenied/unknown, terms/privacy links), sign-up page (heading, logo, GitHub OAuth, email form, autofocus, sign-in link, trust signals, OAuthAccountNotLinked error), verify-request page, auth protection (5 dashboard routes blocked without session)
+- **`e2e/navigation.spec.ts`** (7 tests): title check, sign-in/sign-up round-trip navigation, anchor link scrolling, footer links, robots.txt and sitemap.xml accessibility
+- All 49 tests pass in 6.3s
+### Audit results
+- Build: PASS
+- Skills used: webapp-testing
+- Polish gates: 9/10 passed
+### What's next
+- Polish gate 10/10: simplify
+### Blockers
+- None
