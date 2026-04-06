@@ -14,21 +14,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-
-type PlanTier = 'FREE_TRIAL' | 'STARTER' | 'PRO';
-type PlanStatus = 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
-
-interface TeamPlan {
-  plan: PlanTier;
-  planStatus: PlanStatus;
-  stripeCustomerId: string | null;
-  stripeSubscriptionId: string | null;
-  limits: {
-    maxSources: number;
-    maxMembers: number;
-    channels: string[];
-  };
-}
+import { getTeamId } from '@/lib/shared';
+import type { PlanTier, PlanStatus, TeamPlan } from '@/lib/types';
 
 const PLANS = [
   {
@@ -87,7 +74,7 @@ const STATUS_BADGES: Record<PlanStatus, { label: string; cls: string }> = {
 
 export default function SettingsPage() {
   const { data: session } = useSession();
-  const teamId = (session?.user as Record<string, unknown>)?.teamId as string | undefined;
+  const teamId = getTeamId(session);
   const searchParams = useSearchParams();
 
   const [teamPlan, setTeamPlan] = useState<TeamPlan | null>(null);

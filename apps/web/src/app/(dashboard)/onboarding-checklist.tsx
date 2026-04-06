@@ -17,6 +17,7 @@ import {
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
 import type { ApiSource, AlertRule, Alert } from '@/lib/types';
+import { getTeamId } from '@/lib/shared';
 
 interface OnboardingStep {
   id: string;
@@ -47,7 +48,7 @@ function useDismissed(userId: string | undefined): [boolean, () => void] {
 
 export function OnboardingChecklist() {
   const { data: session } = useSession();
-  const teamId = (session?.user as Record<string, unknown>)?.teamId as string | undefined;
+  const teamId = getTeamId(session);
   const userId = (session?.user as Record<string, unknown>)?.id as string | undefined;
 
   const [dismissed, dismiss] = useDismissed(userId);

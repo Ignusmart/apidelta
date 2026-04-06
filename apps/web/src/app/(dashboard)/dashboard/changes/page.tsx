@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   GitCompareArrows,
-  Loader2,
   AlertTriangle,
   Filter,
   Calendar,
@@ -19,62 +18,13 @@ import type {
   ApiSource,
   ChangeEntry,
   Severity,
-  ChangeType,
 } from '@/lib/types';
-
-// ── Severity config ──
-const SEVERITY_STYLES: Record<string, { dot: string; bg: string; text: string }> = {
-  CRITICAL: { dot: 'bg-red-500', bg: 'bg-red-500/10', text: 'text-red-400' },
-  HIGH: { dot: 'bg-orange-500', bg: 'bg-orange-500/10', text: 'text-orange-400' },
-  MEDIUM: { dot: 'bg-yellow-500', bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
-  LOW: { dot: 'bg-green-500', bg: 'bg-green-500/10', text: 'text-green-400' },
-};
-
-const CHANGE_TYPE_LABELS: Record<ChangeType, { label: string; color: string }> = {
-  BREAKING: { label: 'Breaking', color: 'text-red-400 bg-red-500/10' },
-  DEPRECATION: { label: 'Deprecation', color: 'text-amber-400 bg-amber-500/10' },
-  NON_BREAKING: { label: 'Non-Breaking', color: 'text-blue-400 bg-blue-500/10' },
-  INFO: { label: 'Info', color: 'text-gray-400 bg-gray-500/10' },
-};
-
-const SEVERITY_ORDER: Severity[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
-
-function SeverityBadge({ severity }: { severity: string }) {
-  const s = SEVERITY_STYLES[severity] ?? SEVERITY_STYLES.LOW;
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${s.bg} ${s.text}`}
-    >
-      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
-      {severity}
-    </span>
-  );
-}
-
-function ChangeTypeBadge({ type }: { type: ChangeType }) {
-  const cfg = CHANGE_TYPE_LABELS[type] ?? CHANGE_TYPE_LABELS.INFO;
-  return (
-    <span
-      className={`rounded px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider ${cfg.color}`}
-    >
-      {cfg.label}
-    </span>
-  );
-}
-
-// Response type for changes endpoint (uses paginated alerts as proxy)
-interface ChangesResponse {
-  data: ChangeEntry[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+import { SeverityBadge, ChangeTypeBadge } from '@/lib/components';
+import { SEVERITY_ORDER, getTeamId } from '@/lib/shared';
 
 export default function ChangesPage() {
   const { data: session } = useSession();
-  const teamId = (session?.user as Record<string, unknown>)?.teamId as
-    | string
-    | undefined;
+  const teamId = getTeamId(session);
 
   const [changes, setChanges] = useState<ChangeEntry[]>([]);
   const [sources, setSources] = useState<ApiSource[]>([]);

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { auth, signOut } from '@/auth';
-import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows, Menu, X } from 'lucide-react';
+import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows } from 'lucide-react';
 import Link from 'next/link';
 import { SidebarToggle } from './sidebar-toggle';
 

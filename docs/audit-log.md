@@ -690,3 +690,35 @@
 - Polish gate 10/10: simplify
 ### Blockers
 - None
+
+## Iteration 20 — 2026-04-05 [POLISH]
+### Polish gate 10/10: simplify
+### What was done
+- **Extracted shared utilities** — created `apps/web/src/lib/shared.ts` with `timeAgo`, `getTeamId`, `SEVERITY_STYLES`, `SEVERITY_ORDER`, `CHANGE_TYPE_LABELS` constants that were duplicated across 4+ files
+- **Extracted shared components** — created `apps/web/src/lib/components.tsx` with `SeverityBadge` and `ChangeTypeBadge` that were duplicated in `dashboard/page.tsx` and `changes/page.tsx`
+- **Removed duplicate `timeAgo` function** — was defined identically in `dashboard/page.tsx`, `sources/page.tsx`, and `alerts/page.tsx`; now imported from shared module
+- **Removed duplicate `SeverityBadge` component** — was defined identically in `dashboard/page.tsx` and `changes/page.tsx`
+- **Removed duplicate `SEVERITY_STYLES` constant** — was defined identically in `dashboard/page.tsx` and `changes/page.tsx`
+- **Removed duplicate `SEVERITY_ORDER` constant** — was defined identically in `changes/page.tsx` and `alerts/page.tsx`
+- **Removed duplicate `teamId` extraction pattern** — `(session?.user as Record<string, unknown>)?.teamId` was repeated in 6 files; replaced with `getTeamId(session)` from shared module
+- **Removed unused import: `Menu`, `X`** from `(dashboard)/layout.tsx` — only used in `sidebar-toggle.tsx`
+- **Removed unused import: `Reflector`** from `billing.guard.ts` — never referenced
+- **Removed unused import: `Loader2`** from `changes/page.tsx` — never referenced in component body
+- **Removed unused import: `ChangeEntry`** from `dashboard/page.tsx` — type never referenced directly
+- **Removed unused dependency: `@nestjs/bull`** from API — using `@nestjs/schedule` instead (no Redis)
+- **Removed unused dependency: `bull`** from API — same reason
+- **Removed unused dependency: `playwright`** from API — crawler uses `cheerio`, not Playwright
+- **Removed unused dependency: `zod`** from both API and web — API uses `class-validator`, web uses Prisma types
+- **Removed unused dependency: `class-variance-authority`** from web — never imported
+- **Removed unused dependency: `clsx`** and **`tailwind-merge`** from web — `cn` utility was never imported
+- **Removed unused file: `utils.ts`** — exported `cn` function was never imported anywhere
+- **Removed duplicate `TeamPlan` interface** from `settings/page.tsx` — now imports from `@/lib/types`
+- **Removed duplicate `ChangesResponse` interface** from `changes/page.tsx` — was unused dead code
+### Audit results
+- Build: PASS (apps/web: pass, apps/api: pass)
+- Skills used: simplify
+- Polish gates: 10/10 passed — ALL GATES COMPLETE
+### What's next
+- MVP_COMPLETE — proceed to LAUNCH phase
+### Blockers
+- None

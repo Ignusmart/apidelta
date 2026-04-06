@@ -28,8 +28,7 @@ import type {
   Severity,
   AlertStatus,
 } from '@/lib/types';
-
-const SEVERITY_ORDER: Severity[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+import { SEVERITY_ORDER, timeAgo, getTeamId } from '@/lib/shared';
 
 const ALERT_STATUS_CONFIG: Record<
   AlertStatus,
@@ -47,23 +46,9 @@ const SEVERITY_BADGE: Record<string, string> = {
   LOW: 'bg-green-500/10 text-green-400',
 };
 
-function timeAgo(dateStr: string | null): string {
-  if (!dateStr) return 'Never';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
-
 export default function AlertsPage() {
   const { data: session } = useSession();
-  const teamId = (session?.user as Record<string, unknown>)?.teamId as
-    | string
-    | undefined;
+  const teamId = getTeamId(session);
 
   // Data
   const [rules, setRules] = useState<AlertRule[]>([]);

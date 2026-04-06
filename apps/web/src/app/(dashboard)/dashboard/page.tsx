@@ -9,34 +9,16 @@ import {
   Clock,
   AlertTriangle,
   ArrowRight,
-  Loader2,
   RefreshCw,
   Plus,
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
-import type { ApiSource, ChangeEntry, Alert } from '@/lib/types';
+import type { ApiSource, Alert } from '@/lib/types';
+import { SeverityBadge } from '@/lib/components';
+import { timeAgo, getTeamId } from '@/lib/shared';
 import { OnboardingChecklist } from '../onboarding-checklist';
-
-// ── Severity config ──
-const SEVERITY_STYLES: Record<string, { dot: string; bg: string; text: string }> = {
-  CRITICAL: { dot: 'bg-red-500', bg: 'bg-red-500/10', text: 'text-red-400' },
-  HIGH: { dot: 'bg-orange-500', bg: 'bg-orange-500/10', text: 'text-orange-400' },
-  MEDIUM: { dot: 'bg-yellow-500', bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
-  LOW: { dot: 'bg-green-500', bg: 'bg-green-500/10', text: 'text-green-400' },
-  INFO: { dot: 'bg-gray-500', bg: 'bg-gray-500/10', text: 'text-gray-400' },
-};
-
-function SeverityBadge({ severity }: { severity: string }) {
-  const s = SEVERITY_STYLES[severity] ?? SEVERITY_STYLES.INFO;
-  return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${s.bg} ${s.text}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
-      {severity}
-    </span>
-  );
-}
 
 function StatCard({
   icon: Icon,
@@ -65,21 +47,9 @@ function StatCard({
   );
 }
 
-function timeAgo(dateStr: string | null): string {
-  if (!dateStr) return 'Never';
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
-}
-
 export default function DashboardPage() {
   const { data: session } = useSession();
-  const teamId = (session?.user as Record<string, unknown>)?.teamId as string | undefined;
+  const teamId = getTeamId(session);
 
   const [sources, setSources] = useState<ApiSource[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
