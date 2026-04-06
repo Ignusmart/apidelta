@@ -23,7 +23,7 @@ export function SeoNav() {
           className="flex items-center gap-2 text-lg font-bold tracking-tight"
         >
           <Zap aria-hidden="true" className="h-5 w-5 text-violet-400" />
-          DriftWatch
+          APIDelta
         </a>
         <div className="hidden items-center gap-8 text-sm text-gray-400 md:flex">
           <a
@@ -112,7 +112,7 @@ export function SeoFooter() {
           className="flex items-center gap-2 text-sm font-bold"
         >
           <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
-          DriftWatch
+          APIDelta
         </a>
         <nav
           aria-label="Footer navigation"
@@ -162,7 +162,7 @@ export function SeoFooter() {
           </a>
         </nav>
         <p className="text-xs text-gray-600">
-          &copy; {new Date().getFullYear()} DriftWatch. All rights reserved.
+          &copy; {new Date().getFullYear()} APIDelta. All rights reserved.
         </p>
       </div>
     </footer>
@@ -326,7 +326,7 @@ export function SeoInternalLinks({
   const pages = [
     {
       href: "/",
-      label: "DriftWatch Home",
+      label: "APIDelta Home",
     },
     {
       href: "/use-cases/api-changelog-monitoring",

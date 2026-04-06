@@ -15,14 +15,14 @@ export const metadata: Metadata = {
   description:
     "Learn API versioning best practices: URL path versioning, header versioning, sunset policies, and how to monitor third-party API version changes automatically.",
   alternates: {
-    canonical: "https://driftwatch.dev/guides/api-versioning-best-practices",
+    canonical: "https://apidelta.dev/guides/api-versioning-best-practices",
   },
   openGraph: {
     title: "API Versioning Best Practices for Engineering Teams",
     description:
       "A practical guide to API versioning strategies, deprecation timelines, and monitoring version changes across your API dependencies.",
     type: "article",
-    url: "https://driftwatch.dev/guides/api-versioning-best-practices",
+    url: "https://apidelta.dev/guides/api-versioning-best-practices",
   },
   twitter: {
     card: "summary_large_image",
@@ -78,7 +78,7 @@ const FAQS = [
   },
   {
     q: "How do I know when a third-party API changes versions?",
-    a: "Check the API provider's changelog, release notes, or developer blog. Many providers also send email notifications for major version changes. The challenge is doing this consistently across 10-50 API dependencies. DriftWatch automates this by crawling changelogs hourly and alerting you to version changes, deprecations, and sunset announcements.",
+    a: "Check the API provider's changelog, release notes, or developer blog. Many providers also send email notifications for major version changes. The challenge is doing this consistently across 10-50 API dependencies. APIDelta automates this by crawling changelogs hourly and alerting you to version changes, deprecations, and sunset announcements.",
   },
   {
     q: "What happens if I miss an API version deprecation?",
@@ -174,7 +174,7 @@ export default function ApiVersioningBestPracticesPage() {
                 scales past a handful of dependencies.
               </p>
               <p className="text-white">
-                DriftWatch closes this gap by crawling your API dependencies'
+                APIDelta closes this gap by crawling your API dependencies'
                 changelogs every hour and using AI to classify each update.
                 Deprecation notices, version bumps, and sunset announcements are
                 flagged and routed to the engineers who own each integration — so
@@ -193,7 +193,7 @@ export default function ApiVersioningBestPracticesPage() {
         {/* CTA */}
         <SeoCtaBanner
           headline="Never miss a version deprecation again."
-          subtext="DriftWatch monitors your API dependencies for version changes, deprecation notices, and sunset announcements. AI classifies every update so your team acts on what matters."
+          subtext="APIDelta monitors your API dependencies for version changes, deprecation notices, and sunset announcements. AI classifies every update so your team acts on what matters."
         />
       </main>
 

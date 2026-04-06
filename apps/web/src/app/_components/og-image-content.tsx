@@ -58,7 +58,7 @@ export function OgImageContent() {
         <span
           style={{ fontSize: "48px", fontWeight: 700, color: "#ffffff" }}
         >
-          DriftWatch
+          APIDelta
         </span>
       </div>
 
@@ -103,7 +103,7 @@ export function OgImageContent() {
           color: "#71717a",
         }}
       >
-        <span>driftwatch.dev</span>
+        <span>apidelta.dev</span>
         <span style={{ color: "#3f3f46" }}>|</span>
         <span>From $49/mo</span>
         <span style={{ color: "#3f3f46" }}>|</span>

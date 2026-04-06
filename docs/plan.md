@@ -1,4 +1,4 @@
-# DriftWatch — MVP Build Plan
+# APIDelta — MVP Build Plan
 
 **Goal**: Ship a working MVP that crawls third-party API changelogs, classifies breaking vs non-breaking changes with AI, and alerts engineering teams via Slack/email.
 
@@ -101,7 +101,7 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
   - `README.md` — full setup instructions, env var table, deployment guide
   - Deploy targets: `apps/web/` → Vercel, `apps/api/` → Railway or Fly.io
   - PostgreSQL → Railway managed or Neon
-  - Domain: driftwatch.dev or driftwatch.io (check availability)
+  - Domain: apidelta.dev or apidelta.io (check availability)
 - [x] **Onboarding flow** (`apps/web/src/app/(dashboard)/`)
   - Activation checklist (3 steps: add source, create alert, see crawl results)
   - Quick-add popular API sources (Stripe, Twilio, GitHub, OpenAI, Slack, SendGrid)

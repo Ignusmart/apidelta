@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Navigation and routing', () => {
   test('landing page loads with correct title', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/driftwatch/i);
+    await expect(page).toHaveTitle(/apidelta/i);
   });
 
   test('navigating from landing to sign-in and back', async ({ page }) => {
@@ -12,7 +12,7 @@ test.describe('Navigation and routing', () => {
     await expect(page).toHaveURL(/\/sign-in/);
 
     // Navigate back to home via logo
-    await page.getByRole('link', { name: /driftwatch/i }).first().click();
+    await page.getByRole('link', { name: /apidelta/i }).first().click();
     await expect(page).toHaveURL('/');
   });
 

@@ -133,7 +133,7 @@ export function OnboardingChecklist() {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white">
-              {allComplete ? 'Setup complete!' : 'Get started with DriftWatch'}
+              {allComplete ? 'Setup complete!' : 'Get started with APIDelta'}
             </h3>
             <p className="text-xs text-gray-500">
               {allComplete
@@ -176,7 +176,7 @@ export function OnboardingChecklist() {
       {showCelebration && (
         <div className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-center">
           <p className="text-sm font-medium text-emerald-400">
-            You are ready to go! DriftWatch is now monitoring your APIs.
+            You are ready to go! APIDelta is now monitoring your APIs.
           </p>
           <button
             onClick={dismiss}

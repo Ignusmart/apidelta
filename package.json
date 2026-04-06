@@ -1,17 +1,17 @@
 {
-  "name": "driftwatch",
+  "name": "apidelta",
   "version": "0.1.0",
   "private": true,
   "description": "API dependency change monitor — crawls changelogs, classifies breaking changes with AI, alerts engineering teams",
   "scripts": {
-    "dev:web": "pnpm --filter @driftwatch/web dev",
-    "dev:api": "pnpm --filter @driftwatch/api start:dev",
-    "build:web": "pnpm --filter @driftwatch/web build",
-    "build:api": "pnpm --filter @driftwatch/api build",
+    "dev:web": "pnpm --filter @apidelta/web dev",
+    "dev:api": "pnpm --filter @apidelta/api start:dev",
+    "build:web": "pnpm --filter @apidelta/web build",
+    "build:api": "pnpm --filter @apidelta/api build",
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
-    "db:migrate": "pnpm --filter @driftwatch/api prisma:migrate",
-    "db:generate": "pnpm --filter @driftwatch/api prisma:generate"
+    "db:migrate": "pnpm --filter @apidelta/api prisma:migrate",
+    "db:generate": "pnpm --filter @apidelta/api prisma:generate"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

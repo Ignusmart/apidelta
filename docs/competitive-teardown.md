@@ -1,7 +1,7 @@
-# DriftWatch — Competitive Teardown
+# APIDelta — Competitive Teardown
 
 **Date**: 2026-04-05
-**Prepared for**: DriftWatch MVP planning (Iteration 1)
+**Prepared for**: APIDelta MVP planning (Iteration 1)
 
 ---
 
@@ -194,7 +194,7 @@ SDK generation platform that includes drift detection as a secondary feature. Ch
 
 ## Feature Comparison Matrix
 
-| Feature | DriftWatch (planned) | API Drift Alert | PageCrawl | oasdiff |
+| Feature | APIDelta (planned) | API Drift Alert | PageCrawl | oasdiff |
 |---------|---------------------|----------------|-----------|---------|
 | Third-party changelog crawling | 5 | 5 | 3 | 1 |
 | AI-powered classification | 5 | 1 | 2 | 1 |
@@ -210,11 +210,11 @@ SDK generation platform that includes drift detection as a secondary feature. Ch
 | RSS / GitHub releases | 5 | 3 | 2 | 1 |
 | **TOTAL** | **49/60** | **45/60** | **31/60** | **27/60** |
 
-*DriftWatch scores are aspirational targets for MVP, not current state.*
+*APIDelta scores are aspirational targets for MVP, not current state.*
 
 ---
 
-## SWOT Analysis (DriftWatch)
+## SWOT Analysis (APIDelta)
 
 ### Strengths
 - **AI classification** is a genuine differentiator — no competitor uses LLMs for change analysis
@@ -250,7 +250,7 @@ SDK generation platform that includes drift detection as a secondary feature. Ch
                     API-Specific Intelligence
                            HIGH
                             |
-                  DriftWatch*   API Drift Alert
+                  APIDelta*   API Drift Alert
                      |              |
         LOW --------+------+-------+-------- HIGH
         PRICE       |      |              PRICE
@@ -261,7 +261,7 @@ SDK generation platform that includes drift detection as a secondary feature. Ch
               (Generic monitoring)
 ```
 
-*DriftWatch planned position: high intelligence, low price.
+*APIDelta planned position: high intelligence, low price.
 
 ---
 
@@ -277,7 +277,7 @@ SDK generation platform that includes drift detection as a secondary feature. Ch
 - Build a public API changelog catalog (SEO play)
 - Add PagerDuty + OpsGenie integrations
 - Introduce free tier (3 APIs) to drive adoption
-- Publish comparison page: "DriftWatch vs API Drift Alert"
+- Publish comparison page: "APIDelta vs API Drift Alert"
 - Target dev communities: HN Show, Reddit, Dev.to, Indie Hackers
 
 ### Strategic (3-12 months)

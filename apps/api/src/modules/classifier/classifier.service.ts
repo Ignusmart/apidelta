@@ -184,7 +184,7 @@ export class ClassifierService {
 
 // ── Prompt & Tool Definition ────────────────────
 
-const CLASSIFICATION_SYSTEM_PROMPT = `You are an API changelog classifier for DriftWatch, a tool that monitors third-party API changes.
+const CLASSIFICATION_SYSTEM_PROMPT = `You are an API changelog classifier for APIDelta, a tool that monitors third-party API changes.
 
 Your job: given a list of changelog entries from an API provider, classify each one using the submit_classifications tool.
 

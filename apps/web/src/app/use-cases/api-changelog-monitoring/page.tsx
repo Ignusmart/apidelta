@@ -14,16 +14,16 @@ import {
 export const metadata: Metadata = {
   title: "API Changelog Monitoring — Automated & AI-Powered",
   description:
-    "Automate API changelog monitoring with AI-powered classification. DriftWatch crawls changelogs hourly, classifies breaking changes, and alerts your team via Slack and email.",
+    "Automate API changelog monitoring with AI-powered classification. APIDelta crawls changelogs hourly, classifies breaking changes, and alerts your team via Slack and email.",
   alternates: {
-    canonical: "https://driftwatch.dev/use-cases/api-changelog-monitoring",
+    canonical: "https://apidelta.dev/use-cases/api-changelog-monitoring",
   },
   openGraph: {
     title: "API Changelog Monitoring — Automated & AI-Powered",
     description:
       "Stop reading API changelogs manually. AI classifies every change by severity and alerts your team before breaking changes hit production.",
     type: "website",
-    url: "https://driftwatch.dev/use-cases/api-changelog-monitoring",
+    url: "https://apidelta.dev/use-cases/api-changelog-monitoring",
   },
   twitter: {
     card: "summary_large_image",
@@ -44,7 +44,7 @@ const FEATURES = [
     icon: Rss,
     title: "50+ Changelog Formats",
     description:
-      "HTML pages, RSS feeds, GitHub Releases — DriftWatch handles the messy reality of how APIs publish updates. Paste a URL and it figures out the rest.",
+      "HTML pages, RSS feeds, GitHub Releases — APIDelta handles the messy reality of how APIs publish updates. Paste a URL and it figures out the rest.",
   },
   {
     icon: Bell,
@@ -56,7 +56,7 @@ const FEATURES = [
     icon: Clock,
     title: "Hourly Monitoring",
     description:
-      "DriftWatch checks every monitored API on the hour. When a breaking change lands, you know within 60 minutes — not when CI fails at 2 AM.",
+      "APIDelta checks every monitored API on the hour. When a breaking change lands, you know within 60 minutes — not when CI fails at 2 AM.",
   },
   {
     icon: Users,
@@ -78,20 +78,20 @@ const FAQS = [
     a: "API changelog monitoring is the practice of tracking updates published by third-party APIs your product depends on. Instead of manually checking changelog pages, you use a tool that crawls those pages automatically and notifies you when something changes — especially breaking changes that could affect your integration.",
   },
   {
-    q: "How does DriftWatch monitor API changelogs?",
-    a: "DriftWatch crawls your configured changelog URLs every hour. It supports HTML pages, RSS feeds, and GitHub Releases. When new entries are detected, AI reads and classifies each one by type (breaking, deprecation, non-breaking, informational) and severity (critical, high, medium, low). Alerts are sent to Slack or email based on your rules.",
+    q: "How does APIDelta monitor API changelogs?",
+    a: "APIDelta crawls your configured changelog URLs every hour. It supports HTML pages, RSS feeds, and GitHub Releases. When new entries are detected, AI reads and classifies each one by type (breaking, deprecation, non-breaking, informational) and severity (critical, high, medium, low). Alerts are sent to Slack or email based on your rules.",
   },
   {
-    q: "Which APIs can DriftWatch monitor?",
-    a: "Any API that publishes a changelog, release notes, or status page. Stripe, Twilio, GitHub, OpenAI, Slack, SendGrid, Vercel, and Prisma work out of the box. If it has a URL with changelog content, DriftWatch can crawl it.",
+    q: "Which APIs can APIDelta monitor?",
+    a: "Any API that publishes a changelog, release notes, or status page. Stripe, Twilio, GitHub, OpenAI, Slack, SendGrid, Vercel, and Prisma work out of the box. If it has a URL with changelog content, APIDelta can crawl it.",
   },
   {
     q: "How is this different from using an RSS reader?",
-    a: "RSS readers show you raw text with no classification. You still have to read every entry and decide if it matters. DriftWatch uses AI to classify each change by severity, extract affected endpoints, and generate a summary — so you only act on what matters. It also handles HTML changelogs that have no RSS feed.",
+    a: "RSS readers show you raw text with no classification. You still have to read every entry and decide if it matters. APIDelta uses AI to classify each change by severity, extract affected endpoints, and generate a summary — so you only act on what matters. It also handles HTML changelogs that have no RSS feed.",
   },
   {
     q: "How much does API changelog monitoring cost?",
-    a: "DriftWatch starts at $49/month for 10 monitored APIs with AI classification, Slack and email alerts, and hourly monitoring. The Pro plan at $99/month supports 50 APIs and 10 team members. Both include a 14-day free trial with no credit card required.",
+    a: "APIDelta starts at $49/month for 10 monitored APIs with AI classification, Slack and email alerts, and hourly monitoring. The Pro plan at $99/month supports 50 APIs and 10 team members. Both include a 14-day free trial with no credit card required.",
   },
 ];
 
@@ -104,7 +104,7 @@ export default function ApiChangelogMonitoringPage() {
         <SeoHero
           title="API Changelog Monitoring"
           gradientText="Automated & AI-Powered"
-          description="Your team monitors 15 third-party APIs. Each publishes changes differently — HTML pages, RSS feeds, GitHub release notes. Manually checking each one every week is tedious, error-prone, and impossible to scale. DriftWatch automates the entire process with AI-powered classification."
+          description="Your team monitors 15 third-party APIs. Each publishes changes differently — HTML pages, RSS feeds, GitHub release notes. Manually checking each one every week is tedious, error-prone, and impossible to scale. APIDelta automates the entire process with AI-powered classification."
           ctaText="Start monitoring for free"
           showArrow={false}
         />
@@ -137,7 +137,7 @@ export default function ApiChangelogMonitoringPage() {
                 about breaking changes when production errors spike at 2 AM.
               </p>
               <p className="text-white">
-                DriftWatch replaces both approaches with automated, AI-powered
+                APIDelta replaces both approaches with automated, AI-powered
                 changelog monitoring that classifies every change by severity
                 and routes alerts to the right people.
               </p>
@@ -174,7 +174,7 @@ export default function ApiChangelogMonitoringPage() {
             </h2>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-400">
               Most monitoring platforms charge $149-749/mo for basic text
-              diffing with no intelligence layer. DriftWatch uses AI to
+              diffing with no intelligence layer. APIDelta uses AI to
               understand what changed and why it matters — at a fraction of the
               cost.
             </p>

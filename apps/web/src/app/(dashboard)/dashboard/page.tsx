@@ -202,7 +202,7 @@ export default function DashboardPage() {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/10">
               <Zap aria-hidden="true" className="h-7 w-7 text-violet-400" />
             </div>
-            <h2 className="text-xl font-bold tracking-tight">Welcome to DriftWatch</h2>
+            <h2 className="text-xl font-bold tracking-tight">Welcome to APIDelta</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-gray-400">
               Add your first API changelog and see classified changes in minutes.
               No agents to install, no code changes needed.
@@ -248,7 +248,7 @@ export default function DashboardPage() {
                 <GitCompareArrows aria-hidden="true" className="mx-auto h-8 w-8 text-gray-700" />
                 <p className="mt-3 text-sm text-gray-500">No changes detected yet</p>
                 <p className="mt-1 text-xs text-gray-600">
-                  Changes will appear here once DriftWatch crawls your API sources.
+                  Changes will appear here once APIDelta crawls your API sources.
                 </p>
               </div>
             ) : (

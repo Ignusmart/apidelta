@@ -1,6 +1,6 @@
-# DriftWatch — Deployment Guide
+# APIDelta — Deployment Guide
 
-Step-by-step guide to deploy DriftWatch to production.
+Step-by-step guide to deploy APIDelta to production.
 
 **Architecture**: Next.js frontend on Vercel, NestJS API on Railway (or Fly.io), PostgreSQL on Neon, Stripe for billing.
 
@@ -8,7 +8,7 @@ Step-by-step guide to deploy DriftWatch to production.
 
 ## 1. Neon PostgreSQL Setup
 
-1. Go to [neon.tech](https://neon.tech) and create a project named `driftwatch`
+1. Go to [neon.tech](https://neon.tech) and create a project named `apidelta`
 2. Choose the **US East (N. Virginia)** region (closest to Vercel iad1)
 3. Copy the connection string — it looks like:
    ```
@@ -26,19 +26,19 @@ Step-by-step guide to deploy DriftWatch to production.
 
 1. Go to [Stripe Dashboard](https://dashboard.stripe.com) > Products
 2. Create **Starter** product:
-   - Name: `DriftWatch Starter`
+   - Name: `APIDelta Starter`
    - Price: `$49.00/month` (recurring, monthly)
    - Copy the price ID (`price_xxx`) — this is `STRIPE_PRICE_ID_STARTER`
 3. Create **Pro** product:
-   - Name: `DriftWatch Pro`
+   - Name: `APIDelta Pro`
    - Price: `$99.00/month` (recurring, monthly)
    - Copy the price ID (`price_xxx`) — this is `STRIPE_PRICE_ID_PRO`
 
 ### Set up webhooks
 
 1. Go to Stripe Dashboard > Developers > Webhooks
-2. Add endpoint URL: `https://api.driftwatch.dev/api/billing/webhook`
-   (Replace `api.driftwatch.dev` with your actual API domain)
+2. Add endpoint URL: `https://api.apidelta.dev/api/billing/webhook`
+   (Replace `api.apidelta.dev` with your actual API domain)
 3. Select these events:
    - `checkout.session.completed` — user completes payment
    - `customer.subscription.updated` — plan change or renewal
@@ -60,16 +60,16 @@ Step-by-step guide to deploy DriftWatch to production.
 ### GitHub OAuth
 
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers) > OAuth Apps > New
-2. Application name: `DriftWatch`
-3. Homepage URL: `https://driftwatch.dev`
-4. Authorization callback URL: `https://driftwatch.dev/api/auth/callback/github`
+2. Application name: `APIDelta`
+3. Homepage URL: `https://apidelta.dev`
+4. Authorization callback URL: `https://apidelta.dev/api/auth/callback/github`
 5. Copy Client ID → `GITHUB_ID`
 6. Generate a client secret → `GITHUB_SECRET`
 
 ### Email (Resend)
 
 1. Sign up at [resend.com](https://resend.com)
-2. Add and verify your domain (`driftwatch.dev`)
+2. Add and verify your domain (`apidelta.dev`)
 3. Create an API key → use as `SMTP_PASS`
 4. SMTP settings:
    - `SMTP_HOST=smtp.resend.com`
@@ -111,12 +111,12 @@ Save as `AUTH_SECRET`.
    | `SMTP_PORT` | `465` |
    | `SMTP_USER` | `resend` |
    | `SMTP_PASS` | Resend API key |
-   | `EMAIL_FROM` | `DriftWatch <noreply@driftwatch.dev>` |
-   | `NEXTAUTH_URL` | `https://driftwatch.dev` |
+   | `EMAIL_FROM` | `APIDelta <noreply@apidelta.dev>` |
+   | `NEXTAUTH_URL` | `https://apidelta.dev` |
    | `API_PORT` | `3001` |
    | `NODE_ENV` | `production` |
 
-5. Set **Custom Domain**: `api.driftwatch.dev` (or use Railway's generated domain)
+5. Set **Custom Domain**: `api.apidelta.dev` (or use Railway's generated domain)
 6. Deploy — Railway builds the Docker image and starts the container
 7. The `start.sh` script auto-runs `prisma migrate deploy` on every deploy
 
@@ -125,7 +125,7 @@ Save as `AUTH_SECRET`.
 1. Install flyctl: `brew install flyctl`
 2. From the repo root:
    ```bash
-   fly launch --name driftwatch-api --dockerfile apps/api/Dockerfile --region iad --no-deploy
+   fly launch --name apidelta-api --dockerfile apps/api/Dockerfile --region iad --no-deploy
    ```
 3. Set secrets:
    ```bash
@@ -140,19 +140,19 @@ Save as `AUTH_SECRET`.
      SMTP_PORT="465" \
      SMTP_USER="resend" \
      SMTP_PASS="..." \
-     EMAIL_FROM="DriftWatch <noreply@driftwatch.dev>" \
-     NEXTAUTH_URL="https://driftwatch.dev" \
+     EMAIL_FROM="APIDelta <noreply@apidelta.dev>" \
+     NEXTAUTH_URL="https://apidelta.dev" \
      API_PORT="3001" \
      NODE_ENV="production"
    ```
 4. Deploy: `fly deploy`
-5. Set custom domain: `fly certs add api.driftwatch.dev`
+5. Set custom domain: `fly certs add api.apidelta.dev`
 
 ---
 
 ## 5. Deploy the Frontend (Vercel)
 
-1. Go to [vercel.com](https://vercel.com) and import the DriftWatch repo
+1. Go to [vercel.com](https://vercel.com) and import the APIDelta repo
 2. Set **Root Directory**: `apps/web`
 3. Vercel auto-detects Next.js — the `vercel.json` handles build/install commands for the monorepo
 4. Add environment variables:
@@ -163,16 +163,16 @@ Save as `AUTH_SECRET`.
    | `AUTH_SECRET` | Same secret as API |
    | `GITHUB_ID` | GitHub OAuth client ID |
    | `GITHUB_SECRET` | GitHub OAuth client secret |
-   | `NEXTAUTH_URL` | `https://driftwatch.dev` |
-   | `NEXT_PUBLIC_API_URL` | `https://api.driftwatch.dev/api` |
-   | `EMAIL_FROM` | `DriftWatch <noreply@driftwatch.dev>` |
+   | `NEXTAUTH_URL` | `https://apidelta.dev` |
+   | `NEXT_PUBLIC_API_URL` | `https://api.apidelta.dev/api` |
+   | `EMAIL_FROM` | `APIDelta <noreply@apidelta.dev>` |
    | `SMTP_HOST` | `smtp.resend.com` |
    | `SMTP_PORT` | `465` |
    | `SMTP_USER` | `resend` |
    | `SMTP_PASS` | Resend API key |
 
 5. Deploy
-6. Set custom domain: `driftwatch.dev` in Vercel project settings
+6. Set custom domain: `apidelta.dev` in Vercel project settings
 
 **Note**: The web app needs `DATABASE_URL` because NextAuth uses the Prisma adapter to store sessions directly in the database.
 
@@ -182,7 +182,7 @@ Save as `AUTH_SECRET`.
 
 ### Register domain
 
-Register `driftwatch.dev` (or `.io`) at your preferred registrar (Namecheap, Cloudflare, Google Domains).
+Register `apidelta.dev` (or `.io`) at your preferred registrar (Namecheap, Cloudflare, Google Domains).
 
 ### DNS records
 
@@ -204,8 +204,8 @@ Both Vercel and Railway/Fly.io provision SSL certificates automatically. No manu
 
 Run through this checklist after deploying:
 
-- [ ] `https://api.driftwatch.dev/api/health` returns `{"status":"ok","db":"connected"}`
-- [ ] `https://driftwatch.dev` loads the landing page
+- [ ] `https://api.apidelta.dev/api/health` returns `{"status":"ok","db":"connected"}`
+- [ ] `https://apidelta.dev` loads the landing page
 - [ ] Sign up with GitHub OAuth works
 - [ ] Sign up with email magic link works (check email delivery)
 - [ ] Dashboard loads after sign-in
@@ -245,7 +245,7 @@ Validate demand for API changelog monitoring with a $200 Google Ads budget befor
   - Headline 1: `API Breaking Change Alerts`
   - Headline 2: `AI-Powered Changelog Monitoring`
   - Headline 3: `Start Free — 14 Day Trial`
-  - Description: `Stop finding out about API changes from your error logs. DriftWatch monitors changelogs and alerts your team before breaking changes hit production.`
+  - Description: `Stop finding out about API changes from your error logs. APIDelta monitors changelogs and alerts your team before breaking changes hit production.`
 
 ### Success metrics
 

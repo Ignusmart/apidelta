@@ -13,14 +13,14 @@ export const metadata: Metadata = {
   description:
     "Learn how to detect, triage, and respond to breaking API changes before they cause production incidents. Includes a step-by-step response playbook for engineering teams.",
   alternates: {
-    canonical: "https://driftwatch.dev/guides/handling-breaking-api-changes",
+    canonical: "https://apidelta.dev/guides/handling-breaking-api-changes",
   },
   openGraph: {
     title: "How to Handle Breaking API Changes — A Practical Guide",
     description:
       "A practical response playbook for engineering teams: detect, triage, and fix breaking API changes before they hit production.",
     type: "article",
-    url: "https://driftwatch.dev/guides/handling-breaking-api-changes",
+    url: "https://apidelta.dev/guides/handling-breaking-api-changes",
   },
   twitter: {
     card: "summary_large_image",
@@ -80,7 +80,7 @@ const FAQS = [
   },
   {
     q: "What if an API breaks without any changelog notice?",
-    a: "This happens more often than it should — especially with smaller API providers. Unannounced breaking changes require immediate incident response: check their status page, contact support, and implement a temporary workaround. DriftWatch helps here by monitoring response format changes in addition to changelog entries, catching behavioral changes that were never formally announced.",
+    a: "This happens more often than it should — especially with smaller API providers. Unannounced breaking changes require immediate incident response: check their status page, contact support, and implement a temporary workaround. APIDelta helps here by monitoring response format changes in addition to changelog entries, catching behavioral changes that were never formally announced.",
   },
   {
     q: "How do I prevent breaking changes from reaching production?",
@@ -165,7 +165,7 @@ export default function HandlingBreakingApiChangesPage() {
           </div>
         </section>
 
-        {/* DriftWatch angle */}
+        {/* APIDelta angle */}
         <section className="py-24">
           <div className="mx-auto max-w-4xl px-6">
             <h2 className="mb-8 text-center text-3xl font-bold tracking-tight sm:text-4xl">
@@ -180,7 +180,7 @@ export default function HandlingBreakingApiChangesPage() {
                 of API dependencies.
               </p>
               <p className="text-white">
-                DriftWatch crawls your API dependencies' changelogs every hour.
+                APIDelta crawls your API dependencies' changelogs every hour.
                 AI classifies each entry by type and severity. When a breaking
                 change is detected, the engineer who owns that integration gets
                 an alert in Slack or email — with a plain-English summary of what
@@ -189,7 +189,7 @@ export default function HandlingBreakingApiChangesPage() {
               </p>
               <p>
                 The rest of the playbook still requires engineering judgment.
-                But with DriftWatch, your team starts with full information
+                But with APIDelta, your team starts with full information
                 instead of discovering changes after the damage is done.
               </p>
             </div>
@@ -205,7 +205,7 @@ export default function HandlingBreakingApiChangesPage() {
         {/* CTA */}
         <SeoCtaBanner
           headline="Catch breaking changes before they catch you."
-          subtext="DriftWatch monitors your API changelogs hourly, classifies changes by severity with AI, and alerts the right engineer. Start your 14-day free trial with 3 APIs included."
+          subtext="APIDelta monitors your API changelogs hourly, classifies changes by severity with AI, and alerts the right engineer. Start your 14-day free trial with 3 APIs included."
         />
       </main>
 

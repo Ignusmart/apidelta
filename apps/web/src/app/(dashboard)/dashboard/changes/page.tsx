@@ -290,7 +290,7 @@ export default function ChangesPage() {
           {changes.length === 0 ? (
             <>
               <p className="mt-1 text-xs text-gray-600">
-                Changes appear here automatically after DriftWatch crawls your API sources.
+                Changes appear here automatically after APIDelta crawls your API sources.
               </p>
               {sources.length === 0 && (
                 <Link

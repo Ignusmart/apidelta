@@ -14,14 +14,14 @@ export const metadata: Metadata = {
   description:
     "Why generic website change monitors miss critical API changes. Compare pixel-diff tools with AI-powered API changelog monitoring built for engineering teams.",
   alternates: {
-    canonical: "https://driftwatch.dev/compare/generic-vs-api-specific",
+    canonical: "https://apidelta.dev/compare/generic-vs-api-specific",
   },
   openGraph: {
     title: "Generic Website Monitors vs API-Specific Change Detection",
     description:
       "Generic monitors detect that something changed. API-specific tools tell you what changed, how severe it is, and who needs to know.",
     type: "website",
-    url: "https://driftwatch.dev/compare/generic-vs-api-specific",
+    url: "https://apidelta.dev/compare/generic-vs-api-specific",
   },
   twitter: {
     card: "summary_large_image",
@@ -141,7 +141,7 @@ export default function GenericVsApiSpecificPage() {
                 because it creates a false sense of security.
               </p>
               <p className="text-white">
-                API-specific tools like DriftWatch parse the changelog structure
+                API-specific tools like APIDelta parse the changelog structure
                 itself. They identify individual entries, extract dates and
                 affected endpoints, and use AI to classify severity. Only
                 meaningful changes trigger alerts — and those alerts include
@@ -188,7 +188,7 @@ export default function GenericVsApiSpecificPage() {
         {/* CTA */}
         <SeoCtaBanner
           headline="Get alerts that actually matter."
-          subtext="DriftWatch monitors API changelogs with AI-powered classification. No false positives from CSS changes. No noise from marketing banner updates. Just actionable alerts about API changes that affect your code."
+          subtext="APIDelta monitors API changelogs with AI-powered classification. No false positives from CSS changes. No noise from marketing banner updates. Just actionable alerts about API changes that affect your code."
         />
       </main>
 

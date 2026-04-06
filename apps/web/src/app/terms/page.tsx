@@ -5,14 +5,14 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description:
-    'DriftWatch Terms of Service — read the terms that govern your use of DriftWatch, our API changelog monitoring platform.',
-  alternates: { canonical: 'https://driftwatch.dev/terms' },
+    'APIDelta Terms of Service — read the terms that govern your use of APIDelta, our API changelog monitoring platform.',
+  alternates: { canonical: 'https://apidelta.dev/terms' },
   openGraph: {
-    title: 'Terms of Service | DriftWatch',
+    title: 'Terms of Service | APIDelta',
     description:
-      'DriftWatch Terms of Service — read the terms that govern your use of DriftWatch.',
+      'APIDelta Terms of Service — read the terms that govern your use of APIDelta.',
     type: 'website',
-    url: 'https://driftwatch.dev/terms',
+    url: 'https://apidelta.dev/terms',
   },
 };
 
@@ -27,7 +27,7 @@ export default function TermsPage() {
             className="flex items-center gap-2 text-lg font-bold tracking-tight"
           >
             <Zap aria-hidden="true" className="h-5 w-5 text-violet-400" />
-            DriftWatch
+            APIDelta
           </Link>
           <Link
             href="/sign-up"
@@ -50,8 +50,8 @@ export default function TermsPage() {
           <section>
             <h2>1. Agreement to Terms</h2>
             <p>
-              By accessing or using DriftWatch (&quot;the Service&quot;), operated by
-              DriftWatch (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), you agree to be bound by
+              By accessing or using APIDelta (&quot;the Service&quot;), operated by
+              APIDelta (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;), you agree to be bound by
               these Terms of Service. If you do not agree, do not use the
               Service.
             </p>
@@ -60,7 +60,7 @@ export default function TermsPage() {
           <section>
             <h2>2. Description of Service</h2>
             <p>
-              DriftWatch is a software-as-a-service platform that monitors
+              APIDelta is a software-as-a-service platform that monitors
               third-party API changelogs, uses AI to classify changes by
               severity, and delivers alerts to your team via Slack, email, and
               other integrations. The Service includes the web dashboard, API,
@@ -136,7 +136,7 @@ export default function TermsPage() {
             <h2>6. Intellectual Property</h2>
             <p>
               The Service, including its original content, features, and
-              functionality, is owned by DriftWatch and is protected by
+              functionality, is owned by APIDelta and is protected by
               copyright, trademark, and other intellectual property laws. Your
               data remains yours; we claim no ownership over the content you
               provide.
@@ -171,7 +171,7 @@ export default function TermsPage() {
           <section>
             <h2>9. Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by law, DriftWatch shall not be
+              To the maximum extent permitted by law, APIDelta shall not be
               liable for any indirect, incidental, special, consequential, or
               punitive damages, including but not limited to loss of profits,
               data, or business opportunities, arising from your use of the
@@ -236,10 +236,10 @@ export default function TermsPage() {
             <p>
               If you have questions about these Terms, contact us at{' '}
               <a
-                href="mailto:support@driftwatch.dev"
+                href="mailto:support@apidelta.dev"
                 className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
               >
-                support@driftwatch.dev
+                support@apidelta.dev
               </a>
               .
             </p>
@@ -255,7 +255,7 @@ export default function TermsPage() {
             className="flex items-center gap-2 text-sm font-bold"
           >
             <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
-            DriftWatch
+            APIDelta
           </Link>
           <nav aria-label="Footer navigation" className="flex gap-6 text-sm text-gray-500">
             <Link href="/privacy" className="transition hover:text-gray-300">
@@ -266,7 +266,7 @@ export default function TermsPage() {
             </Link>
           </nav>
           <p className="text-xs text-gray-600">
-            &copy; {new Date().getFullYear()} DriftWatch. All rights reserved.
+            &copy; {new Date().getFullYear()} APIDelta. All rights reserved.
           </p>
         </div>
       </footer>

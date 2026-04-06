@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/dashboard/', '/api/'],
       },
     ],
-    sitemap: 'https://driftwatch.dev/sitemap.xml',
+    sitemap: 'https://apidelta.dev/sitemap.xml',
   };
 }

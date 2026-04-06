@@ -40,7 +40,7 @@ export class EmailTransport {
   }
 
   async send(payload: AlertEmailPayload): Promise<boolean> {
-    const subject = `[DriftWatch] ${payload.severity} ${payload.changeType} change in ${payload.sourceName}`;
+    const subject = `[APIDelta] ${payload.severity} ${payload.changeType} change in ${payload.sourceName}`;
     const html = this.buildHtml(payload);
 
     if (!this.transporter) {
@@ -53,7 +53,7 @@ export class EmailTransport {
 
     try {
       await this.transporter.sendMail({
-        from: this.config.get<string>('SMTP_USER') || 'alerts@driftwatch.dev',
+        from: this.config.get<string>('SMTP_USER') || 'alerts@apidelta.dev',
         to: payload.to,
         subject,
         html,
@@ -94,7 +94,7 @@ export class EmailTransport {
   </div>
 
   <hr style="margin: 24px 0; border: none; border-top: 1px solid #eee;">
-  <p style="font-size: 12px; color: #999;">DriftWatch — API dependency change monitor</p>
+  <p style="font-size: 12px; color: #999;">APIDelta — API dependency change monitor</p>
 </body>
 </html>`;
   }

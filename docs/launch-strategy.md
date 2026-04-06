@@ -1,4 +1,4 @@
-# DriftWatch — Launch & Distribution Strategy
+# APIDelta — Launch & Distribution Strategy
 
 **Created**: 2026-04-05 (Iteration 23)
 **Constraint**: Async-only distribution. No calls, no conferences, no high-touch sales. Customers come via SEO, ads, PLG, and community content.
@@ -69,7 +69,7 @@
 | Tue | Google Ads | Review first 2 weeks of data. Kill bad keywords, double down on winners. |
 | Wed | SEO | Publish "/use-cases/api-deprecation-monitoring" |
 | Thu | Reddit | Post in r/programming (technical angle) |
-| Fri | LinkedIn | Post: lessons learned from building DriftWatch |
+| Fri | LinkedIn | Post: lessons learned from building APIDelta |
 | Fri | Twitter/X | Thread: "How Stripe, Twilio, and GitHub publish changelog updates" |
 
 ### Week 4: Momentum & Review (Days 22-30)
@@ -91,7 +91,7 @@
 > AI-powered API change monitoring for engineering teams
 
 **Description** (260 chars max):
-> DriftWatch monitors third-party API changelogs and uses AI to classify breaking vs. non-breaking changes. Get Slack and email alerts before breaking changes hit production. Set up in under 2 minutes. Start free with 3 APIs.
+> APIDelta monitors third-party API changelogs and uses AI to classify breaking vs. non-breaking changes. Get Slack and email alerts before breaking changes hit production. Set up in under 2 minutes. Start free with 3 APIs.
 
 **Topics**: Developer Tools, SaaS, Artificial Intelligence, APIs, DevOps
 
@@ -100,7 +100,7 @@
 >
 > The pain is real: you find out about a breaking API change when your error logs explode at 2 AM. The changelog update was buried in a 40-item release note three days ago.
 >
-> DriftWatch fixes this. Paste your API changelog URLs, and our AI reads every update, classifies it by severity, and alerts your team on Slack or email — before the change breaks your code.
+> APIDelta fixes this. Paste your API changelog URLs, and our AI reads every update, classifies it by severity, and alerts your team on Slack or email — before the change breaks your code.
 >
 > **What makes it different:**
 > - AI classification (not basic text diffs) — breaking, deprecation, and informational changes
@@ -141,10 +141,10 @@
 ### Show HN Post
 
 **Title**:
-> Show HN: DriftWatch — AI-powered monitoring for third-party API breaking changes
+> Show HN: APIDelta — AI-powered monitoring for third-party API breaking changes
 
 **Body** (keep short, HN rewards brevity and technical depth):
-> I built DriftWatch because I was tired of finding out about API breaking changes from production error logs.
+> I built APIDelta because I was tired of finding out about API breaking changes from production error logs.
 >
 > It monitors third-party API changelogs (Stripe, Twilio, GitHub, OpenAI, etc.), uses AI to classify each change as breaking, deprecation, or informational, and sends alerts to Slack/email.
 >
@@ -158,7 +158,7 @@
 >
 > Free tier: 3 APIs for 14 days. Paid starts at $49/mo.
 >
-> https://driftwatch.dev
+> https://apidelta.dev
 >
 > Curious what APIs you'd monitor first and if the pricing feels right.
 
@@ -188,7 +188,7 @@
 
 #### r/webdev (~2.5M members)
 - **Angle**: "How do you keep track of breaking changes in your API dependencies?"
-- **Format**: Discussion post asking about pain points, share your approach, mention DriftWatch as what you built to solve it
+- **Format**: Discussion post asking about pain points, share your approach, mention APIDelta as what you built to solve it
 - **Timing**: Tuesday or Wednesday, 10 AM - 12 PM ET
 
 #### r/devops (~350K members)
@@ -212,12 +212,12 @@
 - Technical deep-dive on the AI classification pipeline
 - Show real examples: a Stripe changelog entry classified as BREAKING vs INFO
 - Discuss prompt engineering, structured output, accuracy
-- CTA: "Try it free at driftwatch.dev"
+- CTA: "Try it free at apidelta.dev"
 
 #### Article 2: "5 API Changelog Monitoring Strategies for SaaS Teams" (Week 2)
 - Listicle format (high engagement on Dev.to)
 - Cover: manual checking, RSS readers, custom scripts, generic website monitors, purpose-built tools
-- Position DriftWatch as the purpose-built option
+- Position APIDelta as the purpose-built option
 - Include code snippets showing how painful manual monitoring is
 
 #### Article 3: "Parsing 50+ API Changelog Formats with Cheerio" (Week 3-4)
@@ -243,7 +243,7 @@ Build dedicated pages for each high-intent keyword cluster. These are NOT blog p
 #### Tier 1: High Intent (build first)
 | Keyword Cluster | Target Page | Search Intent |
 |---|---|---|
-| API changelog monitoring | `/use-cases/api-changelog-monitoring` | Exact problem DriftWatch solves |
+| API changelog monitoring | `/use-cases/api-changelog-monitoring` | Exact problem APIDelta solves |
 | API breaking change alerts | `/use-cases/breaking-api-change-alerts` | Exact solution |
 | API deprecation alerts / monitoring | `/use-cases/api-deprecation-monitoring` | Specific pain point |
 | API change detection tool | `/use-cases/api-change-detection` | Tool comparison intent |
@@ -268,7 +268,7 @@ Build dedicated pages for each high-intent keyword cluster. These are NOT blog p
 Each `/use-cases/` page should follow this structure:
 1. **H1**: Keyword-optimized headline (e.g., "API Changelog Monitoring — Automated & AI-Powered")
 2. **Pain section**: 2-3 paragraphs about the problem (e.g., "Your team monitors 15 third-party APIs. Each publishes changes differently...")
-3. **Solution section**: How DriftWatch solves it specifically for this use case
+3. **Solution section**: How APIDelta solves it specifically for this use case
 4. **How it works**: 3-step visual (reuse from landing page)
 5. **Feature highlights**: 3-4 features most relevant to this keyword
 6. **Pricing CTA**: Starter/Pro with free trial mention
@@ -301,13 +301,13 @@ The core campaign setup is in `docs/deploy.md` (Section 8). This section adds ad
 - H1: `API Breaking Changes Caught You Off Guard?`
 - H2: `AI Alerts Before They Hit Production`
 - H3: `14-Day Free Trial — No Card Required`
-- Desc: `DriftWatch monitors API changelogs and uses AI to classify breaking changes. Slack and email alerts. Setup in under 2 minutes.`
+- Desc: `APIDelta monitors API changelogs and uses AI to classify breaking changes. Slack and email alerts. Setup in under 2 minutes.`
 
 **Variation B (Solution-led)**:
 - H1: `AI-Powered API Changelog Monitoring`
 - H2: `Know About Breaking Changes First`
 - H3: `Start Free — Monitor 3 APIs`
-- Desc: `Stop reading changelogs manually. DriftWatch crawls 50+ changelog formats, classifies changes by severity, and alerts your team.`
+- Desc: `Stop reading changelogs manually. APIDelta crawls 50+ changelog formats, classifies changes by severity, and alerts your team.`
 
 **Variation C (Price-led)**:
 - H1: `API Change Monitoring from $49/mo`
@@ -338,7 +338,7 @@ The core campaign setup is in `docs/deploy.md` (Section 8). This section adds ad
 - **Priority**: HIGH — Slack alerts are a core feature
 - **Action**: Submit to [Slack App Directory](https://api.slack.com/start/distributing)
 - **Requirements**: OAuth flow for Slack workspace installation (currently using webhook URLs — may need to add OAuth for directory listing)
-- **Listing copy**: "Get AI-classified alerts when your API dependencies publish breaking changes. DriftWatch monitors changelogs and sends alerts to your Slack channels."
+- **Listing copy**: "Get AI-classified alerts when your API dependencies publish breaking changes. APIDelta monitors changelogs and sends alerts to your Slack channels."
 - **Timeline**: Submit in week 1, approval takes 1-4 weeks
 - **Note**: Being in the Slack directory provides ongoing organic discovery from teams searching for monitoring tools
 
@@ -374,11 +374,11 @@ The core campaign setup is in `docs/deploy.md` (Section 8). This section adds ad
 
 ### Outreach Email Template
 
-Subject: `DriftWatch — AI changelog monitoring for API dependencies (just launched)`
+Subject: `APIDelta — AI changelog monitoring for API dependencies (just launched)`
 
 > Hi [Name],
 >
-> I just launched DriftWatch — a tool that monitors third-party API changelogs and uses AI to classify breaking vs. non-breaking changes, then alerts teams via Slack/email.
+> I just launched APIDelta — a tool that monitors third-party API changelogs and uses AI to classify breaking vs. non-breaking changes, then alerts teams via Slack/email.
 >
 > It's solving the problem of engineering teams finding out about API breaking changes from production errors instead of proactive monitoring. AI classification means you only get alerted on what actually matters.
 >
@@ -403,12 +403,12 @@ Subject: `DriftWatch — AI changelog monitoring for API dependencies (just laun
 
 ### LinkedIn (primary social channel for B2B SaaS)
 
-**Profile optimization**: Make sure Jobelo's LinkedIn headline mentions DriftWatch. E.g., "Principal Engineer | Building DriftWatch — AI-powered API change monitoring"
+**Profile optimization**: Make sure Jobelo's LinkedIn headline mentions APIDelta. E.g., "Principal Engineer | Building APIDelta — AI-powered API change monitoring"
 
 #### Post 1: Launch Announcement (Day 1)
 > Every engineering team has a horror story about a third-party API breaking change they found out about from their error logs.
 >
-> I built DriftWatch to fix that.
+> I built APIDelta to fix that.
 >
 > It monitors API changelogs (Stripe, Twilio, GitHub, OpenAI, etc.), uses AI to classify every change by severity, and alerts your team on Slack or email — before it breaks your code.
 >
@@ -434,7 +434,7 @@ Subject: `DriftWatch — AI changelog monitoring for API dependencies (just laun
 > The math works itself out pretty quickly.
 
 #### Post 3: Lessons Learned (Day 12)
-> Building a micro-SaaS as a solo engineer: what I learned shipping DriftWatch in 4 weeks.
+> Building a micro-SaaS as a solo engineer: what I learned shipping APIDelta in 4 weeks.
 >
 > [3-5 bullet points about technical or business decisions]
 >
@@ -447,19 +447,19 @@ Subject: `DriftWatch — AI changelog monitoring for API dependencies (just laun
 #### Thread 1: Launch Thread (Day 1)
 > 1/ I built an AI-powered API change monitor because I was tired of finding out about breaking changes from production errors.
 >
-> It's called DriftWatch. Here's what it does and why I built it. [thread emoji]
+> It's called APIDelta. Here's what it does and why I built it. [thread emoji]
 >
 > 2/ The problem: you integrate with 10+ third-party APIs. Each publishes changes differently — HTML pages, RSS feeds, GitHub Releases. No standard format. No standard notification.
 >
 > 3/ When Stripe deprecates an endpoint or Twilio changes an auth flow, you find out when your code breaks. Not from the changelog.
 >
-> 4/ DriftWatch crawls those changelogs automatically. AI reads every entry and classifies it: BREAKING, DEPRECATION, or INFO. You get a Slack message or email with exactly what changed and how severe it is.
+> 4/ APIDelta crawls those changelogs automatically. AI reads every entry and classifies it: BREAKING, DEPRECATION, or INFO. You get a Slack message or email with exactly what changed and how severe it is.
 >
 > 5/ Setup takes under 2 minutes. Paste your changelog URLs. Set alert rules. Done. No agents, no SDKs, nothing to install.
 >
 > 6/ It's live today. Free trial: 3 APIs for 14 days. Plans start at $49/mo.
 >
-> driftwatch.dev
+> apidelta.dev
 >
 > What APIs would you monitor first?
 
@@ -512,7 +512,7 @@ Subject: `DriftWatch — AI changelog monitoring for API dependencies (just laun
 - [ ] Respond to every PH comment within 30 minutes
 - [ ] Monitor HN for comments and respond thoughtfully
 - [ ] Share PH link in relevant Slack/Discord communities (where appropriate)
-- [ ] Retweet/reshare anyone who mentions DriftWatch
+- [ ] Retweet/reshare anyone who mentions APIDelta
 
 ### Evening (3 PM - 11:59 PM PT)
 - [ ] Final round of PH comment responses

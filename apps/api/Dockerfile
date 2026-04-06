@@ -14,14 +14,14 @@ COPY apps/api/prisma/ apps/api/prisma/
 RUN pnpm install --frozen-lockfile
 
 # Generate Prisma client
-RUN pnpm --filter @driftwatch/api prisma generate
+RUN pnpm --filter @apidelta/api prisma generate
 
 # ── Stage 2: Build NestJS ──
 FROM deps AS builder
 
 COPY apps/api/ apps/api/
 
-RUN pnpm --filter @driftwatch/api build
+RUN pnpm --filter @apidelta/api build
 
 # ── Stage 3: Production image ──
 FROM node:20-alpine AS runner
@@ -29,8 +29,8 @@ FROM node:20-alpine AS runner
 RUN corepack enable && corepack prepare pnpm@9 --activate
 
 # Create non-root user
-RUN addgroup --system --gid 1001 driftwatch && \
-    adduser --system --uid 1001 --ingroup driftwatch driftwatch
+RUN addgroup --system --gid 1001 apidelta && \
+    adduser --system --uid 1001 --ingroup apidelta apidelta
 
 WORKDIR /app
 
@@ -54,8 +54,8 @@ COPY apps/api/scripts/start.sh apps/api/scripts/start.sh
 RUN chmod +x apps/api/scripts/start.sh
 
 # Switch to non-root user
-RUN chown -R driftwatch:driftwatch /app
-USER driftwatch
+RUN chown -R apidelta:apidelta /app
+USER apidelta
 
 ENV NODE_ENV=production
 EXPOSE 3001

@@ -40,7 +40,7 @@ export default async function DashboardLayout({
         <div className="flex h-16 items-center gap-2 border-b border-gray-800 px-6">
           <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:rounded-lg">
             <Zap aria-hidden="true" className="h-5 w-5 text-violet-400" />
-            DriftWatch
+            APIDelta
           </Link>
         </div>
 

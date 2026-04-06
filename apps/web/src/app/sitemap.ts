@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://driftwatch.dev';
+  const baseUrl = 'https://apidelta.dev';
 
   return [
     {

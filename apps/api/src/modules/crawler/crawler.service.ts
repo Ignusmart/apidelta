@@ -106,7 +106,7 @@ export class CrawlerService {
       // Fetch the page
       const response = await fetch(source.url, {
         headers: {
-          'User-Agent': 'DriftWatch/1.0 (changelog-monitor)',
+          'User-Agent': 'APIDelta/1.0 (changelog-monitor)',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         },
         signal: AbortSignal.timeout(30_000),

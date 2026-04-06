@@ -20,7 +20,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: process.env.NODE_ENV === 'production'
-      ? [process.env.NEXTAUTH_URL ?? 'https://driftwatch.dev']
+      ? [process.env.NEXTAUTH_URL ?? 'https://apidelta.dev']
       : ['http://localhost:3000'],
     credentials: true,
   });
@@ -29,7 +29,7 @@ async function bootstrap() {
   const port = configService.get<number>('API_PORT', 3001);
 
   await app.listen(port);
-  console.log(`DriftWatch API running on port ${port}`);
+  console.log(`APIDelta API running on port ${port}`);
 }
 
 bootstrap();

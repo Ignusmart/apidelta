@@ -7,14 +7,14 @@ import { SubmitButton } from '../submit-button';
 export const metadata: Metadata = {
   title: 'Sign in',
   description:
-    'Sign in to your DriftWatch account to monitor API changelogs and manage breaking change alerts.',
+    'Sign in to your APIDelta account to monitor API changelogs and manage breaking change alerts.',
   openGraph: {
-    title: 'Sign in | DriftWatch',
+    title: 'Sign in | APIDelta',
     description:
-      'Sign in to your DriftWatch account to monitor API changelogs and manage breaking change alerts.',
-    url: 'https://driftwatch.dev/sign-in',
+      'Sign in to your APIDelta account to monitor API changelogs and manage breaking change alerts.',
+    url: 'https://apidelta.dev/sign-in',
   },
-  alternates: { canonical: 'https://driftwatch.dev/sign-in' },
+  alternates: { canonical: 'https://apidelta.dev/sign-in' },
 };
 
 export default async function SignInPage({
@@ -36,7 +36,7 @@ export default async function SignInPage({
           Welcome back
         </h1>
         <p className="mb-6 text-center text-sm text-gray-400">
-          Sign in to your DriftWatch account
+          Sign in to your APIDelta account
         </p>
 
         {error && (

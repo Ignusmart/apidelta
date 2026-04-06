@@ -278,7 +278,7 @@ export default function SourcesPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">API Sources</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Add, remove, and monitor the API changelogs DriftWatch crawls for your team.
+            Add, remove, and monitor the API changelogs APIDelta crawls for your team.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -499,7 +499,7 @@ export default function SourcesPage() {
             <Rss aria-hidden="true" className="mx-auto h-10 w-10 text-gray-700" />
             <p className="mt-4 text-sm text-gray-500">No API sources yet.</p>
             <p className="mt-1 text-xs text-gray-600">
-              Paste a changelog URL and DriftWatch starts monitoring within minutes.
+              Paste a changelog URL and APIDelta starts monitoring within minutes.
             </p>
             <button
               onClick={() => setShowAddForm(true)}

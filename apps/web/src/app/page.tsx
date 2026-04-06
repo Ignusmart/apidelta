@@ -18,23 +18,23 @@ import {
 // SEO metadata (50-60 char title, 150-160 char description)
 // ---------------------------------------------------------------------------
 export const metadata: Metadata = {
-  title: "DriftWatch — AI-Powered API Change Monitoring",
+  title: "APIDelta — AI-Powered API Change Monitoring",
   description:
     "Monitor third-party API changelogs, classify breaking changes with AI, and alert your team via Slack and email. Smarter alerts at a fraction of the price.",
   openGraph: {
-    title: "DriftWatch — AI-Powered API Change Monitoring",
+    title: "APIDelta — AI-Powered API Change Monitoring",
     description:
       "Stop finding out about breaking API changes from your error logs. AI-classified alerts before changes break your code.",
     type: "website",
-    url: "https://driftwatch.dev",
+    url: "https://apidelta.dev",
   },
   twitter: {
     card: "summary_large_image",
-    title: "DriftWatch — API Change Monitoring",
+    title: "APIDelta — API Change Monitoring",
     description:
       "AI-classified alerts for third-party API breaking changes. Slack + email. $49/mo.",
   },
-  alternates: { canonical: "https://driftwatch.dev" },
+  alternates: { canonical: "https://apidelta.dev" },
 };
 
 // ---------------------------------------------------------------------------
@@ -57,7 +57,7 @@ const FEATURES = [
     icon: Rss,
     title: "50+ Changelog Formats",
     description:
-      "HTML pages, RSS feeds, GitHub Releases — we handle the messy reality of how APIs publish changes. Paste a URL and DriftWatch figures out the rest.",
+      "HTML pages, RSS feeds, GitHub Releases — we handle the messy reality of how APIs publish changes. Paste a URL and APIDelta figures out the rest.",
   },
   {
     icon: Users,
@@ -69,7 +69,7 @@ const FEATURES = [
     icon: Clock,
     title: "Hourly Monitoring",
     description:
-      "DriftWatch checks every monitored API on the hour. When a breaking change lands, you know within 60 minutes — not when your CI pipeline fails at 2 AM.",
+      "APIDelta checks every monitored API on the hour. When a breaking change lands, you know within 60 minutes — not when your CI pipeline fails at 2 AM.",
   },
   {
     icon: Shield,
@@ -139,20 +139,20 @@ const PLANS = [
 
 const FAQS = [
   {
-    q: "What APIs can DriftWatch monitor?",
-    a: "Any API that publishes a changelog, release notes, or status page. We handle HTML pages, RSS feeds, and GitHub Releases out of the box. If it has a URL, DriftWatch can crawl it.",
+    q: "What APIs can APIDelta monitor?",
+    a: "Any API that publishes a changelog, release notes, or status page. We handle HTML pages, RSS feeds, and GitHub Releases out of the box. If it has a URL, APIDelta can crawl it.",
   },
   {
     q: "How does the AI classification work?",
-    a: "DriftWatch uses AI to read each changelog entry and classify it by type (breaking, deprecation, non-breaking, informational) and severity (critical, high, medium, low). It also extracts affected endpoints and generates a plain-English summary your whole team can act on.",
+    a: "APIDelta uses AI to read each changelog entry and classify it by type (breaking, deprecation, non-breaking, informational) and severity (critical, high, medium, low). It also extracts affected endpoints and generates a plain-English summary your whole team can act on.",
   },
   {
     q: "How is this different from basic change detection tools?",
-    a: "Most monitoring tools charge $149-749/mo for basic text diffing with no intelligence layer. DriftWatch uses AI to understand what changed and whether it affects your integration — at a fraction of the cost. You get smarter alerts for less money.",
+    a: "Most monitoring tools charge $149-749/mo for basic text diffing with no intelligence layer. APIDelta uses AI to understand what changed and whether it affects your integration — at a fraction of the cost. You get smarter alerts for less money.",
   },
   {
     q: "Do I need to install anything?",
-    a: "Nothing. DriftWatch is fully hosted. Sign up, paste your API changelog URLs, configure your alert channels, and you are done. No agents to deploy, no SDKs to integrate, no CI plugins to maintain.",
+    a: "Nothing. APIDelta is fully hosted. Sign up, paste your API changelog URLs, configure your alert channels, and you are done. No agents to deploy, no SDKs to integrate, no CI plugins to maintain.",
   },
   {
     q: "What happens during the free trial?",
@@ -164,7 +164,7 @@ const FAQS = [
   },
   {
     q: "Is my data secure?",
-    a: "All data is encrypted in transit (TLS) and at rest. DriftWatch only stores changelog content and your alert configuration — never your source code or API keys. Each team's data is fully isolated.",
+    a: "All data is encrypted in transit (TLS) and at rest. APIDelta only stores changelog content and your alert configuration — never your source code or API keys. Each team's data is fully isolated.",
   },
 ];
 
@@ -181,8 +181,8 @@ const FAQ_SCHEMA = {
 const ORGANIZATION_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "DriftWatch",
-  url: "https://driftwatch.dev",
+  name: "APIDelta",
+  url: "https://apidelta.dev",
   description:
     "AI-powered API changelog monitoring and breaking change alerts for engineering teams.",
 };
@@ -190,10 +190,10 @@ const ORGANIZATION_SCHEMA = {
 const SOFTWARE_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "DriftWatch",
+  name: "APIDelta",
   applicationCategory: "DeveloperApplication",
   operatingSystem: "Web",
-  url: "https://driftwatch.dev",
+  url: "https://apidelta.dev",
   description:
     "Monitor third-party API changelogs, classify breaking changes with AI, and alert your team via Slack and email.",
   offers: [
@@ -203,7 +203,7 @@ const SOFTWARE_SCHEMA = {
       price: "49",
       priceCurrency: "USD",
       priceValidUntil: "2027-12-31",
-      url: "https://driftwatch.dev/sign-up",
+      url: "https://apidelta.dev/sign-up",
     },
     {
       "@type": "Offer",
@@ -211,7 +211,7 @@ const SOFTWARE_SCHEMA = {
       price: "99",
       priceCurrency: "USD",
       priceValidUntil: "2027-12-31",
-      url: "https://driftwatch.dev/sign-up",
+      url: "https://apidelta.dev/sign-up",
     },
   ],
 };
@@ -239,7 +239,7 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-2 text-lg font-bold tracking-tight">
             <Zap aria-hidden="true" className="h-5 w-5 text-violet-400" />
-            DriftWatch
+            APIDelta
           </div>
           <div className="hidden items-center gap-8 text-sm text-gray-400 md:flex">
             <a href="#features" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
@@ -307,7 +307,7 @@ export default function HomePage() {
           {/* Subhead — Agitate + Solution */}
           <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-400 sm:text-xl">
             Third-party APIs ship breaking changes without warning. Your team
-            finds out when production breaks at 2 AM. DriftWatch monitors 50+
+            finds out when production breaks at 2 AM. APIDelta monitors 50+
             API changelogs every hour, uses AI to classify what matters, and
             alerts your team in Slack or email —{" "}
             <span className="text-white">before anything breaks</span>.
@@ -372,7 +372,7 @@ export default function HomePage() {
               Stop reading changelogs manually
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-400">
-              DriftWatch crawls changelogs, classifies what changed, and sends
+              APIDelta crawls changelogs, classifies what changed, and sends
               the right alert to the right engineer — end to end.
             </p>
           </div>
@@ -459,12 +459,12 @@ export default function HomePage() {
           </div>
 
           {/* Mock Slack message */}
-          <div className="mx-auto max-w-xl rounded-xl border border-gray-800 bg-gray-900 p-6" role="img" aria-label="Example DriftWatch Slack alert showing a critical breaking change from Stripe API">
+          <div className="mx-auto max-w-xl rounded-xl border border-gray-800 bg-gray-900 p-6" role="img" aria-label="Example APIDelta Slack alert showing a critical breaking change from Stripe API">
             <div className="mb-3 flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded bg-violet-500/20">
                 <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
               </div>
-              <span className="font-semibold">DriftWatch</span>
+              <span className="font-semibold">APIDelta</span>
               <span className="text-xs text-gray-500">2:34 PM</span>
             </div>
             <div className="space-y-3 text-sm">
@@ -538,7 +538,7 @@ export default function HomePage() {
             </h2>
             <p className="mx-auto max-w-xl text-gray-400">
               Most monitoring platforms charge $149-749/mo for basic text
-              diffing with no intelligence layer. DriftWatch uses AI to
+              diffing with no intelligence layer. APIDelta uses AI to
               understand what changed and why it matters — starting at $49/mo.
             </p>
           </div>
@@ -677,7 +677,7 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 sm:flex-row">
           <div className="flex items-center gap-2 text-sm font-bold">
             <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
-            DriftWatch
+            APIDelta
           </div>
           <nav aria-label="Footer navigation" className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
             <a href="#features" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
@@ -703,7 +703,7 @@ export default function HomePage() {
             </a>
           </nav>
           <p className="text-xs text-gray-600">
-            &copy; {new Date().getFullYear()} DriftWatch. All rights reserved.
+            &copy; {new Date().getFullYear()} APIDelta. All rights reserved.
           </p>
         </div>
       </footer>

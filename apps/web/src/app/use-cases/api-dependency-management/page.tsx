@@ -21,16 +21,16 @@ import {
 export const metadata: Metadata = {
   title: "API Dependency Management for Engineering Teams",
   description:
-    "Track and manage your third-party API dependencies in one place. DriftWatch gives engineering leads a single dashboard to monitor changes, assign ownership, and prevent surprise breakages.",
+    "Track and manage your third-party API dependencies in one place. APIDelta gives engineering leads a single dashboard to monitor changes, assign ownership, and prevent surprise breakages.",
   alternates: {
-    canonical: "https://driftwatch.dev/use-cases/api-dependency-management",
+    canonical: "https://apidelta.dev/use-cases/api-dependency-management",
   },
   openGraph: {
     title: "API Dependency Management for Engineering Teams",
     description:
       "One dashboard for all your API dependencies. Track changes, assign ownership, and prevent surprise breakages across your entire integration surface.",
     type: "website",
-    url: "https://driftwatch.dev/use-cases/api-dependency-management",
+    url: "https://apidelta.dev/use-cases/api-dependency-management",
   },
   twitter: {
     card: "summary_large_image",
@@ -90,7 +90,7 @@ const FAQS = [
   },
   {
     q: "Can I assign different APIs to different team members?",
-    a: "Yes. DriftWatch supports team-based API ownership. Assign each monitored API to the engineer or team responsible for that integration. Alerts are routed to the owner, so the payments engineer gets Stripe change alerts and the communications engineer gets Twilio alerts.",
+    a: "Yes. APIDelta supports team-based API ownership. Assign each monitored API to the engineer or team responsible for that integration. Alerts are routed to the owner, so the payments engineer gets Stripe change alerts and the communications engineer gets Twilio alerts.",
   },
   {
     q: "How many APIs can I monitor?",
@@ -98,7 +98,7 @@ const FAQS = [
   },
   {
     q: "Can engineering leads use this for API risk assessment?",
-    a: "Yes. DriftWatch provides visibility into change velocity per API, severity distribution, and historical changes. Engineering leads can use this data to assess which dependencies are high-risk (frequent breaking changes) and allocate maintenance time accordingly.",
+    a: "Yes. APIDelta provides visibility into change velocity per API, severity distribution, and historical changes. Engineering leads can use this data to assess which dependencies are high-risk (frequent breaking changes) and allocate maintenance time accordingly.",
   },
 ];
 
@@ -111,7 +111,7 @@ export default function ApiDependencyManagementPage() {
         <SeoHero
           title="API Dependency Management"
           gradientText="for Engineering Teams"
-          description="Your product calls 20 third-party APIs. Who owns each integration? What changed last week? Is anything about to break? DriftWatch gives engineering leads a single dashboard to track API dependencies, monitor changes, and prevent surprise breakages."
+          description="Your product calls 20 third-party APIs. Who owns each integration? What changed last week? Is anything about to break? APIDelta gives engineering leads a single dashboard to track API dependencies, monitor changes, and prevent surprise breakages."
           ctaText="Start managing API dependencies"
         />
 
@@ -142,7 +142,7 @@ export default function ApiDependencyManagementPage() {
                 external API risk.
               </p>
               <p className="text-white">
-                DriftWatch closes this gap. Add your API changelog URLs, assign
+                APIDelta closes this gap. Add your API changelog URLs, assign
                 ownership, and get a single dashboard with AI-classified changes
                 across every dependency.
               </p>

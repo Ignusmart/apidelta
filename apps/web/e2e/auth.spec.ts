@@ -10,11 +10,11 @@ test.describe('Auth pages', () => {
 
     test('renders sign-in form with heading', async ({ page }) => {
       await expect(page.getByRole('heading', { name: /welcome back/i })).toBeVisible();
-      await expect(page.getByText(/sign in to your driftwatch account/i)).toBeVisible();
+      await expect(page.getByText(/sign in to your apidelta account/i)).toBeVisible();
     });
 
-    test('shows DriftWatch logo linking to home', async ({ page }) => {
-      const logo = page.getByRole('link', { name: /driftwatch/i }).first();
+    test('shows APIDelta logo linking to home', async ({ page }) => {
+      const logo = page.getByRole('link', { name: /apidelta/i }).first();
       await expect(logo).toBeVisible();
       await expect(logo).toHaveAttribute('href', '/');
     });
@@ -75,8 +75,8 @@ test.describe('Auth pages', () => {
       await expect(page.getByText(/14-day free trial/i).first()).toBeVisible();
     });
 
-    test('shows DriftWatch logo linking to home', async ({ page }) => {
-      const logo = page.getByRole('link', { name: /driftwatch/i }).first();
+    test('shows APIDelta logo linking to home', async ({ page }) => {
+      const logo = page.getByRole('link', { name: /apidelta/i }).first();
       await expect(logo).toBeVisible();
       await expect(logo).toHaveAttribute('href', '/');
     });

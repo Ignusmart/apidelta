@@ -14,14 +14,14 @@ export const metadata: Metadata = {
   description:
     "Compare manual changelog checking against automated API monitoring. See why engineering teams switch from spreadsheets and RSS readers to AI-powered monitoring tools.",
   alternates: {
-    canonical: "https://driftwatch.dev/compare/manual-vs-automated",
+    canonical: "https://apidelta.dev/compare/manual-vs-automated",
   },
   openGraph: {
     title: "Manual vs Automated API Changelog Monitoring",
     description:
       "Manual changelog checking vs automated monitoring: the real comparison. Coverage, accuracy, cost, and team impact.",
     type: "website",
-    url: "https://driftwatch.dev/compare/manual-vs-automated",
+    url: "https://apidelta.dev/compare/manual-vs-automated",
   },
   twitter: {
     card: "summary_large_image",
@@ -85,11 +85,11 @@ const FAQS = [
   },
   {
     q: "What about writing a custom script to check changelogs?",
-    a: "Custom scripts are a common approach — and they work initially. The maintenance burden grows quickly: each API publishes changes in a different format, HTML structures change without notice, and you need to handle edge cases (entries without dates, nested changelogs, JS-rendered pages). DriftWatch handles all of this out of the box.",
+    a: "Custom scripts are a common approach — and they work initially. The maintenance burden grows quickly: each API publishes changes in a different format, HTML structures change without notice, and you need to handle edge cases (entries without dates, nested changelogs, JS-rendered pages). APIDelta handles all of this out of the box.",
   },
   {
     q: "How much does automated monitoring actually save?",
-    a: "If manual checking takes 2 hours per week (conservative for 10+ APIs), that is 100+ hours per year of engineer time — worth $10,000+ at fully loaded cost. DriftWatch costs $588-1,188/year. The ROI is clear before you even factor in prevented incidents.",
+    a: "If manual checking takes 2 hours per week (conservative for 10+ APIs), that is 100+ hours per year of engineer time — worth $10,000+ at fully loaded cost. APIDelta costs $588-1,188/year. The ROI is clear before you even factor in prevented incidents.",
   },
   {
     q: "When should I stick with manual monitoring?",
@@ -159,7 +159,7 @@ export default function ManualVsAutomatedPage() {
         {/* CTA */}
         <SeoCtaBanner
           headline="Replace manual checking with AI-powered monitoring."
-          subtext="DriftWatch crawls your API changelogs every hour, classifies changes by severity, and alerts the right engineer. No more spreadsheets, no more missed changes."
+          subtext="APIDelta crawls your API changelogs every hour, classifies changes by severity, and alerts the right engineer. No more spreadsheets, no more missed changes."
         />
       </main>
 

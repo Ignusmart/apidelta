@@ -46,7 +46,7 @@ const API_SOURCES = [
 ];
 
 async function main() {
-  console.log('Seeding DriftWatch database...');
+  console.log('Seeding APIDelta database...');
 
   // Create a demo team
   const team = await prisma.team.upsert({
@@ -64,10 +64,10 @@ async function main() {
 
   // Create a demo user
   const user = await prisma.user.upsert({
-    where: { email: 'demo@driftwatch.dev' },
+    where: { email: 'demo@apidelta.dev' },
     update: {},
     create: {
-      email: 'demo@driftwatch.dev',
+      email: 'demo@apidelta.dev',
       name: 'Demo User',
       teamId: team.id,
       isOwner: true,

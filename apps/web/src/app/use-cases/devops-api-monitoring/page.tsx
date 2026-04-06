@@ -14,16 +14,16 @@ import {
 export const metadata: Metadata = {
   title: "API Monitoring for DevOps — Changelog Alerts in Your Pipeline",
   description:
-    "Add third-party API changelog monitoring to your DevOps stack. DriftWatch detects breaking changes, version deprecations, and sunset notices — delivered to Slack alongside your existing alerts.",
+    "Add third-party API changelog monitoring to your DevOps stack. APIDelta detects breaking changes, version deprecations, and sunset notices — delivered to Slack alongside your existing alerts.",
   alternates: {
-    canonical: "https://driftwatch.dev/use-cases/devops-api-monitoring",
+    canonical: "https://apidelta.dev/use-cases/devops-api-monitoring",
   },
   openGraph: {
     title: "API Monitoring for DevOps — Changelog Alerts in Your Pipeline",
     description:
       "Third-party API changelog monitoring for DevOps teams. Detect breaking changes and deprecations alongside your existing monitoring stack.",
     type: "website",
-    url: "https://driftwatch.dev/use-cases/devops-api-monitoring",
+    url: "https://apidelta.dev/use-cases/devops-api-monitoring",
   },
   twitter: {
     card: "summary_large_image",
@@ -38,7 +38,7 @@ const FEATURES = [
     icon: Monitor,
     title: "Complements Your Monitoring Stack",
     description:
-      "You already monitor uptime, latency, and error rates. DriftWatch adds the missing layer: monitoring what your API providers announce before changes hit your metrics. Catch the cause, not just the symptoms.",
+      "You already monitor uptime, latency, and error rates. APIDelta adds the missing layer: monitoring what your API providers announce before changes hit your metrics. Catch the cause, not just the symptoms.",
   },
   {
     icon: Bell,
@@ -56,42 +56,42 @@ const FEATURES = [
     icon: Clock,
     title: "Hourly Crawl Cadence",
     description:
-      "DriftWatch checks every monitored API on the hour. When a provider pushes a breaking change at 3 PM, your team knows by 4 PM — not next Monday when someone manually checks the changelog.",
+      "APIDelta checks every monitored API on the hour. When a provider pushes a breaking change at 3 PM, your team knows by 4 PM — not next Monday when someone manually checks the changelog.",
   },
   {
     icon: Terminal,
     title: "Zero Infrastructure to Manage",
     description:
-      "No agents, sidecars, or self-hosted crawlers. Add your API changelog URLs through the dashboard and monitoring starts immediately. DriftWatch handles the crawling, parsing, and classification infrastructure.",
+      "No agents, sidecars, or self-hosted crawlers. Add your API changelog URLs through the dashboard and monitoring starts immediately. APIDelta handles the crawling, parsing, and classification infrastructure.",
   },
   {
     icon: Shield,
     title: "Audit Trail for Post-Mortems",
     description:
-      "When a post-mortem asks whether you knew about an API change, the answer is in your DriftWatch dashboard. Every crawl, classification, and alert is logged with timestamps for full accountability.",
+      "When a post-mortem asks whether you knew about an API change, the answer is in your APIDelta dashboard. Every crawl, classification, and alert is logged with timestamps for full accountability.",
   },
 ];
 
 const FAQS = [
   {
-    q: "How does DriftWatch fit into my existing monitoring stack?",
-    a: "DriftWatch is not a replacement for uptime monitoring (Datadog, PagerDuty) or APM tools. It is a complementary layer that monitors what your API providers announce — not what your own systems measure. Think of it as monitoring the changelog, not the endpoint. Alerts go to Slack and email, fitting into your existing alert routing.",
+    q: "How does APIDelta fit into my existing monitoring stack?",
+    a: "APIDelta is not a replacement for uptime monitoring (Datadog, PagerDuty) or APM tools. It is a complementary layer that monitors what your API providers announce — not what your own systems measure. Think of it as monitoring the changelog, not the endpoint. Alerts go to Slack and email, fitting into your existing alert routing.",
   },
   {
     q: "Is this the same as API uptime monitoring?",
-    a: "No. Uptime monitoring checks if an API endpoint is responding. DriftWatch monitors the API provider's changelog for announced changes — breaking changes, deprecations, version bumps, and sunset notices. You need both: uptime monitoring catches unannounced outages, DriftWatch catches announced changes that could break your integration if you do not adapt.",
+    a: "No. Uptime monitoring checks if an API endpoint is responding. APIDelta monitors the API provider's changelog for announced changes — breaking changes, deprecations, version bumps, and sunset notices. You need both: uptime monitoring catches unannounced outages, APIDelta catches announced changes that could break your integration if you do not adapt.",
   },
   {
     q: "Can I filter alerts by severity?",
-    a: "Yes. DriftWatch classifies every changelog entry as breaking, deprecation, non-breaking, or informational with severity levels (critical, high, medium, low). You can configure alert thresholds per channel — for example, only critical and high severity changes go to #incidents, while everything goes to #api-updates.",
+    a: "Yes. APIDelta classifies every changelog entry as breaking, deprecation, non-breaking, or informational with severity levels (critical, high, medium, low). You can configure alert thresholds per channel — for example, only critical and high severity changes go to #incidents, while everything goes to #api-updates.",
   },
   {
     q: "How does this help with change management?",
-    a: "Third-party API changes are a form of externally-imposed change management. DriftWatch gives your team advance notice of changes that require action, including the timeline and scope. This lets you plan migrations during sprints instead of responding to incidents. Every change is logged, making it auditable for compliance frameworks like SOC 2.",
+    a: "Third-party API changes are a form of externally-imposed change management. APIDelta gives your team advance notice of changes that require action, including the timeline and scope. This lets you plan migrations during sprints instead of responding to incidents. Every change is logged, making it auditable for compliance frameworks like SOC 2.",
   },
   {
     q: "What if I use Terraform or IaC for my cloud APIs?",
-    a: "Infrastructure-as-code manages your configuration of cloud services, but it does not monitor when those services change their API behavior. A cloud provider can deprecate an API version that your Terraform modules depend on. DriftWatch monitors those provider changelogs so you know about deprecations before your next terraform apply fails.",
+    a: "Infrastructure-as-code manages your configuration of cloud services, but it does not monitor when those services change their API behavior. A cloud provider can deprecate an API version that your Terraform modules depend on. APIDelta monitors those provider changelogs so you know about deprecations before your next terraform apply fails.",
   },
 ];
 
@@ -104,7 +104,7 @@ export default function DevopsApiMonitoringPage() {
         <SeoHero
           title="API Monitoring for"
           gradientText="DevOps Teams"
-          description="Your stack monitors uptime, latency, and error rates. But when a third-party API publishes a breaking change, you find out from production errors — not from the changelog. DriftWatch adds the missing layer to your monitoring stack."
+          description="Your stack monitors uptime, latency, and error rates. But when a third-party API publishes a breaking change, you find out from production errors — not from the changelog. APIDelta adds the missing layer to your monitoring stack."
           ctaText="Add changelog monitoring to your stack"
         />
 
@@ -130,7 +130,7 @@ export default function DevopsApiMonitoringPage() {
                 gives your team weeks to prepare instead of minutes to react.
               </p>
               <p className="text-white">
-                DriftWatch fills this gap by monitoring the one data source your
+                APIDelta fills this gap by monitoring the one data source your
                 existing tools cannot see: your API providers' changelogs. It is
                 not a replacement for your monitoring stack — it is the early
                 warning system that makes the rest of your stack less noisy.
@@ -166,7 +166,7 @@ export default function DevopsApiMonitoringPage() {
         {/* CTA */}
         <SeoCtaBanner
           headline="Add the missing layer to your monitoring stack."
-          subtext="DriftWatch monitors third-party API changelogs hourly and alerts your team in Slack when breaking changes, deprecations, or version bumps are detected. Zero infrastructure to manage."
+          subtext="APIDelta monitors third-party API changelogs hourly and alerts your team in Slack when breaking changes, deprecations, or version bumps are detected. Zero infrastructure to manage."
         />
       </main>
 

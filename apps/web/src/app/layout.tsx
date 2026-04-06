@@ -11,11 +11,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'DriftWatch — AI-Powered API Change Monitoring',
-    template: '%s | DriftWatch',
+    default: 'APIDelta — AI-Powered API Change Monitoring',
+    template: '%s | APIDelta',
   },
   description:
-    'Stop finding out about breaking API changes from your error logs. DriftWatch monitors third-party API changelogs, classifies changes with AI, and alerts your team via Slack and email.',
+    'Stop finding out about breaking API changes from your error logs. APIDelta monitors third-party API changelogs, classifies changes with AI, and alerts your team via Slack and email.',
   keywords: [
     'API monitoring',
     'API changelog monitoring',
@@ -25,24 +25,24 @@ export const metadata: Metadata = {
     'API drift',
     'developer tools',
   ],
-  metadataBase: new URL('https://driftwatch.dev'),
+  metadataBase: new URL('https://apidelta.dev'),
   robots: { index: true, follow: true },
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    siteName: 'DriftWatch',
-    title: 'DriftWatch — AI-Powered API Change Monitoring',
+    siteName: 'APIDelta',
+    title: 'APIDelta — AI-Powered API Change Monitoring',
     description:
       'Monitor third-party API changelogs, classify breaking changes with AI, and alert your team via Slack and email before anything breaks.',
-    url: 'https://driftwatch.dev',
+    url: 'https://apidelta.dev',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'DriftWatch — AI-Powered API Change Monitoring',
+    title: 'APIDelta — AI-Powered API Change Monitoring',
     description:
       'AI-classified alerts for third-party API breaking changes. Slack + email. From $49/mo.',
   },
-  alternates: { canonical: 'https://driftwatch.dev' },
+  alternates: { canonical: 'https://apidelta.dev' },
 };
 
 export default function RootLayout({

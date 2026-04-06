@@ -26,7 +26,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           pass: process.env.SMTP_PASS ?? '',
         },
       },
-      from: process.env.EMAIL_FROM ?? 'DriftWatch <noreply@driftwatch.dev>',
+      from: process.env.EMAIL_FROM ?? 'APIDelta <noreply@apidelta.dev>',
     }),
   ],
   callbacks: {

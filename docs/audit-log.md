@@ -1,4 +1,4 @@
-# DriftWatch — Audit Log
+# APIDelta — Audit Log
 
 ## Iteration 1 — 2026-04-05
 
@@ -229,7 +229,7 @@
   - Added `emailVerified`, `image` fields to `User` model
   - Added relations: `User.accounts`, `User.sessions`
 - Created auth pages at `src/app/(auth)/`:
-  - `layout.tsx` — centered auth layout with DriftWatch logo linking to homepage
+  - `layout.tsx` — centered auth layout with APIDelta logo linking to homepage
   - `sign-in/page.tsx` — GitHub OAuth button + email magic link form, error handling for OAuthAccountNotLinked
   - `sign-up/page.tsx` — same providers, different copy ("Start your free trial", "14 days free")
   - `verify-request/page.tsx` — "Check your email" confirmation with retry link
@@ -434,7 +434,7 @@
 ### Blockers
 - DATABASE_URL needed for running migrations on a live database
 - Stripe keys needed for live billing testing
-- Domain (driftwatch.dev or driftwatch.io) not yet registered
+- Domain (apidelta.dev or apidelta.io) not yet registered
 
 ## Iteration 11 — 2026-04-05 [POLISH]
 ### Polish gate 1/10: page-cro — Landing Page CRO
@@ -471,7 +471,7 @@
 - **CTA banner**: Changed "unannounced" to "surprise" (simpler word); "no agents to install" to "nothing to install" (cleaner)
 - **Auth pages** (`apps/web/src/app/(auth)/`): Changed "Send magic link" to "Send sign-in link"/"Send sign-up link" (clearer for users unfamiliar with magic links); improved OAuth error message to guide user to try the other method; updated verify-request page to say "sign-in link" consistently
 - **Dashboard overview** (`apps/web/src/app/(dashboard)/dashboard/page.tsx`): Tightened subtitle; improved empty states to be more helpful ("Changes will appear here once your API sources are crawled"); improved error message wording
-- **Sources page** (`apps/web/src/app/(dashboard)/dashboard/sources/page.tsx`): Improved subtitle; rewrote empty state CTA to "Paste a changelog URL and DriftWatch starts monitoring within minutes"; changed modal submit button from "Add Source" to "Add and Start Monitoring" (communicates what happens); improved all error messages to be more helpful with recovery guidance; improved delete confirmation copy
+- **Sources page** (`apps/web/src/app/(dashboard)/dashboard/sources/page.tsx`): Improved subtitle; rewrote empty state CTA to "Paste a changelog URL and APIDelta starts monitoring within minutes"; changed modal submit button from "Add Source" to "Add and Start Monitoring" (communicates what happens); improved all error messages to be more helpful with recovery guidance; improved delete confirmation copy
 - **Changes page** (`apps/web/src/app/(dashboard)/dashboard/changes/page.tsx`): Improved subtitle with "classified by severity"; tightened empty state and filter-miss copy; improved error message
 - **Alerts page** (`apps/web/src/app/(dashboard)/dashboard/alerts/page.tsx`): Improved subtitle; rewrote all empty states with more context; changed "Create your first rule" to "Create your first alert rule"; improved keyword helper text; improved all error messages; changed modal submit to "Create Alert Rule"
 - **Settings page** (`apps/web/src/app/(dashboard)/dashboard/settings/page.tsx`): Improved subtitle to "Manage your plan, billing, and team limits"; tightened success/error messages; updated plan feature lists with "Up to N" prefix and consistent "AI-powered classification" wording
@@ -654,7 +654,7 @@
   - Respects source limit (disabled when at plan capacity)
 - **Dashboard overview** (`apps/web/src/app/(dashboard)/dashboard/page.tsx`):
   - Added `OnboardingChecklist` between header and stat cards — visible on every dashboard visit until dismissed
-  - Added welcome hero for zero-state users: gradient card with icon, headline ("Welcome to DriftWatch"), description, primary CTA to add first source, and "Takes less than 30 seconds" micro-copy
+  - Added welcome hero for zero-state users: gradient card with icon, headline ("Welcome to APIDelta"), description, primary CTA to add first source, and "Takes less than 30 seconds" micro-copy
   - Improved Monitored APIs empty state: added Plus icon to CTA, added "Stripe, GitHub, Twilio, and more" hint below button
 - **Sources page** (`apps/web/src/app/(dashboard)/dashboard/sources/page.tsx`):
   - Replaced flat empty state with two-section layout: empty state card + QuickAddGrid below
@@ -727,7 +727,7 @@
 ### Launch phase: demand validation setup
 ### What was done
 - **Dockerfile hardened** (`apps/api/Dockerfile`):
-  - Added non-root user (`driftwatch`, uid 1001) — container no longer runs as root
+  - Added non-root user (`apidelta`, uid 1001) — container no longer runs as root
   - Added `HEALTHCHECK` instruction — checks `/api/health` every 30s with wget (Railway/Fly.io use this for readiness)
   - Added `chown` before `USER` switch so non-root user owns app files
   - Multi-stage build preserved (deps → builder → runner)
@@ -750,7 +750,7 @@
 - Then: Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains) then run $200 Google Ads test
 ### Blockers
 - **Bug**: /terms and /privacy pages are 404 (linked from auth layout footer) — must fix before launch
-- Domain not registered (driftwatch.dev or driftwatch.io)
+- Domain not registered (apidelta.dev or apidelta.io)
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
@@ -770,7 +770,7 @@
 ### What's next
 - Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains) then run $200 Google Ads test
 ### Blockers
-- Domain not registered (driftwatch.dev or driftwatch.io)
+- Domain not registered (apidelta.dev or apidelta.io)
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
@@ -800,7 +800,7 @@
 - Once deployed: execute launch strategy week 1 (Product Hunt, HN, Google Ads, social posts)
 - Build SEO pages (`/use-cases/api-changelog-monitoring`, etc.) as next coding iteration
 ### Blockers
-- Domain not registered (driftwatch.dev or driftwatch.io)
+- Domain not registered (apidelta.dev or apidelta.io)
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
@@ -825,7 +825,7 @@
 - Prepare Product Hunt assets (logo, screenshots, GIF demo)
 - Build SEO pages (`/use-cases/api-changelog-monitoring`, etc.) as next coding iteration
 ### Blockers
-- Domain not registered (driftwatch.dev or driftwatch.io)
+- Domain not registered (apidelta.dev or apidelta.io)
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
@@ -851,7 +851,7 @@
 - Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains)
 - Execute launch strategy week 1
 ### Blockers
-- Domain not registered (driftwatch.dev or driftwatch.io)
+- Domain not registered (apidelta.dev or apidelta.io)
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
@@ -859,10 +859,10 @@
 ## Iteration 26 — 2026-04-05 [LAUNCH]
 ### Launch phase: Final SEO audit pass
 ### What was done
-Full SEO audit of all 21 routes in the DriftWatch frontend. Findings and fixes:
+Full SEO audit of all 21 routes in the APIDelta frontend. Findings and fixes:
 
 1. **Dynamic OG image created** (`apps/web/src/app/opengraph-image.tsx` + `twitter-image.tsx`)
-   - Edge-rendered 1200x630 image with DriftWatch branding, tagline, pricing, and violet/dark gradient
+   - Edge-rendered 1200x630 image with APIDelta branding, tagline, pricing, and violet/dark gradient
    - Replaces the TODO placeholders that were in layout.tsx — every page now has an OG image via Next.js file-based metadata convention
    - Removed stale TODO comments from root layout.tsx
 
@@ -882,7 +882,7 @@ Full SEO audit of all 21 routes in the DriftWatch frontend. Findings and fixes:
    - Landing page nav: added "Use Cases" link
    - Landing page footer: added "Use Cases" and "Compare" links
    - SeoFooter (shared): added "Compare" link
-   - SeoInternalLinks: added "DriftWatch Home" (`/`) so all SEO pages link back to landing page
+   - SeoInternalLinks: added "APIDelta Home" (`/`) so all SEO pages link back to landing page
 
 ### Audit results
 - `pnpm build:web` PASS — 21 routes, OG + Twitter image routes generated
@@ -896,7 +896,7 @@ Full SEO audit of all 21 routes in the DriftWatch frontend. Findings and fixes:
 - Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains)
 - Execute launch strategy week 1
 ### Blockers
-- Domain not registered (driftwatch.dev or driftwatch.io)
+- Domain not registered (apidelta.dev or apidelta.io)
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
@@ -910,11 +910,11 @@ Built 4 Tier 2 SEO content pages for additional long-tail keyword coverage:
 
 1. **`/guides/api-versioning-best-practices`** — Educational guide targeting "API versioning" keywords. Covers URL path, header, date-based, semantic, and rolling versioning strategies. Natural CTA to monitor version changes.
 
-2. **`/guides/handling-breaking-api-changes`** — How-to playbook targeting "breaking API changes" keywords. 6-step response playbook (detect, assess, check timeline, test, communicate, deploy). Positions DriftWatch as step 1 (detection).
+2. **`/guides/handling-breaking-api-changes`** — How-to playbook targeting "breaking API changes" keywords. 6-step response playbook (detect, assess, check timeline, test, communicate, deploy). Positions APIDelta as step 1 (detection).
 
 3. **`/use-cases/saas-api-integrations`** — Targets SaaS companies managing multiple third-party APIs. Covers payment, communication, AI, and cloud infrastructure API monitoring. Speaks to the dependency graph risk.
 
-4. **`/use-cases/devops-api-monitoring`** — Targets DevOps teams. Positions DriftWatch as the missing layer alongside Datadog, PagerDuty, Sentry. Differentiates changelog monitoring from uptime monitoring.
+4. **`/use-cases/devops-api-monitoring`** — Targets DevOps teams. Positions APIDelta as the missing layer alongside Datadog, PagerDuty, Sentry. Differentiates changelog monitoring from uptime monitoring.
 
 Supporting changes:
 - `SeoInternalLinks` expanded with all 4 new pages (10 total internal link targets)

@@ -20,16 +20,16 @@ import {
 export const metadata: Metadata = {
   title: "Breaking Change Detection for Third-Party APIs",
   description:
-    "Detect breaking API changes before they hit production. DriftWatch uses AI to classify changelog entries by severity and alert your engineering team via Slack and email.",
+    "Detect breaking API changes before they hit production. APIDelta uses AI to classify changelog entries by severity and alert your engineering team via Slack and email.",
   alternates: {
-    canonical: "https://driftwatch.dev/use-cases/breaking-change-detection",
+    canonical: "https://apidelta.dev/use-cases/breaking-change-detection",
   },
   openGraph: {
     title: "Breaking Change Detection for Third-Party APIs",
     description:
       "AI-powered breaking change detection for API dependencies. Get Slack and email alerts before breaking changes cause production incidents.",
     type: "website",
-    url: "https://driftwatch.dev/use-cases/breaking-change-detection",
+    url: "https://apidelta.dev/use-cases/breaking-change-detection",
   },
   twitter: {
     card: "summary_large_image",
@@ -62,7 +62,7 @@ const FEATURES = [
     icon: Clock,
     title: "Hourly Detection",
     description:
-      "DriftWatch crawls changelogs every hour. When a breaking change is published, you know within 60 minutes — giving your team time to prepare before the change takes effect.",
+      "APIDelta crawls changelogs every hour. When a breaking change is published, you know within 60 minutes — giving your team time to prepare before the change takes effect.",
   },
   {
     icon: Shield,
@@ -81,11 +81,11 @@ const FEATURES = [
 const FAQS = [
   {
     q: "What counts as a breaking API change?",
-    a: "A breaking change is any modification to an API that could cause existing integrations to fail. This includes removing endpoints, changing required parameters, modifying response formats, deprecating authentication methods, or altering rate limits. DriftWatch's AI is trained to identify these patterns in changelog text.",
+    a: "A breaking change is any modification to an API that could cause existing integrations to fail. This includes removing endpoints, changing required parameters, modifying response formats, deprecating authentication methods, or altering rate limits. APIDelta's AI is trained to identify these patterns in changelog text.",
   },
   {
-    q: "How quickly does DriftWatch detect breaking changes?",
-    a: "DriftWatch crawls monitored changelogs every hour. When a new entry is detected, AI classifies it within seconds. If it's a breaking change that matches your alert rules, you get a Slack message or email within minutes of the changelog being updated.",
+    q: "How quickly does APIDelta detect breaking changes?",
+    a: "APIDelta crawls monitored changelogs every hour. When a new entry is detected, AI classifies it within seconds. If it's a breaking change that matches your alert rules, you get a Slack message or email within minutes of the changelog being updated.",
   },
   {
     q: "Can I filter alerts to only show breaking changes?",
@@ -93,11 +93,11 @@ const FAQS = [
   },
   {
     q: "How accurate is the AI at detecting breaking changes?",
-    a: "DriftWatch achieves over 85% accuracy on breaking change classification across tested API changelogs. The AI uses structured output to ensure consistent severity scoring. False positives are rare because the classifier is tuned to err on the side of flagging potential breaking changes rather than missing them.",
+    a: "APIDelta achieves over 85% accuracy on breaking change classification across tested API changelogs. The AI uses structured output to ensure consistent severity scoring. False positives are rare because the classifier is tuned to err on the side of flagging potential breaking changes rather than missing them.",
   },
   {
-    q: "Does DriftWatch detect breaking changes in OpenAPI specs?",
-    a: "DriftWatch currently monitors changelog pages, release notes, and RSS feeds — the places where API providers announce changes to their users. OpenAPI spec diffing (comparing schema versions) is on the roadmap but is a different use case from changelog monitoring.",
+    q: "Does APIDelta detect breaking changes in OpenAPI specs?",
+    a: "APIDelta currently monitors changelog pages, release notes, and RSS feeds — the places where API providers announce changes to their users. OpenAPI spec diffing (comparing schema versions) is on the roadmap but is a different use case from changelog monitoring.",
   },
 ];
 
@@ -110,7 +110,7 @@ export default function BreakingChangeDetectionPage() {
         <SeoHero
           title="Detect Breaking API Changes"
           gradientText="Before They Hit Production"
-          description="The average engineering team loses 4+ hours per incident caused by a surprise API breaking change. The changelog update was published days ago — buried in a 40-item release note nobody had time to read. DriftWatch uses AI to find those breaking changes for you."
+          description="The average engineering team loses 4+ hours per incident caused by a surprise API breaking change. The changelog update was published days ago — buried in a 40-item release note nobody had time to read. APIDelta uses AI to find those breaking changes for you."
           ctaText="Start detecting breaking changes"
         />
 
@@ -137,7 +137,7 @@ export default function BreakingChangeDetectionPage() {
                 weeks ago.
               </p>
               <p className="text-white">
-                DriftWatch catches breaking changes at the source — in the
+                APIDelta catches breaking changes at the source — in the
                 changelog — hours after they are published. AI classifies each
                 change by severity and affected endpoints, so your team can
                 prepare instead of scramble.
@@ -187,13 +187,13 @@ export default function BreakingChangeDetectionPage() {
                 </p>
                 <p className="mb-1 text-2xl font-bold">$49/mo</p>
                 <p className="text-sm text-gray-400">
-                  DriftWatch Starter plan — 10 APIs monitored hourly with AI
+                  APIDelta Starter plan — 10 APIs monitored hourly with AI
                   classification and instant Slack/email alerts
                 </p>
               </div>
             </div>
             <p className="mt-8 text-gray-500">
-              One prevented incident pays for a year of DriftWatch.
+              One prevented incident pays for a year of APIDelta.
             </p>
           </div>
         </section>
@@ -207,7 +207,7 @@ export default function BreakingChangeDetectionPage() {
         {/* CTA */}
         <SeoCtaBanner
           headline="Stop finding out about breaking changes from error logs."
-          subtext="DriftWatch monitors API changelogs every hour and uses AI to classify breaking changes before they hit production. Start your free trial in under 2 minutes."
+          subtext="APIDelta monitors API changelogs every hour and uses AI to classify breaking changes before they hit production. Start your free trial in under 2 minutes."
         />
       </main>
 

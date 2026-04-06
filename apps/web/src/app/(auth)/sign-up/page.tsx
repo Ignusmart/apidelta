@@ -7,14 +7,14 @@ import { SubmitButton } from '../submit-button';
 export const metadata: Metadata = {
   title: 'Sign up',
   description:
-    'Start your 14-day free trial of DriftWatch. Monitor API changelogs and get AI-classified breaking change alerts. No credit card required.',
+    'Start your 14-day free trial of APIDelta. Monitor API changelogs and get AI-classified breaking change alerts. No credit card required.',
   openGraph: {
-    title: 'Start your free trial | DriftWatch',
+    title: 'Start your free trial | APIDelta',
     description:
       'Monitor API changelogs and get AI-classified breaking change alerts. 14-day free trial, no credit card required.',
-    url: 'https://driftwatch.dev/sign-up',
+    url: 'https://apidelta.dev/sign-up',
   },
-  alternates: { canonical: 'https://driftwatch.dev/sign-up' },
+  alternates: { canonical: 'https://apidelta.dev/sign-up' },
 };
 
 export default async function SignUpPage({

@@ -10,7 +10,7 @@ test.describe('Landing page', () => {
   test('renders nav with logo, links, and CTA', async ({ page }) => {
     const nav = page.locator('nav').first();
     await expect(nav).toBeVisible();
-    await expect(nav.getByText('DriftWatch')).toBeVisible();
+    await expect(nav.getByText('APIDelta')).toBeVisible();
     await expect(nav.getByRole('link', { name: /features/i })).toBeVisible();
     await expect(nav.getByRole('link', { name: /pricing/i })).toBeVisible();
     await expect(nav.getByRole('link', { name: /faq/i })).toBeVisible();
@@ -112,7 +112,7 @@ test.describe('Landing page', () => {
   test('renders FAQ section with expandable questions', async ({ page }) => {
     const faq = page.locator('#faq');
     await expect(faq).toBeVisible();
-    await expect(faq.getByText('What APIs can DriftWatch monitor?')).toBeVisible();
+    await expect(faq.getByText('What APIs can APIDelta monitor?')).toBeVisible();
     await expect(faq.getByText('How does the AI classification work?')).toBeVisible();
   });
 
@@ -140,7 +140,7 @@ test.describe('Landing page', () => {
   test('renders footer with logo, nav, and copyright', async ({ page }) => {
     const footer = page.locator('footer');
     await expect(footer).toBeVisible();
-    await expect(footer.getByText('DriftWatch', { exact: true })).toBeVisible();
+    await expect(footer.getByText('APIDelta', { exact: true })).toBeVisible();
     await expect(footer.getByText(/all rights reserved/i)).toBeVisible();
   });
 
@@ -175,7 +175,7 @@ test.describe('Landing page', () => {
         found = true;
         const json = JSON.parse(content);
         expect(json['@type']).toBe('Organization');
-        expect(json.name).toBe('DriftWatch');
+        expect(json.name).toBe('APIDelta');
       }
     }
     expect(found).toBe(true);

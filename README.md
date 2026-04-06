@@ -1,8 +1,8 @@
-# DriftWatch
+# APIDelta
 
 > Stop finding out about breaking API changes from your error logs.
 
-DriftWatch monitors third-party API changelogs and uses AI to classify changes as breaking, deprecation, or informational. When something matters, it alerts your team via Slack or email — before it hits production.
+APIDelta monitors third-party API changelogs and uses AI to classify changes as breaking, deprecation, or informational. When something matters, it alerts your team via Slack or email — before it hits production.
 
 ## The Problem
 
@@ -26,7 +26,7 @@ Engineering teams depend on dozens of third-party APIs (Stripe, Twilio, SendGrid
 ## Architecture
 
 ```
-driftwatch/
+apidelta/
 ├── apps/
 │   ├── web/          # Next.js frontend — landing page, auth, dashboard
 │   │   └── src/
@@ -61,8 +61,8 @@ driftwatch/
 
 ```bash
 # 1. Clone and install
-git clone <repo-url> driftwatch
-cd driftwatch
+git clone <repo-url> apidelta
+cd apidelta
 pnpm install
 
 # 2. Set up environment

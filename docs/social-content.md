@@ -1,4 +1,4 @@
-# DriftWatch — Social Launch Content
+# APIDelta — Social Launch Content
 
 **Created**: 2026-04-05 (Iteration 24)
 **Status**: Ready to publish (adjust [link] placeholders with actual URLs before posting)
@@ -26,7 +26,7 @@
 >
 > I lived this enough times to build a solution.
 >
-> Today I'm launching DriftWatch — an AI-powered API changelog monitor for engineering teams.
+> Today I'm launching APIDelta — an AI-powered API changelog monitor for engineering teams.
 >
 > Here's what it does:
 >
@@ -36,7 +36,7 @@
 >
 > No agents to install. No SDKs. No code changes. Setup takes under 2 minutes.
 >
-> Why AI classification matters: most monitoring tools do basic text diffs. They alert you on every change — formatting fixes, typo corrections, new features you don't use. The noise makes you ignore the alerts entirely. DriftWatch only escalates what actually matters.
+> Why AI classification matters: most monitoring tools do basic text diffs. They alert you on every change — formatting fixes, typo corrections, new features you don't use. The noise makes you ignore the alerts entirely. APIDelta only escalates what actually matters.
 >
 > Pricing starts at $49/mo for 10 monitored APIs. There's a 14-day free trial with 3 APIs, no credit card required.
 >
@@ -74,7 +74,7 @@
 > 3. Use generic website change monitors (which alert on every CSS tweak)
 > 4. Find out from production errors
 >
-> None of these work well. That's why I built DriftWatch — AI reads every changelog format, classifies changes by severity, and only alerts on what matters.
+> None of these work well. That's why I built APIDelta — AI reads every changelog format, classifies changes by severity, and only alerts on what matters.
 >
 > The problem isn't that teams don't care about API changes. It's that monitoring them manually doesn't scale past 3-4 APIs.
 >
@@ -88,7 +88,7 @@
 
 > "Can't you just diff the HTML?"
 >
-> That's the first question everyone asks when I explain DriftWatch.
+> That's the first question everyone asks when I explain APIDelta.
 >
 > The answer: you can, but it's almost useless for API changelogs.
 >
@@ -130,7 +130,7 @@
 
 > **1/** I built an API changelog monitor because I was tired of finding out about breaking changes from production errors.
 >
-> It's called DriftWatch. Here's what it does and why it exists.
+> It's called APIDelta. Here's what it does and why it exists.
 
 > **2/** The problem: your team integrates with 10+ third-party APIs. Each publishes changes differently.
 >
@@ -149,7 +149,7 @@
 >
 > Yet the tooling barely exists. Most teams either check manually (unsustainable) or use generic website monitors (too noisy).
 
-> **5/** DriftWatch works differently:
+> **5/** APIDelta works differently:
 >
 > - Paste your API changelog URLs
 > - AI reads every entry and classifies it: BREAKING, DEPRECATION, or INFO
@@ -162,7 +162,7 @@
 >
 > Basic change detection tells you "something changed."
 >
-> DriftWatch tells you "the /v2/payments endpoint now requires an idempotency header — this is a breaking change, severity critical, action needed before March 15."
+> APIDelta tells you "the /v2/payments endpoint now requires an idempotency header — this is a breaking change, severity critical, action needed before March 15."
 
 > **7/** It's live today.
 >
@@ -170,7 +170,7 @@
 > Starter: $49/mo (10 APIs)
 > Pro: $99/mo (50 APIs)
 >
-> driftwatch.dev
+> apidelta.dev
 >
 > What APIs would you monitor first?
 
@@ -182,7 +182,7 @@
 
 > **1/** I shipped a SaaS MVP in 4 weeks as a solo engineer.
 >
-> Here's every non-obvious thing I learned building DriftWatch (an AI-powered API changelog monitor).
+> Here's every non-obvious thing I learned building APIDelta (an AI-powered API changelog monitor).
 >
 > Some of these cost me days. Saving you the trouble.
 
@@ -284,13 +284,13 @@
 >
 > Almost nobody. And that's the gap.
 
-> **6/** I built DriftWatch specifically for this:
+> **6/** I built APIDelta specifically for this:
 >
 > AI reads your API changelogs → classifies each change by severity → alerts you before it breaks your code.
 >
 > $49/mo vs $400+ per incident. The math is straightforward.
 >
-> driftwatch.dev — free trial, 3 APIs, no card required.
+> apidelta.dev — free trial, 3 APIs, no card required.
 
 > **7/** Genuine question for engineering leads:
 >
@@ -331,7 +331,7 @@
 >
 > The core problem seems to be that changelogs are unstructured text. You need something that actually *understands* what "we're deprecating the /v1/users endpoint" means vs "we've added a new dashboard feature."
 >
-> I ended up building a tool that uses AI to read changelogs and classify changes by severity (breaking, deprecation, informational). It sends Slack/email alerts only for changes that actually need attention. Called it DriftWatch — [link] if anyone's curious.
+> I ended up building a tool that uses AI to read changelogs and classify changes by severity (breaking, deprecation, informational). It sends Slack/email alerts only for changes that actually need attention. Called it APIDelta — [link] if anyone's curious.
 >
 > But I'm more interested in hearing: **what's your current approach?** Have you built internal tooling for this? Do you just accept the risk? Is there a workflow I'm missing?
 
@@ -359,7 +359,7 @@
 >
 > But nobody reads changelogs for 15+ API dependencies consistently. The formats are all different (HTML pages, RSS, GitHub releases, blog posts), there's no standard notification system, and the signal-to-noise ratio is terrible — 90% of changelog entries are new features and bug fixes that don't affect your integration.
 >
-> I've been working on this problem and built an AI-based changelog monitor (DriftWatch — [link]) that crawls changelog pages and classifies each entry as breaking, deprecation, or informational. The idea is that you get an alert *before* the change hits, not after your error rate spikes.
+> I've been working on this problem and built an AI-based changelog monitor (APIDelta — [link]) that crawls changelog pages and classifies each entry as breaking, deprecation, or informational. The idea is that you get an alert *before* the change hits, not after your error rate spikes.
 >
 > For the devops/SRE crowd: **where does third-party API change monitoring fit in your incident prevention strategy?** Is this a problem you've formalized, or is it still in the "hope for the best" category?
 >
@@ -389,7 +389,7 @@
 >
 > **Cost is negligible.** Haiku processes a typical changelog entry (~200-500 tokens) for fractions of a cent. Even monitoring 50 APIs with daily crawls, the AI cost is under $5/month.
 >
-> The project is DriftWatch ([link]) — open to feedback on the approach. The broader question I'm interested in: **what other developer tooling problems are fundamentally NLU problems being solved with regex?**
+> The project is APIDelta ([link]) — open to feedback on the approach. The broader question I'm interested in: **what other developer tooling problems are fundamentally NLU problems being solved with regex?**
 
 **Posting notes**: r/programming wants technical depth. Lead with the technical insights, not the product. The product mention is a single sentence near the end. Post Tuesday, 9-11 AM ET. The closing question drives technical discussion.
 
@@ -397,13 +397,13 @@
 
 ## Indie Hackers Post
 
-**Title**: Launching DriftWatch — AI-powered API changelog monitoring ($49/mo, solo founder)
+**Title**: Launching APIDelta — AI-powered API changelog monitoring ($49/mo, solo founder)
 
 **Body**:
 
 > Hey IH!
 >
-> I'm Jobelo, a principal engineer launching my first solo SaaS: **DriftWatch** — an AI-powered API changelog monitor for engineering teams.
+> I'm Jobelo, a principal engineer launching my first solo SaaS: **APIDelta** — an AI-powered API changelog monitor for engineering teams.
 >
 > ### The problem
 >
@@ -411,7 +411,7 @@
 >
 > When a breaking change ships, most teams find out from their error logs, not from the changelog. The Postman 2025 report found that 52% of developers cite breaking changes as their top API integration concern.
 >
-> ### What DriftWatch does
+> ### What APIDelta does
 >
 > 1. You add your API changelog URLs
 > 2. A crawler checks them on a schedule (every 6 hours)
@@ -461,7 +461,7 @@
 >
 > Would love feedback on pricing, positioning, or the distribution plan. Happy to answer questions about the build process.
 >
-> [link to DriftWatch]
+> [link to APIDelta]
 
 **Posting notes**: Indie Hackers values transparency, real numbers, and honest reflection. The "what I'd do differently" section builds credibility. Post any weekday.
 
@@ -483,7 +483,7 @@ You monitor uptime. You monitor errors. You monitor performance. But who monitor
 
 For most teams, the answer is: nobody. Or at best, someone who checks manually for a few weeks before giving up.
 
-I built DriftWatch to close this gap. It's an AI-powered changelog monitor that crawls third-party API changelogs, classifies each change by severity, and alerts your team before breaking changes hit production.
+I built APIDelta to close this gap. It's an AI-powered changelog monitor that crawls third-party API changelogs, classifies each change by severity, and alerts your team before breaking changes hit production.
 
 Here's how we built it, what we learned, and the technical decisions behind the architecture.
 
@@ -594,7 +594,7 @@ model CrawlRun {
 
 ## Step 2: AI Classification
 
-This is where DriftWatch differentiates from basic change detection tools.
+This is where APIDelta differentiates from basic change detection tools.
 
 ### Why Not Regex?
 
@@ -744,11 +744,11 @@ We use shadcn/ui for components and Tailwind CSS for styling. The dashboard is s
 
 ## Try It
 
-DriftWatch is live with a 14-day free trial (3 APIs, no credit card required).
+APIDelta is live with a 14-day free trial (3 APIs, no credit card required).
 
 If your team integrates with third-party APIs — and whose doesn't? — give it a look.
 
-[driftwatch.dev](https://driftwatch.dev)
+[apidelta.dev](https://apidelta.dev)
 
 I'd love feedback on the approach, the classification accuracy, or the developer experience. Drop a comment or find me on Twitter/X.
 

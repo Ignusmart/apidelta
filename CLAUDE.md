@@ -1,4 +1,4 @@
-# DriftWatch
+# APIDelta
 
 API dependency change monitor. Crawls third-party API changelogs, uses AI to classify breaking vs non-breaking changes, and alerts engineering teams.
 
@@ -16,7 +16,7 @@ API dependency change monitor. Crawls third-party API changelogs, uses AI to cla
 ## Repo Structure
 
 ```
-driftwatch/
+apidelta/
 ├── apps/
 │   ├── web/          # Next.js frontend (dashboard + landing page)
 │   └── api/          # NestJS backend (REST API + crawler + classifier)

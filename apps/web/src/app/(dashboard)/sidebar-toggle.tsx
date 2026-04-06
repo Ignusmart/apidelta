@@ -43,7 +43,7 @@ export function SidebarToggle() {
             <Menu aria-hidden="true" className="h-5 w-5" />
           )}
         </button>
-        <span className="text-sm font-bold tracking-tight">DriftWatch</span>
+        <span className="text-sm font-bold tracking-tight">APIDelta</span>
       </div>
 
       {/* Backdrop overlay on mobile when sidebar is open */}

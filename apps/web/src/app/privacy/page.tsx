@@ -5,14 +5,14 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
-    'DriftWatch Privacy Policy — learn how we collect, use, and protect your data when you use our API changelog monitoring platform.',
-  alternates: { canonical: 'https://driftwatch.dev/privacy' },
+    'APIDelta Privacy Policy — learn how we collect, use, and protect your data when you use our API changelog monitoring platform.',
+  alternates: { canonical: 'https://apidelta.dev/privacy' },
   openGraph: {
-    title: 'Privacy Policy | DriftWatch',
+    title: 'Privacy Policy | APIDelta',
     description:
-      'DriftWatch Privacy Policy — learn how we collect, use, and protect your data.',
+      'APIDelta Privacy Policy — learn how we collect, use, and protect your data.',
     type: 'website',
-    url: 'https://driftwatch.dev/privacy',
+    url: 'https://apidelta.dev/privacy',
   },
 };
 
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
             className="flex items-center gap-2 text-lg font-bold tracking-tight"
           >
             <Zap aria-hidden="true" className="h-5 w-5 text-violet-400" />
-            DriftWatch
+            APIDelta
           </Link>
           <Link
             href="/sign-up"
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
           <section>
             <h2>1. Introduction</h2>
             <p>
-              DriftWatch (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) respects your privacy.
+              APIDelta (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) respects your privacy.
               This Privacy Policy explains how we collect, use, disclose, and
               safeguard your information when you use our API changelog
               monitoring platform (&quot;the Service&quot;).
@@ -241,10 +241,10 @@ export default function PrivacyPage() {
             <p>
               To exercise any of these rights, contact us at{' '}
               <a
-                href="mailto:privacy@driftwatch.dev"
+                href="mailto:privacy@apidelta.dev"
                 className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
               >
-                privacy@driftwatch.dev
+                privacy@apidelta.dev
               </a>
               . We will respond within 30 days.
             </p>
@@ -299,10 +299,10 @@ export default function PrivacyPage() {
             </p>
             <p>
               <a
-                href="mailto:privacy@driftwatch.dev"
+                href="mailto:privacy@apidelta.dev"
                 className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
               >
-                privacy@driftwatch.dev
+                privacy@apidelta.dev
               </a>
             </p>
           </section>
@@ -317,7 +317,7 @@ export default function PrivacyPage() {
             className="flex items-center gap-2 text-sm font-bold"
           >
             <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
-            DriftWatch
+            APIDelta
           </Link>
           <nav aria-label="Footer navigation" className="flex gap-6 text-sm text-gray-500">
             <Link href="/privacy" className="transition hover:text-gray-300">
@@ -328,7 +328,7 @@ export default function PrivacyPage() {
             </Link>
           </nav>
           <p className="text-xs text-gray-600">
-            &copy; {new Date().getFullYear()} DriftWatch. All rights reserved.
+            &copy; {new Date().getFullYear()} APIDelta. All rights reserved.
           </p>
         </div>
       </footer>
