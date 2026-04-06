@@ -24,6 +24,12 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://driftwatch.dev/use-cases/api-changelog-monitoring",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "API Changelog Monitoring — Automated & AI-Powered",
+    description:
+      "Automate API changelog monitoring with AI classification. Hourly crawls, severity scoring, Slack + email alerts.",
+  },
 };
 
 const FEATURES = [

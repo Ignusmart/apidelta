@@ -130,6 +130,12 @@ export function SeoFooter() {
             Use Cases
           </a>
           <a
+            href="/compare/manual-vs-automated"
+            className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            Compare
+          </a>
+          <a
             href="/terms"
             className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
           >
@@ -305,6 +311,10 @@ export function SeoInternalLinks({
   current: string;
 }) {
   const pages = [
+    {
+      href: "/",
+      label: "DriftWatch Home",
+    },
     {
       href: "/use-cases/api-changelog-monitoring",
       label: "API Changelog Monitoring",

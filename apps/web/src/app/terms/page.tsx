@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: 'Terms of Service',
   description:
     'DriftWatch Terms of Service — read the terms that govern your use of DriftWatch, our API changelog monitoring platform.',
+  alternates: { canonical: 'https://driftwatch.dev/terms' },
+  openGraph: {
+    title: 'Terms of Service | DriftWatch',
+    description:
+      'DriftWatch Terms of Service — read the terms that govern your use of DriftWatch.',
+    type: 'website',
+    url: 'https://driftwatch.dev/terms',
+  },
 };
 
 export default function TermsPage() {

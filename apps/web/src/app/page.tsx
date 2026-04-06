@@ -185,7 +185,6 @@ const ORGANIZATION_SCHEMA = {
   url: "https://driftwatch.dev",
   description:
     "AI-powered API changelog monitoring and breaking change alerts for engineering teams.",
-  // TODO: Add logo when available — logo: "https://driftwatch.dev/logo.png",
 };
 
 const SOFTWARE_SCHEMA = {
@@ -223,6 +222,16 @@ const SOFTWARE_SCHEMA = {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      {/* Structured data — Organization + SoftwareApplication + FAQ */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_SCHEMA) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(SOFTWARE_SCHEMA) }}
+      />
+
       {/* ----------------------------------------------------------------- */}
       {/* NAV                                                                */}
       {/* ----------------------------------------------------------------- */}
@@ -241,6 +250,9 @@ export default function HomePage() {
             </a>
             <a href="#faq" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               FAQ
+            </a>
+            <a href="/use-cases/api-changelog-monitoring" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+              Use Cases
             </a>
           </div>
           <div className="flex items-center gap-3">
@@ -596,16 +608,6 @@ export default function HomePage() {
       {/* ----------------------------------------------------------------- */}
       {/* FAQ                                                                */}
       {/* ----------------------------------------------------------------- */}
-      {/* Structured data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_SCHEMA) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(SOFTWARE_SCHEMA) }}
-      />
-
       <section id="faq" className="py-24">
         <script
           type="application/ld+json"
@@ -686,6 +688,12 @@ export default function HomePage() {
             </a>
             <a href="#faq" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               FAQ
+            </a>
+            <a href="/use-cases/api-changelog-monitoring" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+              Use Cases
+            </a>
+            <a href="/compare/manual-vs-automated" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+              Compare
             </a>
             <a href="/terms" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               Terms

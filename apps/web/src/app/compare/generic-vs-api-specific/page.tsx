@@ -22,6 +22,12 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://driftwatch.dev/compare/generic-vs-api-specific",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Generic Website Monitors vs API-Specific Change Detection",
+    description:
+      "Why generic website monitors miss critical API changes. Compare pixel-diff tools with AI-powered changelog monitoring.",
+  },
 };
 
 const COMPARISON_ROWS = [

@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
     'DriftWatch Privacy Policy — learn how we collect, use, and protect your data when you use our API changelog monitoring platform.',
+  alternates: { canonical: 'https://driftwatch.dev/privacy' },
+  openGraph: {
+    title: 'Privacy Policy | DriftWatch',
+    description:
+      'DriftWatch Privacy Policy — learn how we collect, use, and protect your data.',
+    type: 'website',
+    url: 'https://driftwatch.dev/privacy',
+  },
 };
 
 export default function PrivacyPage() {

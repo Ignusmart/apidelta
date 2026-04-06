@@ -32,6 +32,12 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://driftwatch.dev/use-cases/api-dependency-management",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "API Dependency Management for Engineering Teams",
+    description:
+      "Track third-party API dependencies in one dashboard. AI-classified changes, team ownership, and instant alerts.",
+  },
 };
 
 const FEATURES = [

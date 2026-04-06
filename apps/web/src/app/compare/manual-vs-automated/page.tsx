@@ -22,6 +22,12 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://driftwatch.dev/compare/manual-vs-automated",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Manual vs Automated API Changelog Monitoring",
+    description:
+      "Compare manual changelog checking against automated API monitoring. See why teams switch to AI-powered tools.",
+  },
 };
 
 const COMPARISON_ROWS = [

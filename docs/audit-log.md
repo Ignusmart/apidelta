@@ -855,3 +855,48 @@
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
+
+## Iteration 26 — 2026-04-05 [LAUNCH]
+### Launch phase: Final SEO audit pass
+### What was done
+Full SEO audit of all 21 routes in the DriftWatch frontend. Findings and fixes:
+
+1. **Dynamic OG image created** (`apps/web/src/app/opengraph-image.tsx` + `twitter-image.tsx`)
+   - Edge-rendered 1200x630 image with DriftWatch branding, tagline, pricing, and violet/dark gradient
+   - Replaces the TODO placeholders that were in layout.tsx — every page now has an OG image via Next.js file-based metadata convention
+   - Removed stale TODO comments from root layout.tsx
+
+2. **Twitter card metadata added to 5 SEO pages**
+   - `use-cases/api-changelog-monitoring`, `use-cases/breaking-change-detection`, `use-cases/api-dependency-management`, `compare/manual-vs-automated`, `compare/generic-vs-api-specific`
+   - Each gets `card: "summary_large_image"` with unique title and description
+
+3. **Sitemap expanded** — added `/terms` (priority 0.3, yearly) and `/privacy` (priority 0.3, yearly)
+
+4. **Canonical URLs + OG metadata added to legal pages** (`/terms` and `/privacy`)
+
+5. **Structured data placement fixed on landing page**
+   - Moved Organization + SoftwareApplication JSON-LD to top of page component
+   - Removed stale TODO comment on Organization schema logo
+
+6. **Internal linking improved**
+   - Landing page nav: added "Use Cases" link
+   - Landing page footer: added "Use Cases" and "Compare" links
+   - SeoFooter (shared): added "Compare" link
+   - SeoInternalLinks: added "DriftWatch Home" (`/`) so all SEO pages link back to landing page
+
+### Audit results
+- `pnpm build:web` PASS — 21 routes, OG + Twitter image routes generated
+- All public pages have title, description, OG, canonical
+- All SEO pages have FAQPage JSON-LD structured data
+- Sitemap covers all 10 public pages
+- Internal linking: landing page links to SEO pages (nav + footer), SEO pages cross-link and link back to home
+- No competitor names in user-facing code
+- Performance: all SEO pages static (151 B each), zero client JS on landing + SEO pages
+### What's next
+- Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains)
+- Execute launch strategy week 1
+### Blockers
+- Domain not registered (driftwatch.dev or driftwatch.io)
+- Neon DB not provisioned
+- Stripe products/prices not created
+- All three are manual tasks for Jobelo

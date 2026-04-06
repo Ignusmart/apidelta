@@ -112,7 +112,7 @@ The ONE thing: a working crawler + AI classifier + alert pipeline. No UI auth, n
   - Welcome email
   - Change alert email (with severity badge, affected endpoints, link to dashboard)
   - Weekly digest email
-- [ ] **SEO + meta tags** on landing page
+- [x] **SEO + meta tags** on landing page + all SEO pages (OG images, Twitter cards, JSON-LD, sitemap, canonical URLs, internal linking)
 - [ ] **Error handling + logging** — structured logs, Sentry integration
 - [ ] **Rate limiting** on public API endpoints
 - [ ] **Security hardening** — CORS, helmet, input validation, SQL injection prevention (Prisma handles most)

@@ -31,6 +31,12 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://driftwatch.dev/use-cases/breaking-change-detection",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Breaking Change Detection for Third-Party APIs",
+    description:
+      "Detect breaking API changes before they hit production. AI classifies severity, extracts affected endpoints, and alerts your team.",
+  },
 };
 
 const FEATURES = [
