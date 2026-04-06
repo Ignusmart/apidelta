@@ -4,11 +4,12 @@
   "private": true,
   "description": "API dependency change monitor — crawls changelogs, classifies breaking changes with AI, alerts engineering teams",
   "scripts": {
+    "build": "turbo build",
     "dev:web": "pnpm --filter @apidelta/web dev",
     "dev:api": "pnpm --filter @apidelta/api start:dev",
-    "build:web": "pnpm --filter @apidelta/web build",
-    "build:api": "pnpm --filter @apidelta/api build",
-    "lint": "pnpm -r lint",
+    "build:web": "turbo build --filter=@apidelta/web",
+    "build:api": "turbo build --filter=@apidelta/api",
+    "lint": "turbo lint",
     "test": "pnpm -r test",
     "db:migrate": "pnpm --filter @apidelta/api prisma:migrate",
     "db:generate": "pnpm --filter @apidelta/api prisma:generate"
