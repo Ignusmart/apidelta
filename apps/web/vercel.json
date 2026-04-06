@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "cd ../.. && pnpm install --filter @apidelta/web...",
+  "buildCommand": "cd ../.. && turbo run build --filter=@apidelta/web",
   "regions": ["iad1"],
   "headers": [
     {
