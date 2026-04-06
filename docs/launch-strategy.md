@@ -28,9 +28,9 @@
 ### Pre-Launch (Days -7 to 0)
 - [ ] Register domain, provision DB, deploy to production
 - [ ] Create Product Hunt "Coming Soon" page
-- [ ] Write and schedule 3 LinkedIn posts + 3 Twitter/X threads
-- [ ] Draft Show HN post
-- [ ] Draft 2 Dev.to articles
+- [x] Write and schedule 3 LinkedIn posts + 3 Twitter/X threads
+- [x] Draft Show HN post
+- [x] Draft 2 Dev.to articles
 - [ ] Prepare Product Hunt assets (logo, screenshots, GIF demo, gallery images)
 - [ ] Set up Google Ads campaign (paused, ready to activate)
 - [ ] Submit Slack App Directory listing

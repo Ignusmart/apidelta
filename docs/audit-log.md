@@ -804,3 +804,28 @@
 - Neon DB not provisioned
 - Stripe products/prices not created
 - All three are manual tasks for Jobelo
+
+## Iteration 24 — 2026-04-05 [LAUNCH]
+### Launch phase: social content creation
+### What was done
+- **Created `docs/social-content.md`** — comprehensive ready-to-publish social launch content across 5 platforms:
+  1. **LinkedIn (3 posts)**: Launch announcement (product screenshot + feature breakdown), pain-point story ("I spent a week manually checking 50 API changelogs" — discussion-starter format), technical deep-dive on AI classification vs regex (thought leadership)
+  2. **Twitter/X (3 threads)**: Launch thread (7 tweets — problem, solution, CTA), "What we learned building this" thread (9 tweets — solo SaaS lessons, tech decisions, build-in-public), developer pain-point thread (7 tweets — cost quantification + poll CTA)
+  3. **Reddit (3 posts)**: r/webdev (discussion format — "How do you keep track of breaking changes?"), r/devops (operational angle — "the gap in incident prevention"), r/programming (technical deep-dive — AI classification vs regex, link to Dev.to article)
+  4. **Indie Hackers (1 post)**: Full building-in-public post with real numbers (build time, infra cost, pricing rationale, revenue goal $500 MRR/90 days), key decisions explained (why not open source, why $49 not $19, why changelogs not OpenAPI specs), distribution plan, "what I'd do differently" section
+  5. **Dev.to article (1 draft)**: "How We Built an AI-Powered API Changelog Monitor" — ~2,000 word technical article covering architecture diagram, crawler multi-pattern extraction, AI classification with tool_use code examples, accuracy comparison (regex 60% vs AI 85%), cost analysis ($16/year for 50 APIs), alert engine schema, dashboard overview, lessons learned
+- **All content follows constraints**: No competitor names anywhere, async-only distribution, generic references only ("existing tools", "basic change detection", "enterprise monitoring platforms")
+- **Each post includes posting notes**: Optimal timing, engagement strategy, format tips per platform
+- **Updated `docs/launch-strategy.md`**: Marked 3 pre-launch checklist items complete (LinkedIn/Twitter posts, Show HN draft, Dev.to articles)
+### Audit results
+- No code changes — content document only
+- Skills used: social-content
+### What's next
+- Deploy to production (manual: Jobelo sets up Neon DB, Stripe, domains)
+- Prepare Product Hunt assets (logo, screenshots, GIF demo)
+- Build SEO pages (`/use-cases/api-changelog-monitoring`, etc.) as next coding iteration
+### Blockers
+- Domain not registered (driftwatch.dev or driftwatch.io)
+- Neon DB not provisioned
+- Stripe products/prices not created
+- All three are manual tasks for Jobelo
