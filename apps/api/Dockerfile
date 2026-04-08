@@ -41,9 +41,9 @@ COPY apps/api/package.json apps/api/
 # Install production deps only
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy Prisma schema + generated client
+# Copy Prisma schema + regenerate client for production node_modules
 COPY apps/api/prisma/ apps/api/prisma/
-COPY --from=deps /app/apps/api/node_modules/.prisma apps/api/node_modules/.prisma
+RUN cd apps/api && npx prisma generate
 
 # Copy built dist
 COPY --from=builder /app/apps/api/dist apps/api/dist
