@@ -43,7 +43,7 @@ RUN pnpm install --frozen-lockfile --prod
 
 # Copy Prisma schema + generated client
 COPY apps/api/prisma/ apps/api/prisma/
-COPY --from=deps /app/node_modules/.prisma node_modules/.prisma
+COPY --from=deps /app/apps/api/node_modules/.prisma apps/api/node_modules/.prisma
 
 # Copy built dist
 COPY --from=builder /app/apps/api/dist apps/api/dist
