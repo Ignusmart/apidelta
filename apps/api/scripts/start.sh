@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+cd /app/apps/api
+
 echo "Running Prisma migrations..."
 npx prisma@6.19.3 migrate deploy --schema=prisma/schema.prisma
 
