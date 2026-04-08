@@ -14,14 +14,14 @@ COPY apps/api/prisma/ apps/api/prisma/
 RUN pnpm install --frozen-lockfile
 
 # Generate Prisma client
-RUN pnpm --filter @apidelta/api prisma generate
+RUN cd apps/api && npx prisma generate
 
 # ── Stage 2: Build NestJS ──
 FROM deps AS builder
 
 COPY apps/api/ apps/api/
 
-RUN pnpm --filter @apidelta/api build
+RUN cd apps/api && pnpm build
 
 # ── Stage 3: Production image ──
 FROM node:20-alpine AS runner
@@ -44,7 +44,6 @@ RUN pnpm install --frozen-lockfile --prod
 # Copy Prisma schema + generated client
 COPY apps/api/prisma/ apps/api/prisma/
 COPY --from=deps /app/node_modules/.prisma node_modules/.prisma
-COPY --from=deps /app/apps/api/node_modules/.prisma apps/api/node_modules/.prisma
 
 # Copy built dist
 COPY --from=builder /app/apps/api/dist apps/api/dist
