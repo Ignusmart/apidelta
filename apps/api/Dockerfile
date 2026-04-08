@@ -43,7 +43,7 @@ RUN pnpm install --frozen-lockfile --prod
 
 # Copy Prisma schema + regenerate client for production node_modules
 COPY apps/api/prisma/ apps/api/prisma/
-RUN cd apps/api && npx prisma generate
+RUN cd apps/api && npx prisma@6.19.3 generate
 
 # Copy built dist
 COPY --from=builder /app/apps/api/dist apps/api/dist
