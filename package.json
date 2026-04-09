@@ -30,8 +30,10 @@
     "node": ">=20",
     "pnpm": ">=9"
   },
+  "dependencies": {
+    "next": "^15.2.0"
+  },
   "devDependencies": {
-    "next": "^15.2.0",
     "turbo": "^2.9.4"
   }
 }
