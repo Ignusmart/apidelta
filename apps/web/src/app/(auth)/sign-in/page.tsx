@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: 'Sign in',
   description:
     'Sign in to your APIDelta account to monitor API changelogs and manage breaking change alerts.',
+  robots: { index: false, follow: false },
   openGraph: {
     title: 'Sign in | APIDelta',
     description:

@@ -6,90 +6,78 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: baseUrl,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'weekly',
       priority: 1,
     },
-    {
-      url: `${baseUrl}/sign-in`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/sign-up`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
-    // SEO: Use-case pages
+    // SEO: Use-case pages (tier 1)
     {
       url: `${baseUrl}/use-cases/api-changelog-monitoring`,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/use-cases/breaking-change-detection`,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/use-cases/api-dependency-management`,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     // SEO: Comparison pages
     {
       url: `${baseUrl}/compare/manual-vs-automated`,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     {
       url: `${baseUrl}/compare/generic-vs-api-specific`,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'monthly',
       priority: 0.8,
     },
     // SEO: Tier 2 use-case pages
     {
       url: `${baseUrl}/use-cases/saas-api-integrations`,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
       url: `${baseUrl}/use-cases/devops-api-monitoring`,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     // SEO: Guide pages
     {
       url: `${baseUrl}/guides/api-versioning-best-practices`,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
       url: `${baseUrl}/guides/handling-breaking-api-changes`,
-      lastModified: new Date(),
+      lastModified: '2026-04-09',
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     // Legal pages
     {
       url: `${baseUrl}/terms`,
-      lastModified: new Date(),
+      lastModified: '2026-04-06',
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
+      lastModified: '2026-04-06',
       changeFrequency: 'yearly',
       priority: 0.3,
     },

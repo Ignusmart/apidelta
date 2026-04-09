@@ -8,6 +8,8 @@ import {
   SeoFaqSection,
   SeoFeatureGrid,
   SeoInternalLinks,
+  SeoBreadcrumb,
+  SeoArticleSchema,
 } from "../../_components/seo-page-shell";
 
 export const metadata: Metadata = {
@@ -97,6 +99,20 @@ const FAQS = [
 export default function ApiVersioningBestPracticesPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <SeoBreadcrumb
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Guides", href: "/guides/api-versioning-best-practices" },
+          { name: "API Versioning Best Practices", href: "/guides/api-versioning-best-practices" },
+        ]}
+      />
+      <SeoArticleSchema
+        title="API Versioning Best Practices for Engineering Teams"
+        description="Learn API versioning best practices: URL path versioning, header versioning, sunset policies, and how to monitor third-party API version changes automatically."
+        url="https://apidelta.dev/guides/api-versioning-best-practices"
+        datePublished="2026-04-06"
+        dateModified="2026-04-09"
+      />
       <SeoNav />
 
       <main id="main-content">

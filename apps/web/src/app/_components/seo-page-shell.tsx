@@ -11,6 +11,73 @@ import {
 // Shared shell for SEO landing pages (nav + footer + CTA banner + hero)
 // ---------------------------------------------------------------------------
 
+/** Renders BreadcrumbList JSON-LD schema for nested pages */
+export function SeoBreadcrumb({
+  items,
+}: {
+  items: { name: string; href: string }[];
+}) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: `https://apidelta.dev${item.href}`,
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+/** Renders Article JSON-LD schema for guide pages */
+export function SeoArticleSchema({
+  title,
+  description,
+  url,
+  datePublished,
+  dateModified,
+}: {
+  title: string;
+  description: string;
+  url: string;
+  datePublished: string;
+  dateModified?: string;
+}) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    description,
+    url,
+    datePublished,
+    dateModified: dateModified ?? datePublished,
+    author: {
+      "@type": "Organization",
+      name: "APIDelta",
+      url: "https://apidelta.dev",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "APIDelta",
+      url: "https://apidelta.dev",
+    },
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
 export function SeoNav() {
   return (
     <nav
@@ -104,66 +171,59 @@ export function SeoCtaBanner({
 }
 
 export function SeoFooter() {
+  const linkClass =
+    "rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500";
+
   return (
     <footer className="border-t border-gray-800/60 py-12">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-6 sm:flex-row">
-        <a
-          href="/"
-          className="flex items-center gap-2 text-sm font-bold"
-        >
-          <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
-          APIDelta
-        </a>
-        <nav
-          aria-label="Footer navigation"
-          className="flex flex-wrap justify-center gap-6 text-sm text-gray-500"
-        >
-          <a
-            href="/#features"
-            className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-          >
-            Features
-          </a>
-          <a
-            href="/#pricing"
-            className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-          >
-            Pricing
-          </a>
-          <a
-            href="/use-cases/api-changelog-monitoring"
-            className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-          >
-            Use Cases
-          </a>
-          <a
-            href="/compare/manual-vs-automated"
-            className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-          >
-            Compare
-          </a>
-          <a
-            href="/guides/api-versioning-best-practices"
-            className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-          >
-            Guides
-          </a>
-          <a
-            href="/terms"
-            className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-          >
-            Terms
-          </a>
-          <a
-            href="/privacy"
-            className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-          >
-            Privacy
-          </a>
-        </nav>
-        <p className="text-xs text-gray-600">
-          &copy; {new Date().getFullYear()} APIDelta. All rights reserved.
-        </p>
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Brand */}
+          <div>
+            <a href="/" className="flex items-center gap-2 text-sm font-bold">
+              <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
+              APIDelta
+            </a>
+            <p className="mt-3 text-xs text-gray-600">
+              AI-powered API changelog monitoring for engineering teams.
+            </p>
+          </div>
+
+          {/* Use Cases */}
+          <nav aria-label="Use cases" className="space-y-2 text-sm text-gray-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Use Cases</p>
+            <a href="/use-cases/api-changelog-monitoring" className={linkClass}>API Changelog Monitoring</a><br />
+            <a href="/use-cases/breaking-change-detection" className={linkClass}>Breaking Change Detection</a><br />
+            <a href="/use-cases/api-dependency-management" className={linkClass}>API Dependency Management</a><br />
+            <a href="/use-cases/saas-api-integrations" className={linkClass}>SaaS API Integrations</a><br />
+            <a href="/use-cases/devops-api-monitoring" className={linkClass}>DevOps API Monitoring</a>
+          </nav>
+
+          {/* Resources */}
+          <nav aria-label="Resources" className="space-y-2 text-sm text-gray-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Resources</p>
+            <a href="/guides/api-versioning-best-practices" className={linkClass}>API Versioning Best Practices</a><br />
+            <a href="/guides/handling-breaking-api-changes" className={linkClass}>Handling Breaking Changes</a><br />
+            <a href="/compare/manual-vs-automated" className={linkClass}>Manual vs Automated Monitoring</a><br />
+            <a href="/compare/generic-vs-api-specific" className={linkClass}>Generic vs API-Specific Tools</a>
+          </nav>
+
+          {/* Product */}
+          <nav aria-label="Product" className="space-y-2 text-sm text-gray-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Product</p>
+            <a href="/#features" className={linkClass}>Features</a><br />
+            <a href="/#pricing" className={linkClass}>Pricing</a><br />
+            <a href="/#faq" className={linkClass}>FAQ</a><br />
+            <a href="/terms" className={linkClass}>Terms</a><br />
+            <a href="/privacy" className={linkClass}>Privacy</a>
+          </nav>
+        </div>
+
+        <div className="mt-10 border-t border-gray-800/60 pt-6 text-center">
+          <p className="text-xs text-gray-600">
+            &copy; {new Date().getFullYear()} APIDelta. All rights reserved.
+          </p>
+        </div>
       </div>
     </footer>
   );

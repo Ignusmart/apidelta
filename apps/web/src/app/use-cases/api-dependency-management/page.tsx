@@ -16,6 +16,7 @@ import {
   SeoFaqSection,
   SeoFeatureGrid,
   SeoInternalLinks,
+  SeoBreadcrumb,
 } from "../../_components/seo-page-shell";
 
 export const metadata: Metadata = {
@@ -105,6 +106,7 @@ const FAQS = [
 export default function ApiDependencyManagementPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <SeoBreadcrumb items={[{ name: "Home", href: "/" }, { name: "Use Cases", href: "/use-cases/api-dependency-management" }, { name: "API Dependency Management", href: "/use-cases/api-dependency-management" }]} />
       <SeoNav />
 
       <main id="main-content">

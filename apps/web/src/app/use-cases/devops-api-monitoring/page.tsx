@@ -9,6 +9,7 @@ import {
   SeoFaqSection,
   SeoFeatureGrid,
   SeoInternalLinks,
+  SeoBreadcrumb,
 } from "../../_components/seo-page-shell";
 
 export const metadata: Metadata = {
@@ -98,6 +99,7 @@ const FAQS = [
 export default function DevopsApiMonitoringPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <SeoBreadcrumb items={[{ name: "Home", href: "/" }, { name: "Use Cases", href: "/use-cases/devops-api-monitoring" }, { name: "DevOps API Monitoring", href: "/use-cases/devops-api-monitoring" }]} />
       <SeoNav />
 
       <main id="main-content">

@@ -6,6 +6,8 @@ import {
   SeoFooter,
   SeoFaqSection,
   SeoInternalLinks,
+  SeoBreadcrumb,
+  SeoArticleSchema,
 } from "../../_components/seo-page-shell";
 
 export const metadata: Metadata = {
@@ -95,6 +97,20 @@ const FAQS = [
 export default function HandlingBreakingApiChangesPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <SeoBreadcrumb
+        items={[
+          { name: "Home", href: "/" },
+          { name: "Guides", href: "/guides/handling-breaking-api-changes" },
+          { name: "Handling Breaking API Changes", href: "/guides/handling-breaking-api-changes" },
+        ]}
+      />
+      <SeoArticleSchema
+        title="How to Handle Breaking API Changes — A Practical Guide"
+        description="Learn how to detect, triage, and respond to breaking API changes before they cause production incidents."
+        url="https://apidelta.dev/guides/handling-breaking-api-changes"
+        datePublished="2026-04-06"
+        dateModified="2026-04-09"
+      />
       <SeoNav />
 
       <main id="main-content">

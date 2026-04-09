@@ -42,7 +42,10 @@ export const metadata: Metadata = {
     description:
       'AI-classified alerts for third-party API breaking changes. Slack + email. From $49/mo.',
   },
-  alternates: { canonical: 'https://apidelta.dev' },
+  alternates: {
+    canonical: 'https://apidelta.dev',
+    languages: { en: 'https://apidelta.dev' },
+  },
 };
 
 export default function RootLayout({

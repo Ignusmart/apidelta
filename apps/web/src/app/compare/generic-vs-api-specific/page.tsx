@@ -7,6 +7,7 @@ import {
   SeoFooter,
   SeoFaqSection,
   SeoInternalLinks,
+  SeoBreadcrumb,
 } from "../../_components/seo-page-shell";
 
 export const metadata: Metadata = {
@@ -100,6 +101,7 @@ const FAQS = [
 export default function GenericVsApiSpecificPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <SeoBreadcrumb items={[{ name: "Home", href: "/" }, { name: "Compare", href: "/compare/generic-vs-api-specific" }, { name: "Generic vs API-Specific", href: "/compare/generic-vs-api-specific" }]} />
       <SeoNav />
 
       <main id="main-content">

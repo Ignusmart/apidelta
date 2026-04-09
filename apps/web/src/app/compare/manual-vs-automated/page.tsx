@@ -7,6 +7,7 @@ import {
   SeoFooter,
   SeoFaqSection,
   SeoInternalLinks,
+  SeoBreadcrumb,
 } from "../../_components/seo-page-shell";
 
 export const metadata: Metadata = {
@@ -100,6 +101,7 @@ const FAQS = [
 export default function ManualVsAutomatedPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      <SeoBreadcrumb items={[{ name: "Home", href: "/" }, { name: "Compare", href: "/compare/manual-vs-automated" }, { name: "Manual vs Automated", href: "/compare/manual-vs-automated" }]} />
       <SeoNav />
 
       <main id="main-content">

@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: 'Sign up',
   description:
     'Start your 14-day free trial of APIDelta. Monitor API changelogs and get AI-classified breaking change alerts. No credit card required.',
+  robots: { index: false, follow: false },
   openGraph: {
     title: 'Start your free trial | APIDelta',
     description:
