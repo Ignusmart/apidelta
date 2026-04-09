@@ -494,33 +494,19 @@ export default function SourcesPage() {
 
       {/* Sources table */}
       {sources.length === 0 ? (
-        <div className="space-y-6">
-          <div className="rounded-xl border border-dashed border-gray-800 px-6 py-12 text-center">
-            <Rss aria-hidden="true" className="mx-auto h-10 w-10 text-gray-700" />
-            <p className="mt-4 text-sm text-gray-500">No API sources yet.</p>
-            <p className="mt-1 text-xs text-gray-600">
-              Paste a changelog URL and APIDelta starts monitoring within minutes.
-            </p>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
-            >
-              <Plus aria-hidden="true" className="h-4 w-4" />
-              Add your first API source
-            </button>
-          </div>
-
-          {/* Quick-add popular APIs */}
-          <QuickAddGrid
-            onSelect={(source: QuickAddSource) => {
-              setFormUrl(source.url);
-              setFormName(source.name);
-              setFormType(source.sourceType);
-              setFormTypeAutoDetected(true);
-              setShowAddForm(true);
-            }}
-            disabled={sourceLimit !== null && !sourceLimit.allowed}
-          />
+        <div className="rounded-xl border border-dashed border-gray-800 px-6 py-12 text-center">
+          <Rss aria-hidden="true" className="mx-auto h-10 w-10 text-gray-700" />
+          <p className="mt-4 text-sm text-gray-500">No API sources yet.</p>
+          <p className="mt-1 text-xs text-gray-600">
+            Paste a changelog URL and APIDelta starts monitoring within minutes.
+          </p>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="mt-5 inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
+          >
+            <Plus aria-hidden="true" className="h-4 w-4" />
+            Add your first API source
+          </button>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-800">
@@ -626,6 +612,19 @@ export default function SourcesPage() {
           </table>
         </div>
       )}
+
+      {/* Quick-add popular APIs */}
+      <QuickAddGrid
+        onSelect={(source: QuickAddSource) => {
+          setFormUrl(source.url);
+          setFormName(source.name);
+          setFormType(source.sourceType);
+          setFormTypeAutoDetected(true);
+          setShowAddForm(true);
+        }}
+        disabled={sourceLimit !== null && !sourceLimit.allowed}
+        existingUrls={sources.map((s) => s.url)}
+      />
     </div>
   );
 }

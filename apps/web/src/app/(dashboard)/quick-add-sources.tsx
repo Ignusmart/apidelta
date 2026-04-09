@@ -59,17 +59,22 @@ export const POPULAR_SOURCES: QuickAddSource[] = [
 export function QuickAddGrid({
   onSelect,
   disabled,
+  existingUrls = [],
 }: {
   onSelect: (source: QuickAddSource) => void;
   disabled?: boolean;
+  existingUrls?: string[];
 }) {
+  const available = POPULAR_SOURCES.filter((s) => !existingUrls.includes(s.url));
+  if (available.length === 0) return null;
+
   return (
     <div>
       <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
         Popular APIs — add with one click
       </p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {POPULAR_SOURCES.map((source) => {
+        {available.map((source) => {
           const Icon = source.icon;
           return (
             <button
