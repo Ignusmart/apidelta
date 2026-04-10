@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 export interface AlertEmailPayload {
   to: string;
@@ -16,25 +16,19 @@ export interface AlertEmailPayload {
 @Injectable()
 export class EmailTransport {
   private readonly logger = new Logger(EmailTransport.name);
-  private transporter: nodemailer.Transporter | null = null;
+  private resend: Resend | null = null;
+  private readonly from: string;
 
   constructor(private readonly config: ConfigService) {
-    const host = this.config.get<string>('SMTP_HOST');
-    const port = this.config.get<number>('SMTP_PORT');
-    const user = this.config.get<string>('SMTP_USER');
-    const pass = this.config.get<string>('SMTP_PASS');
+    const apiKey = this.config.get<string>('RESEND_API_KEY');
+    this.from = this.config.get<string>('RESEND_FROM') || 'APIDelta <alerts@apidelta.dev>';
 
-    if (host && user && pass) {
-      this.transporter = nodemailer.createTransport({
-        host,
-        port: port || 465,
-        secure: (port || 465) === 465,
-        auth: { user, pass },
-      });
-      this.logger.log('Email transport configured');
+    if (apiKey) {
+      this.resend = new Resend(apiKey);
+      this.logger.log('Email transport configured (Resend)');
     } else {
       this.logger.warn(
-        'SMTP credentials not configured — email alerts will be logged only',
+        'RESEND_API_KEY not configured — email alerts will be logged only',
       );
     }
   }
@@ -43,25 +37,30 @@ export class EmailTransport {
     const subject = `[APIDelta] ${payload.severity} ${payload.changeType} change in ${payload.sourceName}`;
     const html = this.buildHtml(payload);
 
-    if (!this.transporter) {
+    if (!this.resend) {
       this.logger.log(
         `[DRY RUN] Would send email to ${payload.to}: ${subject}`,
       );
-      this.logger.debug(`[DRY RUN] Body:\n${html}`);
-      return true; // Treat as success in dry-run mode
+      return true;
     }
 
     try {
-      await this.transporter.sendMail({
-        from: this.config.get<string>('SMTP_USER') || 'alerts@apidelta.dev',
+      const { error } = await this.resend.emails.send({
+        from: this.from,
         to: payload.to,
         subject,
         html,
       });
+
+      if (error) {
+        this.logger.error(`Failed to send email to ${payload.to}: ${error.message}`);
+        return false;
+      }
+
       this.logger.log(`Email sent to ${payload.to}: ${subject}`);
       return true;
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`Failed to send email to ${payload.to}: ${msg}`);
       return false;
     }
