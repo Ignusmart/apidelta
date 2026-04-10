@@ -13,7 +13,7 @@ const SEVERITY_RANK: Record<string, number> = {
   LOW: 1,
 };
 
-const DASHBOARD_BASE_URL = 'https://app.apidelta.dev';
+const DASHBOARD_BASE_URL = 'https://apidelta.dev';
 
 @Injectable()
 export class AlertsService {
