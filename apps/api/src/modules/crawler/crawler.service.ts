@@ -362,6 +362,17 @@ export class CrawlerService {
       /^assets$/i,
       /^dahlia$/i, // Stripe version placeholder pages
       /^(pre-)?release$/i,
+      // GitHub / markdown release-note section labels. These are subheadings
+      // inside a release, not standalone entries. The real entry is the
+      // parent release (e.g. "v16.2.1-canary.31").
+      /^core changes$/i,
+      /^misc changes$/i,
+      /^breaking changes$/i,
+      /^bug fixes$/i,
+      /^new features$/i,
+      /^credits$/i,
+      /^what's changed$/i,
+      /^full changelog$/i,
     ];
     if (noisePatterns.some((p) => p.test(title))) return true;
 
@@ -426,12 +437,27 @@ export class CrawlerService {
         elements.each((_, el) => {
           const $el = $(el);
 
-          // Skip wrapper elements that contain multiple changelog items.
-          // When cheerio matches both an outer wrapper and its children, the
-          // wrapper would extract a bloated description because $el.find()
-          // walks the full subtree. We let the inner children match via the
-          // same selector iteration and produce clean single-item entries.
-          if ($el.find('h1, h2, h3, h4').length > 1) return;
+          // Skip wrapper elements that contain multiple same-level headings.
+          // A real wrapper (e.g. Twilio's DOM that holds 10 changelog cards)
+          // has several h3 siblings — we want to skip it and let the inner
+          // children match via the same selector iteration instead.
+          //
+          // We intentionally only look at headings AT THE SAME LEVEL as the
+          // first heading. A single-entry element with sub-sections (e.g.
+          // GitHub's Next.js release page: h2 "v16.2.1-canary.31" + several
+          // h3 "Core Changes" / "Misc Changes" children) should NOT be
+          // treated as a wrapper — its h2 is the real title and the h3s are
+          // section labels within one entry.
+          const $headings = $el.find('h1, h2, h3, h4');
+          const firstHeading = $headings.get(0);
+          if (firstHeading) {
+            const firstTag = (firstHeading as { tagName?: string }).tagName?.toLowerCase() ?? '';
+            const sameLevelCount = $headings.filter(
+              (_i, h) =>
+                ((h as { tagName?: string }).tagName?.toLowerCase() ?? '') === firstTag,
+            ).length;
+            if (sameLevelCount > 1) return;
+          }
 
           const entry = this.extractEntryFromElement($, $el);
           // Require a real title AND some body content. Downstream noise
