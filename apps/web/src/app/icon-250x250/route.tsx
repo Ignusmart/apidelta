@@ -1,0 +1,35 @@
+import { ImageResponse } from 'next/og';
+
+export const runtime = 'edge';
+
+export async function GET() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+          borderRadius: 48,
+        }}
+      >
+        <svg
+          width="160"
+          height="160"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="white"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" />
+        </svg>
+      </div>
+    ),
+    { width: 250, height: 250 },
+  );
+}
