@@ -6,6 +6,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 interface ClassifiedEntry {
   title: string;
+  isSignal: boolean;
   changeType: 'BREAKING' | 'DEPRECATION' | 'NON_BREAKING' | 'INFO';
   severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   affectedEndpoints: string[];
@@ -58,13 +59,26 @@ export class ClassifierService {
     // Process in batches of 20 to stay within token limits
     const BATCH_SIZE = 20;
     let classified = 0;
+    let dropped = 0;
 
     for (let i = 0; i < entries.length; i += BATCH_SIZE) {
       const batch = entries.slice(i, i + BATCH_SIZE);
       try {
         const results = await this.classifyBatch(batch);
-        await this.applyClassifications(batch, results);
-        classified += batch.length;
+        const { applied, droppedIds } = await this.applyClassifications(
+          batch,
+          results,
+        );
+        classified += applied;
+
+        // Hard-delete entries the classifier flagged as noise so they never
+        // show up in the feed. They're bad scrapes, not real changes.
+        if (droppedIds.length > 0) {
+          await this.prisma.changeEntry.deleteMany({
+            where: { id: { in: droppedIds } },
+          });
+          dropped += droppedIds.length;
+        }
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
         this.logger.error(
@@ -75,7 +89,7 @@ export class ClassifierService {
     }
 
     this.logger.log(
-      `Classified ${classified}/${entries.length} entries for crawl run ${crawlRunId}`,
+      `Classified ${classified}/${entries.length} entries for crawl run ${crawlRunId} (dropped ${dropped} as noise)`,
     );
     return classified;
   }
@@ -135,30 +149,42 @@ export class ClassifierService {
 
   /**
    * Apply classification results to the DB entries.
+   * Returns the IDs of entries the classifier marked as noise so the caller
+   * can delete them.
    */
   private async applyClassifications(
     entries: Array<{ id: string; title: string }>,
     classifications: ClassifiedEntry[],
-  ): Promise<void> {
+  ): Promise<{ applied: number; droppedIds: string[] }> {
+    const droppedIds: string[] = [];
+    const updates: Array<Promise<unknown>> = [];
+
     // Match by index position — Claude returns in the same order
-    const updates = entries.map((entry, idx) => {
+    entries.forEach((entry, idx) => {
       const classification = classifications[idx];
-      if (!classification) {
-        return null; // Skip if Claude didn't return enough results
+      if (!classification) return; // Claude didn't return enough results
+
+      // Entry flagged as noise — queue for deletion, don't update
+      if (classification.isSignal === false) {
+        droppedIds.push(entry.id);
+        return;
       }
 
-      return this.prisma.changeEntry.update({
-        where: { id: entry.id },
-        data: {
-          changeType: this.mapChangeType(classification.changeType),
-          severity: this.mapSeverity(classification.severity),
-          affectedEndpoints: classification.affectedEndpoints ?? [],
-          description: classification.summary || entry.title,
-        },
-      });
+      updates.push(
+        this.prisma.changeEntry.update({
+          where: { id: entry.id },
+          data: {
+            changeType: this.mapChangeType(classification.changeType),
+            severity: this.mapSeverity(classification.severity),
+            affectedEndpoints: classification.affectedEndpoints ?? [],
+            description: classification.summary || entry.title,
+          },
+        }),
+      );
     });
 
-    await Promise.all(updates.filter(Boolean));
+    await Promise.all(updates);
+    return { applied: updates.length, droppedIds };
   }
 
   private mapChangeType(type: string): ChangeType {
@@ -188,11 +214,27 @@ const CLASSIFICATION_SYSTEM_PROMPT = `You are an API changelog classifier for AP
 
 Your job: given a list of changelog entries from an API provider, classify each one using the submit_classifications tool.
 
-Classification rules:
+FIRST, decide isSignal for each entry:
+- isSignal=false (NOISE — entry will be DROPPED from the feed):
+  * Navigation chrome, sidebar menus, filter widgets, pagination captured as content
+  * Bare date headers ("Apr 09, 2026", "2024") with no actual content
+  * Archive index entries (just a year, just a month)
+  * Loading errors, "no results found", "sorry something went wrong"
+  * Empty placeholders like "Suggested" with no body
+  * Pure marketing blog post announcements with zero technical API content ("Insights for the future of software development")
+  * Generic version release announcements with no substantive changes ("v16.2.1-canary.30" with boilerplate)
+  * Duplicate/near-duplicate of another entry in the same batch (same change wrapped in a different page chunk)
+  * Entries whose description is nearly identical to their title (no new information)
+  * Pagination UI captured as content ("An icon of a left arrow 1 2 3...")
+- isSignal=true: real changelog entries describing actual API, SDK, platform, or product changes — even small ones
+
+For isSignal=false entries, still provide changeType/severity/summary (they'll be ignored), but use INFO/LOW and a one-word summary like "noise". Do NOT try to rescue noise as INFO — prefer dropping.
+
+Classification rules (only apply to isSignal=true):
 - BREAKING: Removes endpoints, changes required parameters, alters response structure in incompatible ways, removes fields, changes authentication. These WILL break existing integrations.
 - DEPRECATION: Announces future removal of endpoints/features/fields. Not broken yet but will be. Look for words like "deprecated", "sunset", "end of life", "will be removed".
 - NON_BREAKING: New endpoints, new optional parameters, new response fields, performance improvements, bug fixes that don't change behavior. Safe — won't break integrations.
-- INFO: Blog posts, general announcements, documentation updates, marketing content, pricing changes, status updates. Not a technical API change.
+- INFO: Substantive technical announcements or general platform news that developers should know about but don't change API behavior (e.g., new regional availability, new SDK language support, new product launch). NOT marketing filler — that's isSignal=false.
 
 Severity rules:
 - CRITICAL: Breaking changes to widely-used endpoints (auth, core CRUD), immediate effect, no migration path mentioned
@@ -204,7 +246,7 @@ For affectedEndpoints: extract any API paths, method names, SDK functions, or re
 
 For summary: write a 1-2 sentence technical summary focused on what changed and its impact on integrations.
 
-IMPORTANT: Return classifications in the SAME ORDER as the input entries. One classification per input entry.`;
+IMPORTANT: Return classifications in the SAME ORDER as the input entries. One classification per input entry. Be aggressive with isSignal=false — it's better to drop a borderline entry than pollute the feed with noise.`;
 
 const CLASSIFICATION_TOOL: Anthropic.Tool = {
   name: 'submit_classifications',
@@ -222,6 +264,11 @@ const CLASSIFICATION_TOOL: Anthropic.Tool = {
             title: {
               type: 'string',
               description: 'Echo back the original title for matching',
+            },
+            isSignal: {
+              type: 'boolean',
+              description:
+                'false if the entry is noise (nav chrome, bare date, empty placeholder, marketing filler, duplicate) and should be dropped from the feed. true if it describes a real change worth showing developers. Be aggressive — prefer dropping borderline entries.',
             },
             changeType: {
               type: 'string',
@@ -246,6 +293,7 @@ const CLASSIFICATION_TOOL: Anthropic.Tool = {
           },
           required: [
             'title',
+            'isSignal',
             'changeType',
             'severity',
             'affectedEndpoints',

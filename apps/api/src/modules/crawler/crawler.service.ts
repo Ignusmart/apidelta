@@ -149,8 +149,14 @@ export class CrawlerService {
       const html = await response.text();
 
       // Parse changelog entries
-      const entries = this.parseChangelog(html, source.url);
-      this.logger.log(`Parsed ${entries.length} changelog entries from ${source.name}`);
+      const rawEntries = this.parseChangelog(html, source.url);
+      this.logger.log(`Parsed ${rawEntries.length} raw entries from ${source.name}`);
+
+      // Filter obvious noise (nav chrome, date headers, archive indices) and dedupe
+      const entries = this.filterNoiseAndDedupe(rawEntries);
+      this.logger.log(
+        `Kept ${entries.length}/${rawEntries.length} entries after noise filter`,
+      );
 
       // Store entries as ChangeEntry records
       // For this iteration, we skip AI classification — mark everything as INFO/LOW
@@ -243,6 +249,154 @@ export class CrawlerService {
     }
   }
 
+  // ── Noise filter & dedup ─────────────────────
+
+  /**
+   * Drop entries that look like navigation chrome, bare date headers, archive
+   * index pages, loading errors, and other scrape artifacts. Also dedupe by
+   * normalized title within the run.
+   *
+   * This is a cheap pre-filter so we don't waste classifier tokens or pollute
+   * the feed with obvious garbage. The AI classifier handles the grey area.
+   */
+  filterNoiseAndDedupe(
+    entries: ParsedChangelogEntry[],
+  ): ParsedChangelogEntry[] {
+    const seenFingerprints = new Set<string>();
+    const seenTokenSets: Array<{ tokens: Set<string>; size: number }> = [];
+    const kept: ParsedChangelogEntry[] = [];
+
+    for (const entry of entries) {
+      if (this.isLikelyNoise(entry)) continue;
+
+      // Layer 1: exact content fingerprint (title + description prefix).
+      // Catches pages that render the same item multiple times with
+      // identical body text.
+      const fingerprint = this.contentFingerprint(entry);
+      if (seenFingerprints.has(fingerprint)) continue;
+      seenFingerprints.add(fingerprint);
+
+      // Layer 2: token-set Jaccard similarity against previously-kept
+      // entries. Catches same-change-different-framing cases (e.g. Twilio's
+      // page renders each item twice — once with the headline as title,
+      // once with the subtitle as title).
+      const tokens = this.contentTokens(entry);
+      const isDup = seenTokenSets.some(({ tokens: prev, size: prevSize }) => {
+        let intersect = 0;
+        for (const t of tokens) if (prev.has(t)) intersect++;
+        const union = prevSize + tokens.size - intersect;
+        return union > 0 && intersect / union > 0.7;
+      });
+      if (isDup) continue;
+      seenTokenSets.push({ tokens, size: tokens.size });
+
+      kept.push(entry);
+    }
+
+    return kept;
+  }
+
+  /** Stable fingerprint for exact-duplicate detection. */
+  private contentFingerprint(entry: ParsedChangelogEntry): string {
+    const body = `${entry.title} ${entry.description}`
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 240);
+    return body;
+  }
+
+  /** Token set for near-duplicate Jaccard similarity. */
+  private contentTokens(entry: ParsedChangelogEntry): Set<string> {
+    const STOP = new Set([
+      'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+      'to', 'of', 'in', 'on', 'for', 'and', 'or', 'but', 'with', 'by', 'as',
+      'at', 'this', 'that', 'these', 'those', 'it', 'its', 'we', 'you', 'your',
+      'our', 'their', 'from', 'now', 'new', 'can', 'will', 'has', 'have',
+      'into', 'about', 'more', 'learn',
+    ]);
+    return new Set(
+      `${entry.title} ${entry.description.slice(0, 400)}`
+        .toLowerCase()
+        .replace(/[^\w\s]/g, ' ')
+        .split(/\s+/)
+        .filter((t) => t.length > 3 && !STOP.has(t)),
+    );
+  }
+
+  private isLikelyNoise(entry: ParsedChangelogEntry): boolean {
+    const title = entry.title.trim();
+    const description = entry.description.trim();
+
+    // Empty / too-short title with no description
+    if (title.length < 15 && description.length < 40) return true;
+
+    // Title is just a year ("2023", "2024")
+    if (/^\d{4}$/.test(title)) return true;
+
+    // Title is just a date header ("Apr 09, 2026", "April 9, 2026", "2026-04-09")
+    if (
+      /^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2},?\s*\d{4}$/i.test(
+        title,
+      )
+    )
+      return true;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(title)) return true;
+
+    // Known nav / UI fragment patterns
+    const noisePatterns = [
+      /^filter\b/i,
+      /^filter by/i,
+      /^loading\b/i,
+      /^error[:\s]/i,
+      /^no results/i,
+      /^an icon of/i,
+      /^view all/i,
+      /^choose a tag/i,
+      /^sorry, something went wrong/i,
+      /^insights for the future/i, // GitHub marketing filler
+      /^suggested$/i, // OpenAI sidebar header
+      /^read the latest$/i,
+      /^contributors?$/i,
+      /^assets$/i,
+      /^dahlia$/i, // Stripe version placeholder pages
+      /^(pre-)?release$/i,
+    ];
+    if (noisePatterns.some((p) => p.test(title))) return true;
+
+    // Description that's only GitHub release chrome
+    if (
+      /^(pre-release|latest|verified|this commit was created)/i.test(
+        description.slice(0, 60),
+      ) &&
+      description.length < 200
+    )
+      return true;
+
+    // Description is essentially a repeat of the title (no new info)
+    if (
+      description.length > 0 &&
+      description.length < title.length * 1.3 &&
+      description.toLowerCase().startsWith(title.toLowerCase().slice(0, 30))
+    )
+      return true;
+
+    // High ratio of single-word lines (nav menus captured as content)
+    const lines = description.split(/\s+/).filter(Boolean);
+    if (lines.length > 10) {
+      const singleTokenRatio =
+        description
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0 && l.split(/\s+/).length === 1).length /
+        Math.max(description.split('\n').length, 1);
+      if (singleTokenRatio > 0.6) return true;
+    }
+
+    return false;
+  }
+
   // ── HTML changelog parser ────────────────────
 
   parseChangelog(html: string, url: string): ParsedChangelogEntry[] {
@@ -270,8 +424,23 @@ export class CrawlerService {
       if (elements.length >= 2) {
         // Found a pattern with multiple entries
         elements.each((_, el) => {
-          const entry = this.extractEntryFromElement($, $(el));
-          if (entry && entry.title.length > 5) {
+          const $el = $(el);
+
+          // Skip wrapper elements that contain multiple changelog items.
+          // When cheerio matches both an outer wrapper and its children, the
+          // wrapper would extract a bloated description because $el.find()
+          // walks the full subtree. We let the inner children match via the
+          // same selector iteration and produce clean single-item entries.
+          if ($el.find('h1, h2, h3, h4').length > 1) return;
+
+          const entry = this.extractEntryFromElement($, $el);
+          // Require a real title AND some body content. Downstream noise
+          // filter does the surgical work; this just blocks the empty shells.
+          if (
+            entry &&
+            entry.title.length >= 10 &&
+            entry.description.length >= 20
+          ) {
             entries.push(entry);
           }
         });
@@ -341,7 +510,11 @@ export class CrawlerService {
       .join('\n')
       .trim();
 
-    const rawExcerpt = $el.text().trim();
+    // Build rawExcerpt from the content we actually extracted, not the full
+    // descendant text. $el.text() can bleed sibling content when the matched
+    // element is a wrapper containing multiple changelog items (seen on
+    // Twilio). Reconstructing from title+description keeps it tight.
+    const rawExcerpt = [title, description].filter(Boolean).join('\n\n').trim();
 
     if (!title && !description) return null;
 
