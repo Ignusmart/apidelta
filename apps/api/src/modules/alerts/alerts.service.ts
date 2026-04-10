@@ -231,6 +231,55 @@ export class AlertsService {
     return true;
   }
 
+  // ── Retry Failed Alerts ─────────────────────────
+
+  async retryFailed(teamId: string): Promise<{ retried: number; succeeded: number }> {
+    const failedAlerts = await this.prisma.alert.findMany({
+      where: { teamId, status: AlertStatus.FAILED },
+      include: {
+        alertRule: true,
+        changeEntry: {
+          include: {
+            crawlRun: {
+              include: { source: { select: { name: true } } },
+            },
+          },
+        },
+      },
+    });
+
+    if (failedAlerts.length === 0) {
+      this.logger.log(`No failed alerts to retry for team ${teamId}`);
+      return { retried: 0, succeeded: 0 };
+    }
+
+    this.logger.log(`Retrying ${failedAlerts.length} failed alerts for team ${teamId}`);
+
+    let succeeded = 0;
+
+    for (const alert of failedAlerts) {
+      const { alertRule: rule, changeEntry: change } = alert;
+      if (!rule || !change) continue;
+
+      const sourceName = change.crawlRun?.source?.name ?? 'Unknown';
+      const success = await this.sendNotification(rule, change, sourceName);
+
+      await this.prisma.alert.update({
+        where: { id: alert.id },
+        data: {
+          status: success ? AlertStatus.SENT : AlertStatus.FAILED,
+          sentAt: success ? new Date() : null,
+          errorMessage: success ? null : 'Notification delivery failed (retry)',
+        },
+      });
+
+      if (success) succeeded++;
+    }
+
+    this.logger.log(`Retry complete: ${succeeded}/${failedAlerts.length} succeeded`);
+    return { retried: failedAlerts.length, succeeded };
+  }
+
   // ── Notification Dispatch ───────────────────────
 
   private async sendNotification(

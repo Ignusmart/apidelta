@@ -47,6 +47,14 @@ export class AlertsController {
     return this.alertsService.listAlerts(teamId, page, pageSize);
   }
 
+  // ── Retry Failed ─────────────────────────────────
+
+  @Post('retry-failed')
+  @HttpCode(HttpStatus.OK)
+  async retryFailed(@Query('teamId') teamId: string) {
+    return this.alertsService.retryFailed(teamId);
+  }
+
   // ── Manual trigger (for testing) ────────────────
 
   @Post('evaluate/:crawlRunId')
