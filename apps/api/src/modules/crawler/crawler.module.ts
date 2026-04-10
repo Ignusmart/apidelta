@@ -3,13 +3,14 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CrawlerService } from './crawler.service';
 import { CrawlerProcessor } from './crawler.processor';
 import { SourcesController } from './sources.controller';
+import { ChangesController } from './changes.controller';
 import { ClassifierModule } from '../classifier/classifier.module';
 import { AlertsModule } from '../alerts/alerts.module';
 import { BillingModule } from '../billing/billing.module';
 
 @Module({
   imports: [ScheduleModule.forRoot(), ClassifierModule, AlertsModule, BillingModule],
-  controllers: [SourcesController],
+  controllers: [SourcesController, ChangesController],
   providers: [CrawlerService, CrawlerProcessor],
   exports: [CrawlerService],
 })

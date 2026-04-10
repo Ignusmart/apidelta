@@ -23,6 +23,36 @@ export class CrawlerService {
     @Optional() @Inject(AlertsService) private readonly alertsService?: AlertsService,
   ) {}
 
+  // ── Changes ──────────────────────────────────
+
+  async listChanges(teamId: string, page = 1, pageSize = 50) {
+    const skip = (page - 1) * pageSize;
+    const where = {
+      crawlRun: { source: { teamId } },
+    };
+    const [changes, total] = await Promise.all([
+      this.prisma.changeEntry.findMany({
+        where,
+        include: {
+          crawlRun: {
+            select: {
+              source: { select: { id: true, name: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.changeEntry.count({ where }),
+    ]);
+
+    return {
+      changes,
+      pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
+    };
+  }
+
   // ── Source CRUD ──────────────────────────────
 
   async listSources(teamId: string) {

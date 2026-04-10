@@ -60,25 +60,13 @@ export default function ChangesPage() {
     setLoading(true);
     setError(null);
     try {
-      const [alertsData, sourcesData] = await Promise.all([
-        apiFetch<{ data: Array<{ changeEntry?: ChangeEntry }> }>(
-          `/alerts?teamId=${teamId}&page=1&pageSize=100`,
+      const [changesData, sourcesData] = await Promise.all([
+        apiFetch<{ changes: ChangeEntry[]; pagination: { total: number } }>(
+          `/changes?teamId=${teamId}&page=1&pageSize=100`,
         ),
         apiFetch<ApiSource[]>(`/sources?teamId=${teamId}`),
       ]);
-      // Extract unique change entries from alerts
-      const changeMap = new Map<string, ChangeEntry>();
-      for (const alert of alertsData.data ?? []) {
-        if (alert.changeEntry) {
-          changeMap.set(alert.changeEntry.id, alert.changeEntry);
-        }
-      }
-      setChanges(
-        Array.from(changeMap.values()).sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-        ),
-      );
+      setChanges(changesData.changes ?? []);
       setSources(sourcesData);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load changes. Please try again.');
