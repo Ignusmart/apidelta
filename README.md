@@ -168,6 +168,59 @@ pnpm db:generate     # Regenerate Prisma client
 cd apps/api && npx prisma studio
 ```
 
+## Demo GIF
+
+Three ways to produce the 30-second demo GIF (add URL → AI classification → Slack alert).
+
+### Option A: Seed real data and record manually
+
+```bash
+cd apps/api
+pnpm prisma:seed-demo
+```
+
+Then sign in as `demo@apidelta.dev` and screen-record with Kap, LICEcap, or OBS. Follow the beat-by-beat script in `docs/demo-gif-recording.md`.
+
+### Option B: Demo mode (no backend needed)
+
+Append `?demo=true` to any dashboard URL for hardcoded data:
+
+```
+http://localhost:3000/dashboard?demo=true
+http://localhost:3000/dashboard/changes?demo=true
+http://localhost:3000/dashboard/sources?demo=true
+http://localhost:3000/dashboard/alerts?demo=true
+```
+
+### Option C: Playwright auto-capture
+
+```bash
+cd apps/web
+pnpm exec playwright test e2e/demo-capture.spec.ts --headed
+
+# Stitch screenshots into GIF:
+gifski --fps 2 --width 1280 -o demo.gif e2e/demo-screenshots/*.png
+```
+
+### Recording script (30s)
+
+| Beat | Time | What to show |
+|------|------|-------------|
+| 1 | 0–5s | Landing page hero → scroll to Slack alert preview |
+| 2 | 5–10s | Dashboard overview: 5 APIs, 12 changes, 10 alerts sent |
+| 3 | 10–18s | Changes page → click CRITICAL Stripe change → detail panel |
+| 4 | 18–26s | Alerts page → rules → history tab (all green) |
+| 5 | 26–30s | Back to landing page CTA |
+
+### Post-processing
+
+```bash
+# Optimize file size
+gifsicle --optimize=3 --lossy=80 --colors 256 demo.gif -o demo-optimized.gif
+```
+
+Target: under 5MB for README, under 15MB for landing page. Full guide in `docs/demo-gif-recording.md`.
+
 ## Status
 
 MVP complete. See `docs/plan.md` for the build roadmap and `docs/audit-log.md` for iteration history.

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { auth, signOut } from '@/auth';
 import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows } from 'lucide-react';
 import Link from 'next/link';
@@ -22,8 +23,12 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Demo mode: middleware sets x-demo-mode header to bypass auth
+  const hdrs = await headers();
+  const isDemo = hdrs.get('x-demo-mode') === '1';
+
   const session = await auth();
-  if (!session?.user) redirect('/sign-in');
+  if (!session?.user && !isDemo) redirect('/sign-in');
 
   return (
     <div className="flex min-h-screen bg-gray-950 text-white">
@@ -62,31 +67,33 @@ export default async function DashboardLayout({
         <div className="border-t border-gray-800 p-4">
           <div className="mb-3 flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500/20 text-sm font-medium text-violet-300">
-              {(session.user.name?.[0] ?? session.user.email?.[0] ?? '?').toUpperCase()}
+              {(session?.user?.name?.[0] ?? session?.user?.email?.[0] ?? 'A').toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-white">
-                {session.user.name ?? 'User'}
+                {session?.user?.name ?? (isDemo ? 'Alex Chen' : 'User')}
               </p>
               <p className="truncate text-xs text-gray-500">
-                {session.user.email}
+                {session?.user?.email ?? (isDemo ? 'alex@acme.dev' : '')}
               </p>
             </div>
           </div>
-          <form
-            action={async () => {
-              'use server';
-              await signOut({ redirectTo: '/' });
-            }}
-          >
-            <button
-              type="submit"
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 transition-colors duration-150 hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          {!isDemo && (
+            <form
+              action={async () => {
+                'use server';
+                await signOut({ redirectTo: '/' });
+              }}
             >
-              <LogOut aria-hidden="true" className="h-4 w-4" />
-              Sign out
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 transition-colors duration-150 hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+              >
+                <LogOut aria-hidden="true" className="h-4 w-4" />
+                Sign out
+              </button>
+            </form>
+          )}
         </div>
       </aside>
 

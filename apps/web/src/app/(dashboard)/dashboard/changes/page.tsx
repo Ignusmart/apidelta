@@ -18,6 +18,8 @@ import { apiFetch } from '@/lib/api';
 import type { ApiSource, ChangeEntry, Severity } from '@/lib/types';
 import { SeverityBadge, ChangeTypeBadge } from '@/lib/components';
 import { SEVERITY_ORDER, getTeamId } from '@/lib/shared';
+import { useDemo } from '@/lib/use-demo';
+import { DEMO_CHANGES, DEMO_SOURCES } from '@/lib/demo-data';
 
 // Rank used to sort: lower number = more important
 const SEVERITY_RANK: Record<Severity, number> = {
@@ -30,10 +32,11 @@ const SEVERITY_RANK: Record<Severity, number> = {
 export default function ChangesPage() {
   const { data: session } = useSession();
   const teamId = getTeamId(session);
+  const isDemo = useDemo();
 
-  const [changes, setChanges] = useState<ChangeEntry[]>([]);
-  const [sources, setSources] = useState<ApiSource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [changes, setChanges] = useState<ChangeEntry[]>(isDemo ? DEMO_CHANGES : []);
+  const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
+  const [loading, setLoading] = useState(!isDemo);
   const [error, setError] = useState<string | null>(null);
 
   // Filters
@@ -74,6 +77,7 @@ export default function ChangesPage() {
   }, [selected]);
 
   const fetchData = useCallback(async () => {
+    if (isDemo) return;
     if (!teamId) return;
     setLoading(true);
     setError(null);
@@ -93,7 +97,7 @@ export default function ChangesPage() {
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [teamId, isDemo]);
 
   useEffect(() => {
     fetchData();

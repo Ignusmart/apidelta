@@ -437,6 +437,43 @@ export default function HomePage() {
       </section>
 
       {/* ----------------------------------------------------------------- */}
+      {/* PRODUCT DEMO GIF                                                   */}
+      {/* ----------------------------------------------------------------- */}
+      <section className="py-24">
+        <div className="mx-auto max-w-5xl px-6">
+          <div className="mb-12 text-center">
+            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-violet-400">
+              Product tour
+            </p>
+            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              From changelog URL to Slack alert
+            </h2>
+            <p className="mx-auto max-w-xl text-gray-400">
+              Watch the full flow: add an API, see AI-classified changes, and
+              get alerted — all in under 30 seconds.
+            </p>
+          </div>
+
+          <div className="overflow-hidden rounded-xl border border-gray-800 shadow-2xl shadow-violet-500/5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/demo.gif"
+              alt="APIDelta product demo showing the dashboard with AI-classified API changes and Slack alert configuration"
+              width={1280}
+              height={720}
+              className="w-full"
+              loading="lazy"
+            />
+          </div>
+
+          <p className="mt-6 text-center text-sm text-gray-500">
+            Dashboard shown with live data from Stripe, Twilio, Cloudflare,
+            Slack, and OpenAI changelogs.
+          </p>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------------- */}
       {/* ALERT PREVIEW                                                      */}
       {/* ----------------------------------------------------------------- */}
       <section className="py-24">

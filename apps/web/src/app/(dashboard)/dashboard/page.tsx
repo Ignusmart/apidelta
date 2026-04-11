@@ -18,6 +18,8 @@ import { apiFetch } from '@/lib/api';
 import type { ApiSource, Alert } from '@/lib/types';
 import { SeverityBadge } from '@/lib/components';
 import { timeAgo, getTeamId } from '@/lib/shared';
+import { useDemo } from '@/lib/use-demo';
+import { DEMO_SOURCES, DEMO_ALERTS } from '@/lib/demo-data';
 import { OnboardingChecklist } from '../onboarding-checklist';
 
 function StatCard({
@@ -50,13 +52,15 @@ function StatCard({
 export default function DashboardPage() {
   const { data: session } = useSession();
   const teamId = getTeamId(session);
+  const isDemo = useDemo();
 
-  const [sources, setSources] = useState<ApiSource[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
+  const [alerts, setAlerts] = useState<Alert[]>(isDemo ? DEMO_ALERTS : []);
+  const [loading, setLoading] = useState(!isDemo);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    if (isDemo) return;
     if (!teamId) return;
     setLoading(true);
     setError(null);
@@ -72,7 +76,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [teamId, isDemo]);
 
   useEffect(() => {
     fetchData();

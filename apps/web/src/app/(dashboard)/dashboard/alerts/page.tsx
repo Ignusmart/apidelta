@@ -29,6 +29,8 @@ import type {
   AlertStatus,
 } from '@/lib/types';
 import { SEVERITY_ORDER, timeAgo, getTeamId } from '@/lib/shared';
+import { useDemo } from '@/lib/use-demo';
+import { DEMO_ALERT_RULES, DEMO_ALERTS, DEMO_SOURCES } from '@/lib/demo-data';
 
 const ALERT_STATUS_CONFIG: Record<
   AlertStatus,
@@ -49,12 +51,13 @@ const SEVERITY_BADGE: Record<string, string> = {
 export default function AlertsPage() {
   const { data: session } = useSession();
   const teamId = getTeamId(session);
+  const isDemo = useDemo();
 
   // Data
-  const [rules, setRules] = useState<AlertRule[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [sources, setSources] = useState<ApiSource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [rules, setRules] = useState<AlertRule[]>(isDemo ? DEMO_ALERT_RULES : []);
+  const [alerts, setAlerts] = useState<Alert[]>(isDemo ? DEMO_ALERTS : []);
+  const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
+  const [loading, setLoading] = useState(!isDemo);
   const [error, setError] = useState<string | null>(null);
 
   // UI
@@ -75,6 +78,7 @@ export default function AlertsPage() {
   const [ruleFieldsTouched, setRuleFieldsTouched] = useState<Record<string, boolean>>({});
 
   const fetchData = useCallback(async () => {
+    if (isDemo) return;
     if (!teamId) return;
     setLoading(true);
     setError(null);
@@ -94,7 +98,7 @@ export default function AlertsPage() {
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [teamId, isDemo]);
 
   useEffect(() => {
     fetchData();

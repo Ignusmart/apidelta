@@ -21,6 +21,8 @@ import Link from 'next/link';
 import { apiFetch } from '@/lib/api';
 import type { ApiSource, SourceType } from '@/lib/types';
 import { timeAgo, getTeamId } from '@/lib/shared';
+import { useDemo } from '@/lib/use-demo';
+import { DEMO_SOURCES } from '@/lib/demo-data';
 import { QuickAddGrid, type QuickAddSource } from '../../quick-add-sources';
 
 const SOURCE_TYPE_OPTIONS: { value: SourceType; label: string; icon: React.ElementType }[] = [
@@ -72,9 +74,10 @@ function SourceTypeIcon({ type }: { type: SourceType }) {
 export default function SourcesPage() {
   const { data: session } = useSession();
   const teamId = getTeamId(session);
+  const isDemo = useDemo();
 
-  const [sources, setSources] = useState<ApiSource[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
+  const [loading, setLoading] = useState(!isDemo);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [crawlingId, setCrawlingId] = useState<string | null>(null);
@@ -139,6 +142,7 @@ export default function SourcesPage() {
   }
 
   const fetchSources = useCallback(async () => {
+    if (isDemo) return;
     if (!teamId) return;
     setLoading(true);
     try {
@@ -156,7 +160,7 @@ export default function SourcesPage() {
     } finally {
       setLoading(false);
     }
-  }, [teamId]);
+  }, [teamId, isDemo]);
 
   useEffect(() => {
     fetchSources();
