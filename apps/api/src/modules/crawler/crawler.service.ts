@@ -5,6 +5,7 @@ import { CrawlStatus, ChangeType, Severity } from '@prisma/client';
 import { ClassifierService } from '../classifier/classifier.service';
 import { AlertsService } from '../alerts/alerts.service';
 import * as cheerio from 'cheerio';
+import { createHash } from 'crypto';
 
 export interface ParsedChangelogEntry {
   title: string;
@@ -158,25 +159,34 @@ export class CrawlerService {
         `Kept ${entries.length}/${rawEntries.length} entries after noise filter`,
       );
 
-      // Store entries as ChangeEntry records
-      // For this iteration, we skip AI classification — mark everything as INFO/LOW
-      const changeEntries = await Promise.all(
-        entries.map((entry) =>
-          this.prisma.changeEntry.create({
-            data: {
-              crawlRunId: crawlRun.id,
-              title: entry.title.slice(0, 500),
-              description: entry.description.slice(0, 2000),
-              rawExcerpt: entry.rawExcerpt.slice(0, 5000),
-              changeDate: entry.date,
-              changeType: ChangeType.INFO, // AI classifier will set this later
-              severity: Severity.LOW,      // AI classifier will set this later
-              affectedEndpoints: [],
-              isNew: true,
-            },
-          }),
-        ),
-      );
+      // Store entries as ChangeEntry records, skipping duplicates via content hash
+      const changeEntries = [];
+      for (const entry of entries) {
+        const hash = this.computeContentHash(sourceId, entry.title);
+
+        // Skip if this content was already seen in a previous crawl run
+        const existing = await this.prisma.changeEntry.findFirst({
+          where: { contentHash: hash },
+          select: { id: true },
+        });
+        if (existing) continue;
+
+        const created = await this.prisma.changeEntry.create({
+          data: {
+            crawlRunId: crawlRun.id,
+            title: entry.title.slice(0, 500),
+            description: entry.description.slice(0, 2000),
+            rawExcerpt: entry.rawExcerpt.slice(0, 5000),
+            changeDate: entry.date,
+            changeType: ChangeType.INFO, // AI classifier will set this later
+            severity: Severity.LOW,      // AI classifier will set this later
+            affectedEndpoints: [],
+            contentHash: hash,
+            isNew: true,
+          },
+        });
+        changeEntries.push(created);
+      }
 
       // Update crawl run as completed
       const durationMs = Date.now() - startTime;
@@ -230,12 +240,45 @@ export class CrawlerService {
         }
       }
 
+      // Mark entries from previous crawl runs as no longer new
+      // so alerts won't re-fire on them in future evaluations
+      if (changeEntries.length > 0) {
+        await this.prisma.changeEntry.updateMany({
+          where: {
+            crawlRun: { sourceId },
+            NOT: { crawlRunId: crawlRun.id },
+            isNew: true,
+          },
+          data: { isNew: false },
+        });
+      }
+
       return completedRun;
     } catch (error) {
       const durationMs = Date.now() - startTime;
       const errorMessage = error instanceof Error ? error.message : String(error);
 
       this.logger.error(`Crawl failed for ${source.name}: ${errorMessage}`);
+
+      // Auto-disable source after 5 consecutive failures
+      const recentRuns = await this.prisma.crawlRun.findMany({
+        where: { sourceId },
+        orderBy: { startedAt: 'desc' },
+        take: 5,
+        select: { status: true },
+      });
+      if (
+        recentRuns.length >= 5 &&
+        recentRuns.every((r) => r.status === CrawlStatus.FAILED)
+      ) {
+        this.logger.warn(
+          `Auto-disabling source ${source.name} after 5 consecutive failures`,
+        );
+        await this.prisma.apiSource.update({
+          where: { id: sourceId },
+          data: { isActive: false },
+        });
+      }
 
       return this.prisma.crawlRun.update({
         where: { id: crawlRun.id },
@@ -294,6 +337,18 @@ export class CrawlerService {
     }
 
     return kept;
+  }
+
+  /** SHA-256 content hash for cross-run deduplication.
+   *  Uses sourceId + title only (not description) because the classifier
+   *  rewrites description, making it unstable across runs. */
+  private computeContentHash(sourceId: string, title: string): string {
+    const normalized = `${sourceId}:${title}`
+      .toLowerCase()
+      .replace(/[^\w\s:]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return createHash('sha256').update(normalized).digest('hex');
   }
 
   /** Stable fingerprint for exact-duplicate detection. */
@@ -373,6 +428,13 @@ export class CrawlerService {
       /^credits$/i,
       /^what's changed$/i,
       /^full changelog$/i,
+      // Section headers that parsers extract as standalone entries
+      /^features$/i,
+      /^studio$/i,
+      /^stable channel$/i,
+      /^rapid channel$/i,
+      /^(🛠\s*)?fixes$/i,
+      /^availability and pricing/i,
     ];
     if (noisePatterns.some((p) => p.test(title))) return true;
 

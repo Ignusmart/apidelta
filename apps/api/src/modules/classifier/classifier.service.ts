@@ -43,7 +43,7 @@ export class ClassifierService {
     }
 
     const entries = await this.prisma.changeEntry.findMany({
-      where: { crawlRunId },
+      where: { crawlRunId, aiSummary: null },
       orderBy: { createdAt: 'asc' },
     });
 
@@ -177,7 +177,7 @@ export class ClassifierService {
             changeType: this.mapChangeType(classification.changeType),
             severity: this.mapSeverity(classification.severity),
             affectedEndpoints: classification.affectedEndpoints ?? [],
-            description: classification.summary || entry.title,
+            aiSummary: classification.summary || entry.title,
           },
         }),
       );

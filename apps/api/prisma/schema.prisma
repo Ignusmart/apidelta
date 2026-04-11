@@ -195,9 +195,11 @@ model ChangeEntry {
   changeType    ChangeType
   severity      Severity
   title         String     // Short summary of the change
-  description   String     // Detailed description from AI
+  description   String     // Original parsed description from crawler
+  aiSummary     String?    // AI-generated summary from classifier (never overwrites description)
   affectedEndpoints String[] // e.g. ["/v1/charges", "/v1/customers"]
   rawExcerpt    String?    // Original changelog text this was extracted from
+  contentHash   String?    // SHA-256 of sourceId + normalized title + description prefix for cross-run dedup
   changeDate    DateTime?  // Date of the change (if parseable from changelog)
   isNew         Boolean    @default(true) // False if seen in a previous crawl
   createdAt     DateTime   @default(now())
@@ -210,6 +212,7 @@ model ChangeEntry {
   @@index([severity])
   @@index([changeDate])
   @@index([isNew])
+  @@index([contentHash])
 }
 
 // ──────────────────────────────────────────────
@@ -250,6 +253,7 @@ model Alert {
   changeEntry ChangeEntry @relation(fields: [changeEntryId], references: [id], onDelete: Cascade)
   team        Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
+  @@unique([alertRuleId, changeEntryId])
   @@index([alertRuleId])
   @@index([changeEntryId])
   @@index([teamId])

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 
 const API_BASE = process.env.API_URL ?? 'http://localhost:3001/api';
 
@@ -23,6 +24,17 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ p
 }
 
 async function proxy(req: NextRequest, params: { path: string[] }) {
+  // Validate session — reject unauthenticated requests
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const teamId = (session.user as Record<string, unknown>).teamId as string | undefined;
+  if (!teamId) {
+    return NextResponse.json({ error: 'No team associated with user' }, { status: 403 });
+  }
+
   const path = params.path.join('/');
   const url = new URL(`${API_BASE}/${path}`);
 
@@ -33,6 +45,7 @@ async function proxy(req: NextRequest, params: { path: string[] }) {
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
+    'x-team-id': teamId,
   };
 
   const init: RequestInit = {

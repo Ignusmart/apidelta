@@ -41,7 +41,7 @@ export class EmailTransport {
       this.logger.log(
         `[DRY RUN] Would send email to ${payload.to}: ${subject}`,
       );
-      return true;
+      return false;
     }
 
     try {

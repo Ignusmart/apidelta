@@ -74,4 +74,32 @@ export class CrawlerProcessor {
       this.isRunning = false;
     }
   }
+
+  /**
+   * Daily cleanup: delete old CrawlRun rows (and their cascade-deleted ChangeEntry rows
+   * that are no longer new) to prevent unbounded table growth.
+   */
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async pruneOldCrawlRuns() {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    // Only prune runs where all associated changes are no longer new
+    const prunable = await this.prisma.crawlRun.findMany({
+      where: {
+        startedAt: { lt: thirtyDaysAgo },
+        status: { in: ['COMPLETED', 'FAILED'] },
+        changes: { none: { isNew: true } },
+      },
+      select: { id: true },
+    });
+
+    if (prunable.length === 0) return;
+
+    const ids = prunable.map((r) => r.id);
+    const deleted = await this.prisma.crawlRun.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    this.logger.log(`Pruned ${deleted.count} old crawl runs (>30 days)`);
+  }
 }

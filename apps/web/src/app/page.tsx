@@ -51,19 +51,19 @@ const FEATURES = [
     icon: Bell,
     title: "Slack and Email Alerts",
     description:
-      "Route critical changes to Slack for instant visibility, and batch lower-severity updates into email digests. Set severity thresholds per channel so the right signal reaches the right place.",
+      "Route critical changes to Slack for instant visibility and get email alerts for important updates. Set severity thresholds per rule so the right signal reaches the right place.",
   },
   {
     icon: Rss,
-    title: "50+ Changelog Formats",
+    title: "HTML, RSS & GitHub Releases",
     description:
-      "HTML pages, RSS feeds, GitHub Releases — we handle the messy reality of how APIs publish changes. Paste a URL and APIDelta figures out the rest.",
+      "Paste a changelog URL and APIDelta parses it automatically. Supports standard HTML changelog pages, RSS/Atom feeds, and GitHub Release pages.",
   },
   {
     icon: Users,
-    title: "Built for Teams",
+    title: "Flexible Alert Routing",
     description:
-      "Assign API ownership to the engineers who maintain each integration. Route alerts to the right people and share a single change feed with clear severity badges.",
+      "Create alert rules per source, severity level, or keyword. Route breaking changes to Slack and lower-priority updates to email — each rule targets exactly who needs to know.",
   },
   {
     icon: Clock,
@@ -84,7 +84,7 @@ const HOW_IT_WORKS = [
     step: "1",
     title: "Paste your changelog URLs",
     description:
-      "Add the changelog URL for any third-party API your product depends on. Stripe, Twilio, GitHub, OpenAI, and 50+ more work out of the box — any URL with a changelog works.",
+      "Add the changelog URL for any third-party API your product depends on. Twilio, Cloudflare, Slack, Vercel, and more work out of the box — any URL with an HTML changelog or RSS feed works.",
   },
   {
     step: "2",
@@ -108,11 +108,10 @@ const PLANS = [
     description: "For small teams with a handful of key integrations",
     features: [
       "10 monitored APIs",
-      "2 team members",
       "Email + Slack alerts",
       "AI classification",
       "Hourly monitoring",
-      "7-day change history",
+      "Full change history",
     ],
     cta: "Start 14-day free trial",
     highlighted: false,
@@ -124,13 +123,10 @@ const PLANS = [
     description: "For teams managing dozens of API dependencies",
     features: [
       "50 monitored APIs",
-      "10 team members",
-      "All alert channels",
+      "Email + Slack alerts",
       "AI classification",
       "Hourly monitoring",
-      "90-day change history",
-      "Weekly digest emails",
-      "Priority support",
+      "Full change history",
     ],
     cta: "Start 14-day free trial",
     highlighted: true,
@@ -140,7 +136,7 @@ const PLANS = [
 const FAQS = [
   {
     q: "What APIs can APIDelta monitor?",
-    a: "Any API that publishes a changelog, release notes, or status page. We handle HTML pages, RSS feeds, and GitHub Releases out of the box. If it has a URL, APIDelta can crawl it.",
+    a: "Any API that publishes a changelog as an HTML page, RSS/Atom feed, or GitHub Releases page. Paste the URL and APIDelta handles the parsing automatically. We actively monitor changelogs from Twilio, Cloudflare, Slack, Vercel, Prisma, Supabase, Linear, Google Cloud, and more.",
   },
   {
     q: "How does the AI classification work?",
@@ -289,7 +285,7 @@ export default function HomePage() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75 motion-reduce:animate-none" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-green-400" />
             </span>
-            Monitoring 50+ API changelogs in real time
+            AI-powered API changelog monitoring
           </div>
 
           {/* H1 — Outcome-focused */}
@@ -307,7 +303,7 @@ export default function HomePage() {
           {/* Subhead — Agitate + Solution */}
           <p className="mx-auto mb-10 max-w-2xl text-lg text-gray-400 sm:text-xl">
             Third-party APIs ship breaking changes without warning. Your team
-            finds out when production breaks at 2 AM. APIDelta monitors 50+
+            finds out when production breaks at 2 AM. APIDelta monitors your
             API changelogs every hour, uses AI to classify what matters, and
             alerts your team in Slack or email —{" "}
             <span className="text-white">before anything breaks</span>.
@@ -347,14 +343,14 @@ export default function HomePage() {
             Monitors changelogs from APIs you already depend on
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-lg font-semibold text-gray-500">
-            <span>Stripe</span>
             <span>Twilio</span>
-            <span>GitHub</span>
-            <span>OpenAI</span>
+            <span>Cloudflare</span>
             <span>Slack</span>
-            <span>SendGrid</span>
             <span>Vercel</span>
             <span>Prisma</span>
+            <span>Supabase</span>
+            <span>Linear</span>
+            <span>Google Cloud</span>
           </div>
         </div>
       </section>

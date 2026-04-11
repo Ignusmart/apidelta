@@ -5,11 +5,12 @@ import {
   Delete,
   Param,
   Body,
-  Query,
+  Headers,
   HttpCode,
   HttpStatus,
   ParseIntPipe,
   DefaultValuePipe,
+  Query,
 } from '@nestjs/common';
 import { AlertsService } from './alerts.service';
 import { CreateAlertRuleDto } from './dto/create-alert-rule.dto';
@@ -21,12 +22,13 @@ export class AlertsController {
   // ── Alert Rules ─────────────────────────────────
 
   @Get('rules')
-  async listRules(@Query('teamId') teamId: string) {
+  async listRules(@Headers('x-team-id') teamId: string) {
     return this.alertsService.listRules(teamId);
   }
 
   @Post('rules')
-  async createRule(@Body() dto: CreateAlertRuleDto) {
+  async createRule(@Body() dto: CreateAlertRuleDto, @Headers('x-team-id') teamId: string) {
+    dto.teamId = teamId;
     return this.alertsService.createRule(dto);
   }
 
@@ -40,7 +42,7 @@ export class AlertsController {
 
   @Get()
   async listAlerts(
-    @Query('teamId') teamId: string,
+    @Headers('x-team-id') teamId: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize: number,
   ) {
@@ -51,16 +53,7 @@ export class AlertsController {
 
   @Post('retry-failed')
   @HttpCode(HttpStatus.OK)
-  async retryFailed(@Query('teamId') teamId: string) {
+  async retryFailed(@Headers('x-team-id') teamId: string) {
     return this.alertsService.retryFailed(teamId);
-  }
-
-  // ── Manual trigger (for testing) ────────────────
-
-  @Post('evaluate/:crawlRunId')
-  @HttpCode(HttpStatus.OK)
-  async evaluateCrawlRun(@Param('crawlRunId') crawlRunId: string) {
-    const alertCount = await this.alertsService.evaluateCrawlRun(crawlRunId);
-    return { crawlRunId, alertCount };
   }
 }

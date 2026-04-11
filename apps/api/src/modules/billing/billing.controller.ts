@@ -21,26 +21,27 @@ export class BillingController {
   /** Create a Stripe Checkout session to subscribe */
   @Post('checkout')
   async createCheckout(
-    @Body() body: { teamId: string; planTier: 'STARTER' | 'PRO' },
+    @Headers('x-team-id') teamId: string,
+    @Body() body: { planTier: 'STARTER' | 'PRO' },
   ) {
-    return this.billingService.createCheckoutSession(body.teamId, body.planTier);
+    return this.billingService.createCheckoutSession(teamId, body.planTier);
   }
 
   /** Create a Stripe Customer Portal session for self-serve management */
   @Post('portal')
-  async createPortal(@Body() body: { teamId: string }) {
-    return this.billingService.createCustomerPortalSession(body.teamId);
+  async createPortal(@Headers('x-team-id') teamId: string) {
+    return this.billingService.createCustomerPortalSession(teamId);
   }
 
   /** Get team's current plan details and limits */
   @Get('plan')
-  async getPlan(@Query('teamId') teamId: string) {
+  async getPlan(@Headers('x-team-id') teamId: string) {
     return this.billingService.getTeamPlan(teamId);
   }
 
   /** Check if team can add another source */
   @Get('check-source-limit')
-  async checkSourceLimit(@Query('teamId') teamId: string) {
+  async checkSourceLimit(@Headers('x-team-id') teamId: string) {
     return this.billingService.checkSourceLimit(teamId);
   }
 

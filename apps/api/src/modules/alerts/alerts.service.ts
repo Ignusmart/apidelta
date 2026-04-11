@@ -152,15 +152,24 @@ export class AlertsService {
           continue;
         }
 
-        // Create alert record
-        const alert = await this.prisma.alert.create({
-          data: {
-            alertRuleId: rule.id,
-            changeEntryId: change.id,
-            teamId,
-            status: AlertStatus.PENDING,
-          },
-        });
+        // Create alert record (skip if duplicate — unique constraint on alertRuleId+changeEntryId)
+        let alert;
+        try {
+          alert = await this.prisma.alert.create({
+            data: {
+              alertRuleId: rule.id,
+              changeEntryId: change.id,
+              teamId,
+              status: AlertStatus.PENDING,
+            },
+          });
+        } catch (error) {
+          // Unique constraint violation — alert already exists for this rule+change pair
+          if (error instanceof Error && error.message.includes('Unique constraint')) {
+            continue;
+          }
+          throw error;
+        }
 
         // Send notification
         const success = await this.sendNotification(

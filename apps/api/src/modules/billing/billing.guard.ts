@@ -20,7 +20,7 @@ export class BillingGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const teamId = request.body?.teamId ?? request.query?.teamId;
+    const teamId = request.headers['x-team-id'] ?? request.body?.teamId ?? request.query?.teamId;
 
     if (!teamId) {
       throw new ForbiddenException('Missing teamId');
@@ -60,7 +60,7 @@ export class SourceLimitGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const teamId = request.body?.teamId ?? request.query?.teamId;
+    const teamId = request.headers['x-team-id'] ?? request.body?.teamId ?? request.query?.teamId;
 
     if (!teamId) {
       throw new ForbiddenException('Missing teamId');

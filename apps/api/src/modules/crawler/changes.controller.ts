@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Headers,
   Query,
   ParseIntPipe,
   DefaultValuePipe,
@@ -13,7 +14,7 @@ export class ChangesController {
 
   @Get()
   async listChanges(
-    @Query('teamId') teamId: string,
+    @Headers('x-team-id') teamId: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('pageSize', new DefaultValuePipe(50), ParseIntPipe) pageSize: number,
   ) {

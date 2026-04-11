@@ -22,7 +22,7 @@ export class SlackTransport {
       this.logger.log(
         `[DRY RUN] Would send Slack message to ${payload.webhookUrl}: ${payload.title}`,
       );
-      return true;
+      return false;
     }
 
     try {
