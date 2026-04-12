@@ -20,4 +20,12 @@ export class ChangesController {
   ) {
     return this.crawlerService.listChanges(teamId, page, pageSize);
   }
+
+  @Get('stats')
+  async getStats(
+    @Headers('x-team-id') teamId: string,
+    @Query('days', new DefaultValuePipe(30), ParseIntPipe) days: number,
+  ) {
+    return this.crawlerService.getChangesStats(teamId, days);
+  }
 }

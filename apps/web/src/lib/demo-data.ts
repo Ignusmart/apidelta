@@ -472,6 +472,25 @@ export const DEMO_ALERTS: Alert[] = alertableChanges.flatMap((change, i) => [
 
 // ── Team plan ──
 
+// Chart demo data — 30 days of realistic change activity
+export const DEMO_CHANGES_STATS = {
+  daily: Array.from({ length: 30 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (29 - i));
+    const dayKey = date.toISOString().slice(0, 10);
+    // Simulate realistic patterns: more activity mid-week, occasional spikes
+    const base = Math.random();
+    return {
+      date: dayKey,
+      critical: base > 0.9 ? 1 : 0,
+      high: base > 0.7 ? Math.floor(Math.random() * 2) + 1 : 0,
+      medium: Math.floor(Math.random() * 3),
+      low: Math.floor(Math.random() * 4),
+    };
+  }),
+  totals: { critical: 2, high: 8, medium: 24, low: 42 },
+};
+
 export const DEMO_TEAM_PLAN: TeamPlan = {
   plan: 'STARTER',
   planStatus: 'ACTIVE',

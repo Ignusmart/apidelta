@@ -19,8 +19,9 @@ import type { ApiSource, Alert } from '@/lib/types';
 import { SeverityBadge } from '@/lib/components';
 import { timeAgo, getTeamId } from '@/lib/shared';
 import { useDemo } from '@/lib/use-demo';
-import { DEMO_SOURCES, DEMO_ALERTS } from '@/lib/demo-data';
+import { DEMO_SOURCES, DEMO_ALERTS, DEMO_CHANGES_STATS } from '@/lib/demo-data';
 import { OnboardingChecklist } from '../onboarding-checklist';
+import { ChangesOverTimeChart, SeverityDistributionChart } from '@/lib/charts';
 
 function StatCard({
   icon: Icon,
@@ -56,6 +57,10 @@ export default function DashboardPage() {
 
   const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
   const [alerts, setAlerts] = useState<Alert[]>(isDemo ? DEMO_ALERTS : []);
+  const [changesStats, setChangesStats] = useState<{
+    daily: Array<{ date: string; critical: number; high: number; medium: number; low: number }>;
+    totals: { critical: number; high: number; medium: number; low: number };
+  }>(isDemo ? DEMO_CHANGES_STATS : { daily: [], totals: { critical: 0, high: 0, medium: 0, low: 0 } });
   const [loading, setLoading] = useState(!isDemo);
 
   const fetchData = useCallback(async () => {
@@ -63,12 +68,14 @@ export default function DashboardPage() {
     if (!teamId) return;
     setLoading(true);
     try {
-      const [srcData, alertData] = await Promise.all([
+      const [srcData, alertData, statsData] = await Promise.all([
         apiFetch<ApiSource[]>(`/sources?teamId=${teamId}`),
         apiFetch<{ data: Alert[] }>(`/alerts?teamId=${teamId}&page=1&pageSize=10`),
+        apiFetch<typeof changesStats>(`/changes/stats?days=30`),
       ]);
       setSources(srcData);
       setAlerts(alertData.data ?? []);
+      setChangesStats(statsData);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not load dashboard data. Please try again.');
     } finally {
@@ -223,6 +230,24 @@ export default function DashboardPage() {
         <StatCard icon={Bell} label="Alerts Sent" value={activeAlerts} accent="bg-amber-500" />
         <StatCard icon={Clock} label="Last Crawl" value={timeAgo(lastCrawl ?? null)} accent="bg-emerald-500" />
       </div>
+
+      {/* Trends charts */}
+      {totalSources > 0 && (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <div className="rounded-xl border border-gray-800 bg-gray-900/30 p-5">
+              <h2 className="mb-4 text-sm font-semibold">Changes Over Time</h2>
+              <ChangesOverTimeChart data={changesStats.daily} />
+            </div>
+          </div>
+          <div className="lg:col-span-2">
+            <div className="rounded-xl border border-gray-800 bg-gray-900/30 p-5">
+              <h2 className="mb-4 text-sm font-semibold">Severity Distribution</h2>
+              <SeverityDistributionChart totals={changesStats.totals} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Two-column layout: Recent changes + Sources */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">

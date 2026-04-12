@@ -107,6 +107,49 @@ export class CrawlerService {
     return result;
   }
 
+  // ── Stats ───────────────────────────────────
+
+  async getChangesStats(teamId: string, days = 30) {
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+
+    const entries = await this.prisma.changeEntry.findMany({
+      where: {
+        crawlRun: { source: { teamId } },
+        createdAt: { gte: since },
+      },
+      select: {
+        createdAt: true,
+        severity: true,
+      },
+    });
+
+    // Build daily buckets
+    const dailyMap = new Map<string, { critical: number; high: number; medium: number; low: number }>();
+    for (let d = 0; d < days; d++) {
+      const date = new Date();
+      date.setDate(date.getDate() - (days - 1 - d));
+      const key = date.toISOString().slice(0, 10);
+      dailyMap.set(key, { critical: 0, high: 0, medium: 0, low: 0 });
+    }
+
+    const totals = { critical: 0, high: 0, medium: 0, low: 0 };
+    for (const entry of entries) {
+      const key = entry.createdAt.toISOString().slice(0, 10);
+      const severity = entry.severity.toLowerCase() as 'critical' | 'high' | 'medium' | 'low';
+      const bucket = dailyMap.get(key);
+      if (bucket) bucket[severity]++;
+      totals[severity]++;
+    }
+
+    const daily = Array.from(dailyMap.entries()).map(([date, counts]) => ({
+      date,
+      ...counts,
+    }));
+
+    return { daily, totals };
+  }
+
   // ── Source CRUD ──────────────────────────────
 
   async listSources(teamId: string) {
