@@ -698,9 +698,12 @@ export default function AlertsPage() {
                           </span>
                         </td>
                         <td className="px-5 py-4">
-                          <p className="max-w-xs truncate text-sm font-medium">
+                          <Link
+                            href={`/dashboard/changes?highlight=${alert.changeEntryId}`}
+                            className="block max-w-xs truncate text-sm font-medium transition hover:text-violet-400"
+                          >
                             {alert.changeEntry?.title ?? 'Unknown change'}
-                          </p>
+                          </Link>
                           {alert.changeEntry?.severity && (
                             <span
                               className={`mt-0.5 inline-block rounded px-1.5 py-0.5 text-[10px] font-medium ${

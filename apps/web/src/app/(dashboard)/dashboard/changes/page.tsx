@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   GitCompareArrows,
@@ -35,6 +36,9 @@ export default function ChangesPage() {
   const { data: session } = useSession();
   const teamId = getTeamId(session);
   const isDemo = useDemo();
+
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
 
   const [changes, setChanges] = useState<ChangeEntry[]>(isDemo ? DEMO_CHANGES : []);
   const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
@@ -102,6 +106,14 @@ export default function ChangesPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Auto-open detail panel when navigating from alerts with ?highlight=ID
+  useEffect(() => {
+    if (highlightId && changes.length > 0 && !selected) {
+      const match = changes.find((c) => c.id === highlightId);
+      if (match) setSelected(match);
+    }
+  }, [highlightId, changes, selected]);
 
   // Apply filters + sort by severity (breaking first), then date desc
   const filtered = useMemo(() => {
