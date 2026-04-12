@@ -31,6 +31,7 @@ import type {
 import { SEVERITY_ORDER, timeAgo, getTeamId } from '@/lib/shared';
 import { useDemo } from '@/lib/use-demo';
 import { DEMO_ALERT_RULES, DEMO_ALERTS, DEMO_SOURCES } from '@/lib/demo-data';
+import { useConfirm } from '@/lib/dialogs';
 
 const ALERT_STATUS_CONFIG: Record<
   AlertStatus,
@@ -52,6 +53,8 @@ export default function AlertsPage() {
   const { data: session } = useSession();
   const teamId = getTeamId(session);
   const isDemo = useDemo();
+
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   // Data
   const [rules, setRules] = useState<AlertRule[]>(isDemo ? DEMO_ALERT_RULES : []);
@@ -176,8 +179,13 @@ export default function AlertsPage() {
   }
 
   async function handleDeleteRule(id: string) {
-    if (!confirm('Delete this alert rule? You will stop receiving notifications from this rule.'))
-      return;
+    const confirmed = await confirm({
+      title: 'Delete alert rule',
+      description: 'You will stop receiving notifications from this rule.',
+      confirmLabel: 'Delete',
+      confirmVariant: 'danger',
+    });
+    if (!confirmed) return;
     setDeletingId(id);
     try {
       await apiFetch(`/alerts/rules/${id}`, { method: 'DELETE' });
@@ -741,6 +749,9 @@ export default function AlertsPage() {
           )}
         </div>
       )}
+
+      {/* Dialogs */}
+      {confirmDialog}
     </div>
   );
 }

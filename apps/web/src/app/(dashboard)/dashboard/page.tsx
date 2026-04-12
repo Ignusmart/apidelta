@@ -18,10 +18,10 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import type { ApiSource, Alert, ChangeEntry } from '@/lib/types';
-import { SeverityBadge, ChangeTypeBadge } from '@/lib/components';
+import { SeverityBadge, ChangeTypeBadge, Tooltip } from '@/lib/components';
 import { timeAgo, getTeamId } from '@/lib/shared';
 import { useDemo } from '@/lib/use-demo';
-import { DEMO_SOURCES, DEMO_ALERTS, DEMO_CHANGES_STATS } from '@/lib/demo-data';
+import { DEMO_SOURCES, DEMO_ALERTS, DEMO_CHANGES, DEMO_CHANGES_STATS } from '@/lib/demo-data';
 import { OnboardingChecklist } from '../onboarding-checklist';
 import { ChangesOverTimeChart, SeverityDistributionChart } from '@/lib/charts';
 
@@ -30,18 +30,26 @@ function StatCard({
   label,
   value,
   accent,
+  tooltip,
 }: {
   icon: React.ElementType;
   label: string;
   value: string | number;
   accent: string;
+  tooltip?: string;
 }) {
   return (
     <div className="group relative overflow-hidden rounded-xl border border-gray-800 bg-gray-900/50 p-5 transition-all duration-150 hover:border-gray-700 hover:bg-gray-900/70">
       <div className={`absolute -right-4 -top-4 h-20 w-20 rounded-full opacity-[0.07] blur-2xl ${accent}`} />
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-gray-500">{label}</p>
+          {tooltip ? (
+            <Tooltip text={tooltip}>
+              <p className="text-sm text-gray-500 underline decoration-dotted decoration-gray-700 underline-offset-4 cursor-help">{label}</p>
+            </Tooltip>
+          ) : (
+            <p className="text-sm text-gray-500">{label}</p>
+          )}
           <p className="mt-1.5 text-3xl font-bold tracking-tight">{value}</p>
         </div>
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gray-800/80`}>
@@ -59,6 +67,7 @@ export default function DashboardPage() {
 
   const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
   const [alerts, setAlerts] = useState<Alert[]>(isDemo ? DEMO_ALERTS : []);
+  const [recentChangeEntries, setRecentChangeEntries] = useState<ChangeEntry[]>(isDemo ? DEMO_CHANGES.slice(0, 8) : []);
   const [changesStats, setChangesStats] = useState<{
     daily: Array<{ date: string; critical: number; high: number; medium: number; low: number }>;
     totals: { critical: number; high: number; medium: number; low: number };
@@ -71,15 +80,17 @@ export default function DashboardPage() {
     if (!teamId) return;
     setLoading(true);
     try {
-      const [srcData, alertData, statsData, changesData] = await Promise.all([
+      const [srcData, alertData, statsData, changesData, recentData] = await Promise.all([
         apiFetch<ApiSource[]>(`/sources?teamId=${teamId}`),
         apiFetch<{ data: Alert[] }>(`/alerts?teamId=${teamId}&page=1&pageSize=10`),
         apiFetch<typeof changesStats>(`/changes/stats?days=30`),
         apiFetch<{ data: ChangeEntry[] }>(`/changes?teamId=${teamId}&triageStatus=OPEN&page=1&pageSize=5`),
+        apiFetch<{ changes: ChangeEntry[] }>(`/changes?teamId=${teamId}&page=1&pageSize=8`),
       ]);
       setSources(srcData);
       setAlerts(alertData.data ?? []);
       setChangesStats(statsData);
+      setRecentChangeEntries(recentData.changes ?? []);
       // Filter to only CRITICAL and HIGH unresolved changes
       const urgent = (changesData.data ?? []).filter(
         (c) => c.severity === 'CRITICAL' || c.severity === 'HIGH'
@@ -98,19 +109,13 @@ export default function DashboardPage() {
 
   // Derive stats
   const totalSources = sources.length;
-  const recentChanges = alerts.length; // from recent alerts as proxy
+  const totalChanges = changesStats.totals.critical + changesStats.totals.high + changesStats.totals.medium + changesStats.totals.low;
   const activeAlerts = alerts.filter((a) => a.status === 'SENT').length;
   const lastCrawl = sources
     .map((s) => s.lastCrawledAt)
     .filter(Boolean)
     .sort()
     .pop();
-
-  // Flatten recent changes from alerts
-  const recentChangeEntries = alerts
-    .filter((a) => a.changeEntry)
-    .map((a) => a.changeEntry!)
-    .slice(0, 8);
 
   if (loading && !sources.length) {
     return (
@@ -278,10 +283,10 @@ export default function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Rss} label="Monitored APIs" value={totalSources} accent="bg-violet-500" />
-        <StatCard icon={GitCompareArrows} label="Recent Changes" value={recentChanges} accent="bg-blue-500" />
-        <StatCard icon={Bell} label="Alerts Sent" value={activeAlerts} accent="bg-amber-500" />
-        <StatCard icon={Clock} label="Last Crawl" value={timeAgo(lastCrawl ?? null)} accent="bg-emerald-500" />
+        <StatCard icon={Rss} label="Monitored APIs" value={totalSources} accent="bg-violet-500" tooltip="Total API changelog sources being monitored" />
+        <StatCard icon={GitCompareArrows} label="Changes (30d)" value={totalChanges} accent="bg-blue-500" tooltip="Total changes detected across all sources in the last 30 days" />
+        <StatCard icon={Bell} label="Alerts Sent" value={activeAlerts} accent="bg-amber-500" tooltip="Alerts successfully delivered to your configured channels" />
+        <StatCard icon={Clock} label="Last Crawl" value={timeAgo(lastCrawl ?? null)} accent="bg-emerald-500" tooltip="When APIDelta last checked your API sources for changes" />
       </div>
 
       {/* Trends charts */}

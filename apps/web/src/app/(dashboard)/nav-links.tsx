@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Rss, GitCompareArrows, Bell, Settings } from 'lucide-react';
-import { AlertsBadge } from './nav-badge';
+import { AlertsBadge, ChangesBadge, SourcesBadge } from './nav-badge';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -37,6 +37,8 @@ export function NavLinks() {
           >
             <item.icon aria-hidden="true" className={`h-4 w-4 ${isActive ? 'text-violet-400' : ''}`} />
             <span className="flex-1">{item.label}</span>
+            {item.label === 'API Sources' && <SourcesBadge />}
+            {item.label === 'Changes' && <ChangesBadge />}
             {item.label === 'Alerts' && <AlertsBadge />}
           </Link>
         );

@@ -6,6 +6,7 @@ import {
   Plus,
   Trash2,
   Play,
+  Pause,
   Loader2,
   ExternalLink,
   X,
@@ -23,6 +24,7 @@ import type { ApiSource, SourceType } from '@/lib/types';
 import { timeAgo, getTeamId } from '@/lib/shared';
 import { useDemo } from '@/lib/use-demo';
 import { DEMO_SOURCES } from '@/lib/demo-data';
+import { useConfirm } from '@/lib/dialogs';
 import { QuickAddGrid, type QuickAddSource } from '../../quick-add-sources';
 
 const SOURCE_TYPE_OPTIONS: { value: SourceType; label: string; icon: React.ElementType }[] = [
@@ -76,12 +78,16 @@ export default function SourcesPage() {
   const teamId = getTeamId(session);
   const isDemo = useDemo();
 
+  const { confirm, dialog: confirmDialog } = useConfirm();
   const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
   const [loading, setLoading] = useState(!isDemo);
   const [showAddForm, setShowAddForm] = useState(false);
   const [crawlingId, setCrawlingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [sourceLimit, setSourceLimit] = useState<{ allowed: boolean; current: number; max: number; plan: string } | null>(null);
+  const [detailSource, setDetailSource] = useState<ApiSource | null>(null);
+  const [detailCrawls, setDetailCrawls] = useState<import('@/lib/types').CrawlRun[]>([]);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -205,7 +211,13 @@ export default function SourcesPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this API source? All crawl history and change data for this source will be permanently removed.')) return;
+    const confirmed = await confirm({
+      title: 'Delete API source',
+      description: 'All crawl history and change data for this source will be permanently removed.',
+      confirmLabel: 'Delete',
+      confirmVariant: 'danger',
+    });
+    if (!confirmed) return;
     setDeletingId(id);
     try {
       await apiFetch(`/sources/${id}`, { method: 'DELETE' });
@@ -229,6 +241,41 @@ export default function SourcesPage() {
       toast.error(e instanceof Error ? e.message : 'Could not start crawl');
     } finally {
       setCrawlingId(null);
+    }
+  }
+
+  async function handleOpenDetail(src: ApiSource) {
+    setDetailSource(src);
+    if (isDemo) {
+      setDetailCrawls([]);
+      return;
+    }
+    setDetailLoading(true);
+    try {
+      const data = await apiFetch<import('@/lib/types').SourceDetail>(`/sources/${src.id}`);
+      setDetailCrawls(data.crawlRuns ?? []);
+    } catch {
+      setDetailCrawls([]);
+    } finally {
+      setDetailLoading(false);
+    }
+  }
+
+  async function handleToggleActive(id: string, currentlyActive: boolean) {
+    if (isDemo) {
+      setSources((prev) => prev.map((s) => s.id === id ? { ...s, isActive: !currentlyActive } : s));
+      toast.success(currentlyActive ? 'Source paused' : 'Source resumed');
+      return;
+    }
+    try {
+      await apiFetch(`/sources/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ isActive: !currentlyActive }),
+      });
+      setSources((prev) => prev.map((s) => s.id === id ? { ...s, isActive: !currentlyActive } : s));
+      toast.success(currentlyActive ? 'Source paused' : 'Source resumed');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not update source');
     }
   }
 
@@ -536,7 +583,13 @@ export default function SourcesPage() {
                     <div className="flex items-center gap-3">
                       <SourceTypeIcon type={src.sourceType} />
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{src.name}</p>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenDetail(src)}
+                          className="truncate text-sm font-medium text-white transition hover:text-violet-400 focus-visible:outline-none focus-visible:text-violet-400"
+                        >
+                          {src.name}
+                        </button>
                         <a
                           href={src.url}
                           target="_blank"
@@ -603,8 +656,20 @@ export default function SourcesPage() {
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-1">
                       <button
+                        onClick={() => handleToggleActive(src.id, src.isActive)}
+                        aria-label={src.isActive ? `Pause ${src.name}` : `Resume ${src.name}`}
+                        title={src.isActive ? 'Pause monitoring' : 'Resume monitoring'}
+                        className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-amber-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                      >
+                        {src.isActive ? (
+                          <Pause aria-hidden="true" className="h-4 w-4" />
+                        ) : (
+                          <Play aria-hidden="true" className="h-4 w-4 text-emerald-500" />
+                        )}
+                      </button>
+                      <button
                         onClick={() => handleCrawl(src.id)}
-                        disabled={crawlingId === src.id}
+                        disabled={crawlingId === src.id || !src.isActive}
                         aria-label={`Trigger crawl for ${src.name}`}
                         className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-violet-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                       >
@@ -647,6 +712,76 @@ export default function SourcesPage() {
         disabled={sourceLimit !== null && !sourceLimit.allowed}
         existingUrls={sources.map((s) => s.url)}
       />
+
+      {/* Source detail slide-over */}
+      {detailSource && (
+        <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="source-detail-title">
+          <button type="button" aria-label="Close details" onClick={() => setDetailSource(null)} className="animate-modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div className="animate-slide-in-right relative flex h-full w-full max-w-xl flex-col border-l border-gray-800 bg-gray-950 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-900 px-6 py-4">
+              <h2 id="source-detail-title" className="text-base font-semibold">{detailSource.name}</h2>
+              <button type="button" onClick={() => setDetailSource(null)} aria-label="Close" className="rounded-md p-1 text-gray-500 transition hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+              {/* Source info */}
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-gray-600">URL</span><a href={detailSource.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-violet-400 hover:text-violet-300">{new URL(detailSource.url).hostname} <ExternalLink className="h-3 w-3" /></a></div>
+                <div className="flex justify-between"><span className="text-gray-600">Type</span><span className="text-gray-300">{detailSource.sourceType.replace('_', ' ')}</span></div>
+                <div className="flex justify-between"><span className="text-gray-600">Interval</span><span className="text-gray-300">Every {detailSource.crawlIntervalHours}h</span></div>
+                <div className="flex justify-between"><span className="text-gray-600">Status</span><span className={detailSource.isActive ? 'text-emerald-400' : 'text-gray-500'}>{detailSource.isActive ? 'Active' : 'Paused'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-600">Last crawled</span><span className="text-gray-300">{timeAgo(detailSource.lastCrawledAt)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-600">Added</span><span className="text-gray-300">{new Date(detailSource.createdAt).toLocaleDateString()}</span></div>
+              </div>
+
+              {/* Crawl history */}
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">Crawl History</h3>
+                {detailLoading ? (
+                  <div className="mt-3 space-y-2">
+                    {[1, 2, 3].map((i) => <div key={i} className="h-12 animate-pulse rounded-lg bg-gray-800/40" />)}
+                  </div>
+                ) : detailCrawls.length === 0 ? (
+                  <p className="mt-3 text-sm text-gray-600">No crawl history available yet.</p>
+                ) : (
+                  <div className="mt-3 space-y-2">
+                    {detailCrawls.slice(0, 10).map((crawl) => (
+                      <div key={crawl.id} className="rounded-lg border border-gray-800 bg-gray-900/30 px-4 py-3">
+                        <div className="flex items-center justify-between">
+                          <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${
+                            crawl.status === 'COMPLETED' ? 'text-emerald-400' :
+                            crawl.status === 'FAILED' ? 'text-red-400' :
+                            crawl.status === 'RUNNING' ? 'text-amber-400' : 'text-gray-500'
+                          }`}>
+                            <span className={`h-1.5 w-1.5 rounded-full ${
+                              crawl.status === 'COMPLETED' ? 'bg-emerald-500' :
+                              crawl.status === 'FAILED' ? 'bg-red-500' :
+                              crawl.status === 'RUNNING' ? 'bg-amber-500' : 'bg-gray-600'
+                            }`} />
+                            {crawl.status}
+                          </span>
+                          <span className="text-xs text-gray-600">{new Date(crawl.startedAt).toLocaleString()}</span>
+                        </div>
+                        <div className="mt-1.5 flex items-center gap-3 text-xs text-gray-500">
+                          {crawl.durationMs != null && <span>{(crawl.durationMs / 1000).toFixed(1)}s</span>}
+                          {crawl.changes && <span>{crawl.changes.length} change{crawl.changes.length !== 1 ? 's' : ''}</span>}
+                        </div>
+                        {crawl.errorMessage && (
+                          <p className="mt-1.5 rounded bg-red-500/10 px-2 py-1 text-xs text-red-400">{crawl.errorMessage}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dialogs */}
+      {confirmDialog}
     </div>
   );
 }

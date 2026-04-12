@@ -14,6 +14,7 @@ import {
   ExternalLink,
   CheckCircle2,
   Eye,
+  Download,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -24,6 +25,8 @@ import { SEVERITY_ORDER, getTeamId } from '@/lib/shared';
 import { useDemo } from '@/lib/use-demo';
 import { DEMO_CHANGES, DEMO_SOURCES } from '@/lib/demo-data';
 import { useSavedFilters } from '@/lib/use-saved-filters';
+import { usePrompt } from '@/lib/dialogs';
+import { useFocusTrap } from '@/lib/use-focus-trap';
 
 // Rank used to sort: lower number = more important
 const SEVERITY_RANK: Record<Severity, number> = {
@@ -52,14 +55,20 @@ export default function ChangesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showInfo, setShowInfo] = useState(false); // Default-hide INFO noise
+  const [triageFilter, setTriageFilter] = useState<TriageStatus | 'ALL'>('OPEN');
+  const [dateRange, setDateRange] = useState<'24h' | '7d' | '30d' | 'all'>('all');
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Saved filters
   const { filters: savedFilters, save: saveFilter, remove: removeFilter } = useSavedFilters();
+  const { prompt: showPrompt, dialog: promptDialog } = usePrompt();
 
   // Detail panel
   const [selected, setSelected] = useState<ChangeEntry | null>(null);
   const [focusedIdx, setFocusedIdx] = useState<number>(-1);
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Debounced search — 300ms
   function handleSearchChange(value: string) {
@@ -110,12 +119,37 @@ export default function ChangesPage() {
     }
   }, [highlightId, changes, selected]);
 
+  // Triage counts (computed before other filters for tab badges)
+  const triageCounts = useMemo(() => {
+    const counts = { OPEN: 0, ACKNOWLEDGED: 0, RESOLVED: 0, ALL: 0 };
+    for (const c of changes) {
+      if (!showInfo && c.changeType === 'INFO') continue;
+      const status = c.triageStatus ?? 'OPEN';
+      counts[status]++;
+      counts.ALL++;
+    }
+    return counts;
+  }, [changes, showInfo]);
+
+  // Compute date cutoff for range filter
+  const dateCutoff = useMemo(() => {
+    if (dateRange === 'all') return null;
+    const now = Date.now();
+    const ms = { '24h': 86400000, '7d': 604800000, '30d': 2592000000 }[dateRange];
+    return new Date(now - ms);
+  }, [dateRange]);
+
   // Apply filters + sort by severity (breaking first), then date desc
   const filtered = useMemo(() => {
     const result = changes.filter((c) => {
       if (!showInfo && c.changeType === 'INFO') return false;
+      if (triageFilter !== 'ALL' && (c.triageStatus ?? 'OPEN') !== triageFilter) return false;
       if (severityFilter && c.severity !== severityFilter) return false;
       if (sourceFilter && c.crawlRun?.source?.id !== sourceFilter) return false;
+      if (dateCutoff) {
+        const changeTime = new Date(c.changeDate ?? c.createdAt).getTime();
+        if (changeTime < dateCutoff.getTime()) return false;
+      }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matchesTitle = c.title.toLowerCase().includes(q);
@@ -141,7 +175,7 @@ export default function ChangesPage() {
     });
 
     return result;
-  }, [changes, severityFilter, sourceFilter, searchQuery, showInfo]);
+  }, [changes, severityFilter, sourceFilter, searchQuery, showInfo, triageFilter, dateCutoff]);
 
   const hiddenInfoCount = useMemo(
     () => changes.filter((c) => c.changeType === 'INFO').length,
@@ -149,9 +183,85 @@ export default function ChangesPage() {
   );
 
   const activeFilterCount =
-    (severityFilter ? 1 : 0) + (sourceFilter ? 1 : 0) + (searchInput ? 1 : 0);
+    (severityFilter ? 1 : 0) + (sourceFilter ? 1 : 0) + (searchInput ? 1 : 0) + (dateRange !== 'all' ? 1 : 0);
 
-  // Keyboard navigation: j/k to move, Enter to open, Escape to close
+  // Triage handler — shared between inline actions and detail panel
+  const handleTriage = useCallback(async (id: string, status: TriageStatus) => {
+    // Capture previous status for undo
+    const prev = changes.find((c) => c.id === id);
+    const previousStatus = prev?.triageStatus ?? 'OPEN';
+
+    const applyLocally = (s: TriageStatus) => {
+      setChanges((list) =>
+        list.map((c) => (c.id === id ? { ...c, triageStatus: s } : c)),
+      );
+      setSelected((sel) => sel && sel.id === id ? { ...sel, triageStatus: s } : sel);
+    };
+
+    if (isDemo) {
+      applyLocally(status);
+      toast.success(`Marked as ${status.toLowerCase()}`, {
+        action: {
+          label: 'Undo',
+          onClick: () => applyLocally(previousStatus),
+        },
+      });
+      return;
+    }
+    try {
+      await apiFetch(`/changes/${id}/triage`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      });
+      applyLocally(status);
+      toast.success(`Marked as ${status.toLowerCase()}`, {
+        action: {
+          label: 'Undo',
+          onClick: async () => {
+            try {
+              await apiFetch(`/changes/${id}/triage`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status: previousStatus }),
+              });
+              applyLocally(previousStatus);
+            } catch {
+              toast.error('Could not undo');
+            }
+          },
+        },
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not update triage status');
+    }
+  }, [isDemo, changes]);
+
+  const handleBulkTriage = useCallback(async (status: TriageStatus) => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    for (const id of ids) {
+      await handleTriage(id, status);
+    }
+    setSelectedIds(new Set());
+  }, [selectedIds, handleTriage]);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.size === filtered.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((c) => c.id)));
+    }
+  }, [filtered, selectedIds.size]);
+
+  // Keyboard navigation: j/k to move, Enter to open, Escape to close, x to toggle select
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const tag = (e.target as HTMLElement)?.tagName;
@@ -171,6 +281,11 @@ export default function ChangesPage() {
         });
         return;
       }
+      if (e.key === 'x' && focusedIdx >= 0 && focusedIdx < filtered.length) {
+        e.preventDefault();
+        toggleSelect(filtered[focusedIdx].id);
+        return;
+      }
       if (e.key === 'Enter' && focusedIdx >= 0 && focusedIdx < filtered.length) {
         e.preventDefault();
         setSelected(filtered[focusedIdx]);
@@ -179,7 +294,7 @@ export default function ChangesPage() {
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, filtered, focusedIdx]);
+  }, [selected, filtered, focusedIdx, toggleSelect]);
 
   if (loading && !changes.length) {
     return (
@@ -232,6 +347,68 @@ export default function ChangesPage() {
             </span>
           )}
         </button>
+        {filtered.length > 0 && (
+          <button
+            onClick={() => {
+              const headers = ['Title', 'Severity', 'Type', 'Source', 'Status', 'Date', 'Affected Endpoints'];
+              const rows = filtered.map((c) => [
+                `"${c.title.replace(/"/g, '""')}"`,
+                c.severity,
+                c.changeType,
+                c.crawlRun?.source?.name ?? '',
+                c.triageStatus ?? 'OPEN',
+                c.changeDate ?? c.createdAt,
+                `"${c.affectedEndpoints.join(', ')}"`,
+              ]);
+              const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+              const blob = new Blob([csv], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `apidelta-changes-${new Date().toISOString().slice(0, 10)}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+              toast.success(`Exported ${filtered.length} changes`);
+            }}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900/50 px-3.5 py-2 text-sm text-gray-300 transition hover:border-gray-700 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            <Download aria-hidden="true" className="h-4 w-4" />
+            Export
+          </button>
+        )}
+      </div>
+
+      {/* Triage status tabs */}
+      <div className="flex gap-1 rounded-lg border border-gray-800 bg-gray-900/30 p-1" role="tablist" aria-label="Filter by triage status">
+        {(['OPEN', 'ACKNOWLEDGED', 'RESOLVED', 'ALL'] as const).map((tab) => {
+          const labels: Record<typeof tab, string> = {
+            OPEN: 'Open',
+            ACKNOWLEDGED: 'Acknowledged',
+            RESOLVED: 'Resolved',
+            ALL: 'All',
+          };
+          const isActive = triageFilter === tab;
+          return (
+            <button
+              key={tab}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => { setTriageFilter(tab); setFocusedIdx(-1); }}
+              className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
+                isActive
+                  ? 'bg-gray-800 text-white shadow-sm'
+                  : 'text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              {labels[tab]}
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] tabular-nums ${
+                isActive ? 'bg-gray-700 text-gray-300' : 'bg-gray-800/50 text-gray-600'
+              }`}>
+                {triageCounts[tab]}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Filters panel */}
@@ -319,6 +496,28 @@ export default function ChangesPage() {
               </div>
             </div>
 
+            <div className="w-full sm:w-auto">
+              <label className="mb-1.5 block text-xs font-medium text-gray-500">
+                Date range
+              </label>
+              <div className="flex gap-1">
+                {(['24h', '7d', '30d', 'all'] as const).map((range) => (
+                  <button
+                    key={range}
+                    type="button"
+                    onClick={() => setDateRange(range)}
+                    className={`rounded-md px-2.5 py-2 text-xs font-medium transition ${
+                      dateRange === range
+                        ? 'bg-gray-800 text-white'
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    {range === 'all' ? 'All time' : `Last ${range}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <label className="inline-flex cursor-pointer items-center gap-2 pb-2.5 text-sm text-gray-400">
               <input
                 type="checkbox"
@@ -336,6 +535,7 @@ export default function ChangesPage() {
                   setSourceFilter('');
                   setSearchInput('');
                   setSearchQuery('');
+                  setDateRange('all');
                 }}
                 className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2.5 text-sm text-gray-500 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
@@ -374,17 +574,17 @@ export default function ChangesPage() {
           ))}
           {activeFilterCount > 0 && savedFilters.length < 5 && (
             <button
-              onClick={() => {
-                const name = prompt('Filter name:');
-                if (!name?.trim()) return;
+              onClick={async () => {
+                const name = await showPrompt({ title: 'Save filter', placeholder: 'Filter name', submitLabel: 'Save' });
+                if (!name) return;
                 saveFilter({
-                  name: name.trim(),
+                  name,
                   severityFilter,
                   sourceFilter,
                   searchQuery,
                   showInfo,
                 });
-                toast.success(`Filter "${name.trim()}" saved`);
+                toast.success(`Filter "${name}" saved`);
               }}
               className="inline-flex items-center gap-1 rounded-lg border border-dashed border-gray-700 px-3 py-1.5 text-xs text-gray-500 transition hover:border-violet-500/50 hover:text-violet-400"
             >
@@ -395,9 +595,43 @@ export default function ChangesPage() {
         </div>
       )}
 
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border border-violet-500/30 bg-violet-500/5 px-4 py-2.5">
+          <span className="text-sm font-medium text-violet-300">
+            {selectedIds.size} selected
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleBulkTriage('ACKNOWLEDGED')}
+              className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-400 transition hover:bg-amber-500/20"
+            >
+              <Eye className="h-3 w-3" />
+              Acknowledge all
+            </button>
+            <button
+              type="button"
+              onClick={() => handleBulkTriage('RESOLVED')}
+              className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/20"
+            >
+              <CheckCircle2 className="h-3 w-3" />
+              Resolve all
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="ml-auto text-xs text-gray-500 transition hover:text-white"
+          >
+            Clear selection
+          </button>
+        </div>
+      )}
+
       {/* Results count + keyboard hints */}
       <div className="flex items-center justify-between text-sm text-gray-500">
-        <span>
+        <span aria-live="polite" aria-atomic="true">
           {filtered.length} change{filtered.length !== 1 ? 's' : ''}{' '}
           {activeFilterCount > 0 && `(filtered from ${changes.length})`}
         </span>
@@ -406,6 +640,10 @@ export default function ChangesPage() {
             <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 text-[10px]">j</kbd>
             <kbd className="ml-0.5 rounded border border-gray-700 bg-gray-800 px-1 py-0.5 text-[10px]">k</kbd>
             {' '}navigate
+          </span>
+          <span>
+            <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 text-[10px]">x</kbd>
+            {' '}select
           </span>
           <span>
             <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 text-[10px]">Enter</kbd>
@@ -468,36 +706,88 @@ export default function ChangesPage() {
         </div>
       ) : (
         <ul className="divide-y divide-gray-900 overflow-hidden rounded-xl border border-gray-800 bg-gray-900/20">
-          {filtered.map((change, idx) => (
-            <li key={change.id}>
-              <button
-                type="button"
-                onClick={() => { setSelected(change); setFocusedIdx(idx); }}
-                className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-900/60 focus-visible:bg-gray-900/60 focus-visible:outline-none ${
-                  focusedIdx === idx ? 'bg-gray-900/60 ring-1 ring-inset ring-violet-500/40' : ''
-                }`}
-              >
-                <SeverityBadge severity={change.severity} />
-                <ChangeTypeBadge type={change.changeType} />
-                <span className="flex-1 truncate text-sm text-white">
-                  {change.title}
-                </span>
-                {change.triageStatus && change.triageStatus !== 'OPEN' && (
-                  <TriageStatusBadge status={change.triageStatus} />
-                )}
-                {change.crawlRun?.source?.name && (
-                  <span className="hidden shrink-0 text-xs text-gray-500 md:inline">
-                    {change.crawlRun.source.name}
-                  </span>
-                )}
-                <span className="hidden shrink-0 text-xs text-gray-600 md:inline">
-                  {new Date(
-                    change.changeDate ?? change.createdAt,
-                  ).toLocaleDateString()}
-                </span>
-              </button>
+          {/* Select all header */}
+          {filtered.length > 0 && (
+            <li className="flex items-center gap-3 border-b border-gray-800/50 px-4 py-1.5 text-xs text-gray-600">
+              <input
+                type="checkbox"
+                checked={selectedIds.size === filtered.length && filtered.length > 0}
+                onChange={toggleSelectAll}
+                className="h-3.5 w-3.5 rounded border-gray-700 bg-gray-950 text-violet-500 focus:ring-violet-500/30"
+                aria-label="Select all changes"
+              />
+              <span>{selectedIds.size === filtered.length ? 'Deselect all' : 'Select all'}</span>
             </li>
-          ))}
+          )}
+          {filtered.map((change, idx) => {
+            const status = change.triageStatus ?? 'OPEN';
+            const isSelected = selectedIds.has(change.id);
+            return (
+              <li key={change.id} className="group/row relative">
+                <div
+                  className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-900/60 ${
+                    focusedIdx === idx ? 'bg-gray-900/60 ring-1 ring-inset ring-violet-500/40' : ''
+                  } ${isSelected ? 'bg-violet-500/5' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleSelect(change.id)}
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-3.5 w-3.5 shrink-0 rounded border-gray-700 bg-gray-950 text-violet-500 focus:ring-violet-500/30"
+                    aria-label={`Select ${change.title}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { setSelected(change); setFocusedIdx(idx); }}
+                    className="flex flex-1 items-center gap-3 focus-visible:outline-none"
+                  >
+                  <SeverityBadge severity={change.severity} />
+                  <ChangeTypeBadge type={change.changeType} />
+                  <span className="flex-1 truncate text-sm text-white">
+                    {change.title}
+                  </span>
+                  {status !== 'OPEN' && (
+                    <TriageStatusBadge status={status} />
+                  )}
+                  {change.crawlRun?.source?.name && (
+                    <span className="hidden shrink-0 text-xs text-gray-500 md:inline group-hover/row:hidden">
+                      {change.crawlRun.source.name}
+                    </span>
+                  )}
+                  <span className="hidden shrink-0 text-xs text-gray-600 md:inline group-hover/row:hidden">
+                    {new Date(
+                      change.changeDate ?? change.createdAt,
+                    ).toLocaleDateString()}
+                  </span>
+                  </button>
+                  {/* Inline triage actions — visible on hover */}
+                  <div className="hidden shrink-0 items-center gap-1 group-hover/row:flex">
+                    {status === 'OPEN' && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleTriage(change.id, 'ACKNOWLEDGED'); }}
+                        className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] font-medium text-amber-400 transition hover:bg-amber-500/20"
+                        title="Acknowledge"
+                      >
+                        <Eye className="h-3 w-3" />
+                      </button>
+                    )}
+                    {status !== 'RESOLVED' && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleTriage(change.id, 'RESOLVED'); }}
+                        className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-400 transition hover:bg-emerald-500/20"
+                        title="Resolve"
+                      >
+                        <CheckCircle2 className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
 
@@ -505,33 +795,13 @@ export default function ChangesPage() {
       {selected && (
         <ChangeDetailPanel
           change={selected}
-          isDemo={isDemo}
           onClose={() => setSelected(null)}
-          onTriage={async (id, status) => {
-            if (isDemo) {
-              setChanges((prev) =>
-                prev.map((c) => (c.id === id ? { ...c, triageStatus: status } : c)),
-              );
-              setSelected((prev) => prev && prev.id === id ? { ...prev, triageStatus: status } : prev);
-              toast.success(`Marked as ${status.toLowerCase()}`);
-              return;
-            }
-            try {
-              await apiFetch(`/changes/${id}/triage`, {
-                method: 'PATCH',
-                body: JSON.stringify({ status }),
-              });
-              setChanges((prev) =>
-                prev.map((c) => (c.id === id ? { ...c, triageStatus: status } : c)),
-              );
-              setSelected((prev) => prev && prev.id === id ? { ...prev, triageStatus: status } : prev);
-              toast.success(`Marked as ${status.toLowerCase()}`);
-            } catch (e) {
-              toast.error(e instanceof Error ? e.message : 'Could not update triage status');
-            }
-          }}
+          onTriage={handleTriage}
         />
       )}
+
+      {/* Dialogs */}
+      {promptDialog}
     </div>
   );
 }
@@ -540,17 +810,18 @@ export default function ChangesPage() {
 
 function ChangeDetailPanel({
   change,
-  isDemo,
   onClose,
   onTriage,
 }: {
   change: ChangeEntry;
-  isDemo: boolean;
   onClose: () => void;
   onTriage: (id: string, status: TriageStatus) => void;
 }) {
+  const trapRef = useFocusTrap(true);
+
   return (
     <div
+      ref={trapRef}
       className="fixed inset-0 z-50 flex justify-end"
       role="dialog"
       aria-modal="true"
@@ -561,11 +832,11 @@ function ChangeDetailPanel({
         type="button"
         aria-label="Close details"
         onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="animate-modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm"
       />
 
       {/* Panel */}
-      <div className="relative flex h-full w-full max-w-xl flex-col border-l border-gray-800 bg-gray-950 shadow-2xl">
+      <div className="animate-slide-in-right relative flex h-full w-full max-w-xl flex-col border-l border-gray-800 bg-gray-950 shadow-2xl">
         <div className="flex items-start justify-between gap-4 border-b border-gray-900 px-6 py-4">
           <div className="flex flex-wrap items-center gap-2">
             <SeverityBadge severity={change.severity} />
