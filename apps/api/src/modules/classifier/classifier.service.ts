@@ -180,6 +180,21 @@ export class ClassifierService {
         return;
       }
 
+      // Detect quality issues: if title and AI summary share very few
+      // words, the parser likely captured wrong text (e.g. sidebar link).
+      const titleWords = new Set(
+        entry.title.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(w => w.length > 3),
+      );
+      const summaryWords = (classification.summary || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
+      const overlap = summaryWords.filter(w => titleWords.has(w)).length;
+      const overlapRatio = titleWords.size > 0 ? overlap / titleWords.size : 1;
+
+      // If less than 20% word overlap, prefix aiSummary with a quality warning
+      const summaryText = classification.summary || entry.title;
+      const aiSummary = overlapRatio < 0.2 && titleWords.size >= 3
+        ? `[LOW_QUALITY_PARSE] ${summaryText}`
+        : summaryText;
+
       updates.push(
         this.prisma.changeEntry.update({
           where: { id: entry.id },
@@ -187,7 +202,7 @@ export class ClassifierService {
             changeType: this.mapChangeType(classification.changeType),
             severity: this.mapSeverity(classification.severity),
             affectedEndpoints: classification.affectedEndpoints ?? [],
-            aiSummary: classification.summary || entry.title,
+            aiSummary,
           },
         }),
       );
