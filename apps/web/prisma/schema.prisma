@@ -38,6 +38,12 @@ enum Severity {
   LOW
 }
 
+enum TriageStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
 enum AlertChannel {
   EMAIL
   SLACK
@@ -95,9 +101,10 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  team     Team?     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  accounts Account[]
-  sessions Session[]
+  team             Team?          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  accounts         Account[]
+  sessions         Session[]
+  triageAssignments ChangeEntry[]
 
   @@index([teamId])
   @@index([email])
@@ -204,11 +211,14 @@ model ChangeEntry {
   contentHash   String?    @unique // SHA-256 of sourceId + normalized title for cross-run dedup
   changeDate    DateTime?  // Date of the change (if parseable from changelog)
   isNew         Boolean    @default(true) // False if seen in a previous crawl
+  triageStatus  TriageStatus @default(OPEN)
+  triageAssigneeId String?  // FK to User who acknowledged/resolved
   createdAt     DateTime   @default(now())
 
-  crawlRun CrawlRun  @relation(fields: [crawlRunId], references: [id], onDelete: Cascade)
-  source   ApiSource? @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  alerts   Alert[]
+  crawlRun       CrawlRun  @relation(fields: [crawlRunId], references: [id], onDelete: Cascade)
+  source         ApiSource? @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  triageAssignee User?     @relation(fields: [triageAssigneeId], references: [id], onDelete: SetNull)
+  alerts         Alert[]
 
   @@index([crawlRunId])
   @@index([sourceId])
@@ -216,6 +226,7 @@ model ChangeEntry {
   @@index([severity])
   @@index([changeDate])
   @@index([isNew])
+  @@index([triageStatus])
   @@index([contentHash])
 }
 

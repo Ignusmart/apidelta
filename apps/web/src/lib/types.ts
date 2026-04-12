@@ -6,6 +6,7 @@ export type ChangeType = 'BREAKING' | 'DEPRECATION' | 'NON_BREAKING' | 'INFO';
 export type Severity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 export type AlertChannel = 'EMAIL' | 'SLACK';
 export type AlertStatus = 'SENT' | 'FAILED' | 'PENDING';
+export type TriageStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED';
 
 // ── API response types ──
 
@@ -34,6 +35,12 @@ export interface CrawlRun {
   changes?: ChangeEntry[];
 }
 
+export interface TriageAssignee {
+  id: string;
+  name: string | null;
+  email: string;
+}
+
 export interface ChangeEntry {
   id: string;
   crawlRunId: string;
@@ -45,6 +52,8 @@ export interface ChangeEntry {
   rawExcerpt: string | null;
   changeDate: string | null;
   isNew: boolean;
+  triageStatus: TriageStatus;
+  triageAssignee?: TriageAssignee | null;
   createdAt: string;
   crawlRun?: CrawlRun & { source?: ApiSource };
 }

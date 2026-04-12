@@ -128,6 +128,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'Breaking: The source parameter is no longer accepted on PaymentIntents.',
     changeDate: daysAgo(1),
     isNew: true,
+    triageStatus: 'OPEN' as const,
     createdAt: minsAgo(23),
     crawlRun: {
       id: CRAWL_STRIPE,
@@ -152,6 +153,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'Legacy voice endpoints permanently removed.',
     changeDate: daysAgo(2),
     isNew: true,
+    triageStatus: 'OPEN' as const,
     createdAt: minsAgo(23),
     crawlRun: {
       id: CRAWL_TWILIO,
@@ -176,6 +178,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'The Charges API is deprecated.',
     changeDate: daysAgo(3),
     isNew: false,
+    triageStatus: 'ACKNOWLEDGED' as const,
     createdAt: daysAgo(3),
     crawlRun: {
       id: CRAWL_STRIPE,
@@ -200,6 +203,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'KV list pagination cursors transitioning to new format.',
     changeDate: daysAgo(1),
     isNew: true,
+    triageStatus: 'OPEN' as const,
     createdAt: minsAgo(23),
     crawlRun: {
       id: CRAWL_CLOUDFLARE,
@@ -224,6 +228,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'Breaking: team_join event payload restructured.',
     changeDate: daysAgo(1),
     isNew: true,
+    triageStatus: 'OPEN' as const,
     createdAt: hoursAgo(2),
     crawlRun: {
       id: CRAWL_SLACK,
@@ -248,6 +253,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'Completions API being sunset.',
     changeDate: daysAgo(5),
     isNew: false,
+    triageStatus: 'RESOLVED' as const,
     createdAt: daysAgo(5),
     crawlRun: {
       id: CRAWL_OPENAI,
@@ -272,6 +278,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'New: request_incremental_authorization field.',
     changeDate: daysAgo(1),
     isNew: true,
+    triageStatus: 'OPEN' as const,
     createdAt: minsAgo(23),
     crawlRun: {
       id: CRAWL_STRIPE,
@@ -296,6 +303,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'GPT-4.1 is now generally available.',
     changeDate: daysAgo(0),
     isNew: true,
+    triageStatus: 'OPEN' as const,
     createdAt: hoursAgo(4),
     crawlRun: {
       id: CRAWL_OPENAI,
@@ -320,6 +328,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'New message subtype: canvas.',
     changeDate: daysAgo(2),
     isNew: false,
+    triageStatus: 'RESOLVED' as const,
     createdAt: daysAgo(2),
     crawlRun: {
       id: CRAWL_SLACK,
@@ -344,6 +353,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'New model: @cf/meta/llama-4-scout.',
     changeDate: daysAgo(0),
     isNew: true,
+    triageStatus: 'OPEN' as const,
     createdAt: minsAgo(23),
     crawlRun: {
       id: CRAWL_CLOUDFLARE,
@@ -368,6 +378,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'Pages asset manifest v2 included in builds.',
     changeDate: daysAgo(3),
     isNew: false,
+    triageStatus: 'ACKNOWLEDGED' as const,
     createdAt: daysAgo(3),
     crawlRun: {
       id: CRAWL_CLOUDFLARE,
@@ -392,6 +403,7 @@ export const DEMO_CHANGES: ChangeEntry[] = [
     rawExcerpt: 'New: channel field in VerificationCheck response.',
     changeDate: daysAgo(4),
     isNew: false,
+    triageStatus: 'RESOLVED' as const,
     createdAt: daysAgo(4),
     crawlRun: {
       id: CRAWL_TWILIO,

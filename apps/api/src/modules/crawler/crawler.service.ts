@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, Inject, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSourceDto } from './dto/create-source.dto';
-import { CrawlStatus, ChangeType, Severity } from '@prisma/client';
+import { CrawlStatus, ChangeType, Severity, TriageStatus } from '@prisma/client';
 import { ClassifierService } from '../classifier/classifier.service';
 import { AlertsService } from '../alerts/alerts.service';
 import * as cheerio from 'cheerio';
@@ -26,11 +26,14 @@ export class CrawlerService {
 
   // ── Changes ──────────────────────────────────
 
-  async listChanges(teamId: string, page = 1, pageSize = 50) {
+  async listChanges(teamId: string, page = 1, pageSize = 50, triageStatus?: TriageStatus) {
     const skip = (page - 1) * pageSize;
-    const where = {
+    const where: Record<string, unknown> = {
       crawlRun: { source: { teamId } },
     };
+    if (triageStatus) {
+      where.triageStatus = triageStatus;
+    }
     const [changes, total] = await Promise.all([
       this.prisma.changeEntry.findMany({
         where,
@@ -39,6 +42,9 @@ export class CrawlerService {
             select: {
               source: { select: { id: true, name: true } },
             },
+          },
+          triageAssignee: {
+            select: { id: true, name: true, email: true },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -148,6 +154,33 @@ export class CrawlerService {
     }));
 
     return { daily, totals };
+  }
+
+  // ── Triage ──────────────────────────────────
+
+  async updateTriage(teamId: string, changeId: string, status: TriageStatus, assigneeId?: string) {
+    // Verify the change belongs to this team
+    const change = await this.prisma.changeEntry.findFirst({
+      where: {
+        id: changeId,
+        crawlRun: { source: { teamId } },
+      },
+      select: { id: true },
+    });
+    if (!change) throw new NotFoundException(`Change ${changeId} not found`);
+
+    return this.prisma.changeEntry.update({
+      where: { id: changeId },
+      data: {
+        triageStatus: status,
+        triageAssigneeId: assigneeId ?? null,
+      },
+      include: {
+        triageAssignee: {
+          select: { id: true, name: true, email: true },
+        },
+      },
+    });
   }
 
   // ── Source CRUD ──────────────────────────────

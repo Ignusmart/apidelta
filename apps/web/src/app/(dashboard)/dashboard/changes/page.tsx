@@ -11,12 +11,14 @@ import {
   Search,
   Plus,
   ExternalLink,
+  CheckCircle2,
+  Eye,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
-import type { ApiSource, ChangeEntry, Severity } from '@/lib/types';
-import { SeverityBadge, ChangeTypeBadge } from '@/lib/components';
+import type { ApiSource, ChangeEntry, Severity, TriageStatus } from '@/lib/types';
+import { SeverityBadge, ChangeTypeBadge, TriageStatusBadge } from '@/lib/components';
 import { SEVERITY_ORDER, getTeamId } from '@/lib/shared';
 import { useDemo } from '@/lib/use-demo';
 import { DEMO_CHANGES, DEMO_SOURCES } from '@/lib/demo-data';
@@ -371,6 +373,9 @@ export default function ChangesPage() {
                 <span className="flex-1 truncate text-sm text-white">
                   {change.title}
                 </span>
+                {change.triageStatus && change.triageStatus !== 'OPEN' && (
+                  <TriageStatusBadge status={change.triageStatus} />
+                )}
                 {change.crawlRun?.source?.name && (
                   <span className="hidden shrink-0 text-xs text-gray-500 md:inline">
                     {change.crawlRun.source.name}
@@ -391,7 +396,31 @@ export default function ChangesPage() {
       {selected && (
         <ChangeDetailPanel
           change={selected}
+          isDemo={isDemo}
           onClose={() => setSelected(null)}
+          onTriage={async (id, status) => {
+            if (isDemo) {
+              setChanges((prev) =>
+                prev.map((c) => (c.id === id ? { ...c, triageStatus: status } : c)),
+              );
+              setSelected((prev) => prev && prev.id === id ? { ...prev, triageStatus: status } : prev);
+              toast.success(`Marked as ${status.toLowerCase()}`);
+              return;
+            }
+            try {
+              await apiFetch(`/changes/${id}/triage`, {
+                method: 'PATCH',
+                body: JSON.stringify({ status }),
+              });
+              setChanges((prev) =>
+                prev.map((c) => (c.id === id ? { ...c, triageStatus: status } : c)),
+              );
+              setSelected((prev) => prev && prev.id === id ? { ...prev, triageStatus: status } : prev);
+              toast.success(`Marked as ${status.toLowerCase()}`);
+            } catch (e) {
+              toast.error(e instanceof Error ? e.message : 'Could not update triage status');
+            }
+          }}
         />
       )}
     </div>
@@ -402,10 +431,14 @@ export default function ChangesPage() {
 
 function ChangeDetailPanel({
   change,
+  isDemo,
   onClose,
+  onTriage,
 }: {
   change: ChangeEntry;
+  isDemo: boolean;
   onClose: () => void;
+  onTriage: (id: string, status: TriageStatus) => void;
 }) {
   return (
     <div
@@ -446,6 +479,37 @@ function ChangeDetailPanel({
           >
             {change.title}
           </h2>
+
+          {/* Triage actions */}
+          <div className="mt-3 flex items-center gap-2">
+            <TriageStatusBadge status={change.triageStatus ?? 'OPEN'} />
+            {(change.triageStatus ?? 'OPEN') === 'OPEN' && (
+              <button
+                onClick={() => onTriage(change.id, 'ACKNOWLEDGED')}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-400 transition hover:bg-amber-500/20"
+              >
+                <Eye className="h-3 w-3" />
+                Acknowledge
+              </button>
+            )}
+            {(change.triageStatus ?? 'OPEN') !== 'RESOLVED' && (
+              <button
+                onClick={() => onTriage(change.id, 'RESOLVED')}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/20"
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                Resolve
+              </button>
+            )}
+            {(change.triageStatus ?? 'OPEN') !== 'OPEN' && (
+              <button
+                onClick={() => onTriage(change.id, 'OPEN')}
+                className="rounded-lg px-3 py-1.5 text-xs text-gray-500 transition hover:bg-gray-800 hover:text-gray-300"
+              >
+                Reopen
+              </button>
+            )}
+          </div>
 
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-gray-300">
             {change.description}
