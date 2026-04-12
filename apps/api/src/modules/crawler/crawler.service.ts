@@ -48,10 +48,63 @@ export class CrawlerService {
       this.prisma.changeEntry.count({ where }),
     ]);
 
+    // Roll up consecutive LOW-severity entries from the same source
+    // into digest groups so minor CLI releases don't dominate the feed.
+    const grouped = this.rollUpLowSeverity(changes);
+
     return {
-      changes,
+      changes: grouped,
       pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
     };
+  }
+
+  /**
+   * Group runs of 3+ consecutive LOW-severity entries from the same source
+   * into a single digest object. Entries with MEDIUM+ severity are never
+   * rolled up. This keeps the feed focused on impactful changes.
+   */
+  private rollUpLowSeverity<
+    T extends { severity: Severity; crawlRun?: { source?: { id?: string; name?: string } | null } | null },
+  >(changes: T[]): Array<T | { _digest: true; source: string; sourceName: string; count: number; entries: T[] }> {
+    const result: Array<T | { _digest: true; source: string; sourceName: string; count: number; entries: T[] }> = [];
+    let i = 0;
+
+    while (i < changes.length) {
+      const entry = changes[i];
+      const sourceId = entry.crawlRun?.source?.id;
+
+      if (entry.severity !== Severity.LOW || !sourceId) {
+        result.push(entry);
+        i++;
+        continue;
+      }
+
+      // Collect consecutive LOW entries from the same source
+      let j = i + 1;
+      while (
+        j < changes.length &&
+        changes[j].severity === Severity.LOW &&
+        changes[j].crawlRun?.source?.id === sourceId
+      ) {
+        j++;
+      }
+
+      const run = changes.slice(i, j);
+      if (run.length >= 3) {
+        result.push({
+          _digest: true,
+          source: sourceId,
+          sourceName: entry.crawlRun?.source?.name ?? 'Unknown',
+          count: run.length,
+          entries: run,
+        });
+      } else {
+        result.push(...run);
+      }
+      i = j;
+    }
+
+    return result;
   }
 
   // ── Source CRUD ──────────────────────────────
