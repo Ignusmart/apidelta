@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
-import { useDemo } from '@/lib/use-demo';
+
+function useIsDemo(): boolean {
+  const [isDemo, setIsDemo] = useState(false);
+  useEffect(() => {
+    setIsDemo(new URLSearchParams(window.location.search).get('demo') === 'true');
+  }, []);
+  return isDemo;
+}
 
 function NavBadge({ count, color = 'bg-gray-700 text-gray-400' }: { count: number; color?: string }) {
   if (count === 0) return null;
@@ -14,11 +21,11 @@ function NavBadge({ count, color = 'bg-gray-700 text-gray-400' }: { count: numbe
 }
 
 export function AlertsBadge() {
-  const isDemo = useDemo();
-  const [count, setCount] = useState(isDemo ? 3 : 0);
+  const isDemo = useIsDemo();
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (isDemo) return;
+    if (isDemo) { setCount(3); return; }
     apiFetch<{ count: number }>('/alerts/unread-count')
       .then((data) => setCount(data.count))
       .catch(() => {});
@@ -28,11 +35,11 @@ export function AlertsBadge() {
 }
 
 export function ChangesBadge() {
-  const isDemo = useDemo();
-  const [count, setCount] = useState(isDemo ? 7 : 0);
+  const isDemo = useIsDemo();
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (isDemo) return;
+    if (isDemo) { setCount(7); return; }
     apiFetch<{ count: number }>('/changes/open-count')
       .then((data) => setCount(data.count))
       .catch(() => {});
@@ -42,11 +49,11 @@ export function ChangesBadge() {
 }
 
 export function SourcesBadge() {
-  const isDemo = useDemo();
-  const [count, setCount] = useState(isDemo ? 5 : 0);
+  const isDemo = useIsDemo();
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (isDemo) return;
+    if (isDemo) { setCount(5); return; }
     apiFetch<{ count: number }>('/sources/count')
       .then((data) => setCount(data.count))
       .catch(() => {});

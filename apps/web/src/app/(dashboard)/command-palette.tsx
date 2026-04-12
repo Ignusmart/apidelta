@@ -14,7 +14,6 @@ import {
   Keyboard,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import { useDemo } from '@/lib/use-demo';
 import { DEMO_SOURCES, DEMO_CHANGES } from '@/lib/demo-data';
 import type { ApiSource, ChangeEntry } from '@/lib/types';
 import { SEVERITY_STYLES } from '@/lib/shared';
@@ -39,7 +38,6 @@ export function CommandPalette() {
   const [dynamicSources, setDynamicSources] = useState<ApiSource[]>([]);
   const [dynamicChanges, setDynamicChanges] = useState<ChangeEntry[]>([]);
   const router = useRouter();
-  const isDemo = useDemo();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -72,7 +70,8 @@ export function CommandPalette() {
     }
 
     debounceRef.current = setTimeout(async () => {
-      if (isDemo) {
+      const isDemoMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === 'true';
+      if (isDemoMode) {
         const lower = q.toLowerCase();
         setDynamicSources(DEMO_SOURCES.filter((s) => s.name.toLowerCase().includes(lower)));
         setDynamicChanges(DEMO_CHANGES.filter((c) =>
@@ -92,7 +91,7 @@ export function CommandPalette() {
         // Silently ignore search errors
       }
     }, 250);
-  }, [isDemo]);
+  }, []);
 
   function handleQueryChange(value: string) {
     setQuery(value);
