@@ -252,7 +252,7 @@ Severity rules:
 - MEDIUM: Deprecations with long timeline (3+ months), non-breaking changes to important endpoints, behavior changes
 - LOW: New features, documentation updates, minor improvements, informational items
 
-For affectedEndpoints: extract any API paths, method names, SDK functions, or resource names mentioned. Use the format they appear in (e.g., "/v1/charges", "Charge.create"). Return empty array if none mentioned.
+For affectedEndpoints: extract ANY API paths, method names, SDK functions, CLI commands, resource names, or product/service names mentioned. Be thorough — scan the ENTIRE entry text, not just the title. Use the format they appear in (e.g., "/v1/charges", "Charge.create", "conversations.history", "slack run", "AI Gateway"). For entries that mention specific product features or services (e.g., "Browser Rendering", "Workers AI", "Messaging Services"), include those as affected endpoints too. Return empty array ONLY if genuinely no APIs, services, or technical resources are mentioned.
 
 For summary: write a 1-2 sentence technical summary focused on what changed and its impact on integrations.
 
