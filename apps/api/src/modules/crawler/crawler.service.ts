@@ -475,6 +475,21 @@ export class CrawlerService {
       if (singleTokenRatio > 0.6) return true;
     }
 
+    // GKE / Kubernetes release channel version bumps: walls of version
+    // numbers with no behavioral change. Detect entries dominated by
+    // version-like strings (e.g. "1.32.12-gke.1076000").
+    const combined = `${title} ${description}`;
+    const versionMatches = combined.match(/\d+\.\d+[\w.-]*gke[\w.-]*/g);
+    if (versionMatches && versionMatches.length >= 5) return true;
+
+    // Also catch generic release channel entries (Regular/Rapid/Stable/Extended channel)
+    if (
+      /^(regular|rapid|stable|extended|no)\s+channel$/i.test(title) &&
+      versionMatches &&
+      versionMatches.length >= 2
+    )
+      return true;
+
     return false;
   }
 
