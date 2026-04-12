@@ -6,6 +6,7 @@ import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows, Se
 import Link from 'next/link';
 import { SidebarToggle } from './sidebar-toggle';
 import { CommandPalette } from './command-palette';
+import { ShortcutsProvider } from './shortcuts-dialog';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -112,8 +113,9 @@ export default async function DashboardLayout({
       {/* Main content */}
       <main id="main-content" className="min-w-0 flex-1 p-6 pt-20 lg:ml-64 lg:p-8 lg:pt-8">{children}</main>
 
-      {/* Command palette (Cmd+K) */}
+      {/* Command palette (Cmd+K) + keyboard shortcuts */}
       <CommandPalette />
+      <ShortcutsProvider />
     </div>
   );
 }
