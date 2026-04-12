@@ -7,7 +7,6 @@ import {
   Plus,
   Trash2,
   Loader2,
-  AlertTriangle,
   X,
   Mail,
   MessageSquare,
@@ -19,6 +18,7 @@ import {
   Rss,
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import type {
   AlertRule,
@@ -58,7 +58,7 @@ export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>(isDemo ? DEMO_ALERTS : []);
   const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
   const [loading, setLoading] = useState(!isDemo);
-  const [error, setError] = useState<string | null>(null);
+
 
   // UI
   const [activeTab, setActiveTab] = useState<'rules' | 'history'>('rules');
@@ -81,7 +81,6 @@ export default function AlertsPage() {
     if (isDemo) return;
     if (!teamId) return;
     setLoading(true);
-    setError(null);
     try {
       const [rulesData, alertsData, sourcesData] = await Promise.all([
         apiFetch<AlertRule[]>(`/alerts/rules?teamId=${teamId}`),
@@ -94,7 +93,7 @@ export default function AlertsPage() {
       setAlerts(alertsData.data ?? []);
       setSources(sourcesData);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not load alert data. Please try again.');
+      toast.error(e instanceof Error ? e.message : 'Could not load alert data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -168,8 +167,9 @@ export default function AlertsPage() {
       resetRuleForm();
       setShowCreateForm(false);
       await fetchData();
+      toast.success('Alert rule created');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not create alert rule. Please try again.');
+      toast.error(e instanceof Error ? e.message : 'Could not create alert rule. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -182,8 +182,9 @@ export default function AlertsPage() {
     try {
       await apiFetch(`/alerts/rules/${id}`, { method: 'DELETE' });
       setRules((prev) => prev.filter((r) => r.id !== id));
+      toast.success('Alert rule deleted');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not delete alert rule. Please try again.');
+      toast.error(e instanceof Error ? e.message : 'Could not delete alert rule. Please try again.');
     } finally {
       setDeletingId(null);
     }
@@ -241,20 +242,6 @@ export default function AlertsPage() {
           Create Rule
         </button>
       </div>
-
-      {error && (
-        <div role="alert" className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
-          <AlertTriangle aria-hidden="true" className="mr-2 inline h-4 w-4" />
-          {error}
-          <button
-            onClick={() => setError(null)}
-            aria-label="Dismiss error"
-            className="ml-2 rounded text-red-500 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-          >
-            <X aria-hidden="true" className="inline h-3 w-3" />
-          </button>
-        </div>
-      )}
 
       {/* Tabs */}
       <div role="tablist" aria-label="Alert views" className="flex gap-1 rounded-lg border border-gray-800 bg-gray-900/30 p-1">

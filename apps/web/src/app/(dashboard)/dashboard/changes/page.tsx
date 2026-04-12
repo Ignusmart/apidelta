@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   GitCompareArrows,
-  AlertTriangle,
   Filter,
   Calendar,
   X,
@@ -14,6 +13,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import type { ApiSource, ChangeEntry, Severity } from '@/lib/types';
 import { SeverityBadge, ChangeTypeBadge } from '@/lib/components';
@@ -37,7 +37,6 @@ export default function ChangesPage() {
   const [changes, setChanges] = useState<ChangeEntry[]>(isDemo ? DEMO_CHANGES : []);
   const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
   const [loading, setLoading] = useState(!isDemo);
-  const [error, setError] = useState<string | null>(null);
 
   // Filters
   const [severityFilter, setSeverityFilter] = useState<Severity | ''>('');
@@ -80,7 +79,6 @@ export default function ChangesPage() {
     if (isDemo) return;
     if (!teamId) return;
     setLoading(true);
-    setError(null);
     try {
       const [changesData, sourcesData] = await Promise.all([
         apiFetch<{ changes: ChangeEntry[]; pagination: { total: number } }>(
@@ -91,7 +89,7 @@ export default function ChangesPage() {
       setChanges(changesData.changes ?? []);
       setSources(sourcesData);
     } catch (e) {
-      setError(
+      toast.error(
         e instanceof Error ? e.message : 'Could not load changes. Please try again.',
       );
     } finally {
@@ -196,16 +194,6 @@ export default function ChangesPage() {
           )}
         </button>
       </div>
-
-      {error && (
-        <div
-          role="alert"
-          className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400"
-        >
-          <AlertTriangle aria-hidden="true" className="mr-2 inline h-4 w-4" />
-          {error}
-        </div>
-      )}
 
       {/* Filters panel */}
       {showFilters && (

@@ -7,13 +7,13 @@ import {
   GitCompareArrows,
   Bell,
   Clock,
-  AlertTriangle,
   ArrowRight,
   RefreshCw,
   Plus,
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import type { ApiSource, Alert } from '@/lib/types';
 import { SeverityBadge } from '@/lib/components';
@@ -57,13 +57,11 @@ export default function DashboardPage() {
   const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
   const [alerts, setAlerts] = useState<Alert[]>(isDemo ? DEMO_ALERTS : []);
   const [loading, setLoading] = useState(!isDemo);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     if (isDemo) return;
     if (!teamId) return;
     setLoading(true);
-    setError(null);
     try {
       const [srcData, alertData] = await Promise.all([
         apiFetch<ApiSource[]>(`/sources?teamId=${teamId}`),
@@ -72,7 +70,7 @@ export default function DashboardPage() {
       setSources(srcData);
       setAlerts(alertData.data ?? []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not load dashboard data. Please try again.');
+      toast.error(e instanceof Error ? e.message : 'Could not load dashboard data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -186,13 +184,6 @@ export default function DashboardPage() {
           Refresh
         </button>
       </div>
-
-      {error && (
-        <div role="alert" className="rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
-          <AlertTriangle aria-hidden="true" className="mr-2 inline h-4 w-4" />
-          {error}
-        </div>
-      )}
 
       {/* Onboarding checklist — shown until user completes setup or dismisses */}
       <OnboardingChecklist />
