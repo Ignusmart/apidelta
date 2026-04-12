@@ -213,11 +213,15 @@ const SOFTWARE_SCHEMA = {
 };
 
 // ---------------------------------------------------------------------------
+import { StickyCTA } from './sticky-cta';
+
 // Page component
 // ---------------------------------------------------------------------------
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
+      {/* Sticky CTA bar — appears on scroll, hides at pricing */}
+      <StickyCTA />
       {/* Structured data — Organization + SoftwareApplication + FAQ */}
       <script
         type="application/ld+json"
@@ -273,7 +277,7 @@ export default function HomePage() {
       {/* HERO — PAS: Problem headline, agitate in subhead, solution CTA   */}
       {/* ----------------------------------------------------------------- */}
       <main id="main-content">
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20 text-center">
+      <section id="hero-section" className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20 text-center">
         {/* Background effects */}
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-violet-900/20 to-transparent" />
         <div aria-hidden="true" className="pointer-events-none absolute -top-40 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-violet-600/20 blur-3xl" />
@@ -454,20 +458,26 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-gray-800 shadow-2xl shadow-violet-500/5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/demo.gif"
-              alt="APIDelta product demo showing the dashboard with AI-classified API changes and Slack alert configuration"
-              width={1280}
-              height={720}
-              className="w-full"
+          <div className="group relative overflow-hidden rounded-xl border border-gray-800 shadow-2xl shadow-violet-500/5">
+            <iframe
+              src="/dashboard?demo=true"
+              title="APIDelta live demo — dashboard with AI-classified API changes"
+              className="h-[500px] w-full pointer-events-none sm:h-[600px]"
               loading="lazy"
             />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-100 transition-opacity group-hover:opacity-0">
+              <a
+                href="/dashboard?demo=true"
+                className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-violet-600/20 transition hover:bg-violet-500"
+              >
+                Try the live demo
+                <ArrowRight className="h-4 w-4" />
+              </a>
+            </div>
           </div>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            Dashboard shown with live data from Stripe, Twilio, Cloudflare,
+            Interactive demo with sample data from Stripe, Twilio, Cloudflare,
             Slack, and OpenAI changelogs.
           </p>
         </div>

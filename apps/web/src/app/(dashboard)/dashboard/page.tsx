@@ -13,7 +13,10 @@ import {
   Zap,
   AlertTriangle,
   CheckCircle2,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
@@ -31,12 +34,14 @@ function StatCard({
   value,
   accent,
   tooltip,
+  trend,
 }: {
   icon: React.ElementType;
   label: string;
   value: string | number;
   accent: string;
   tooltip?: string;
+  trend?: { value: number; label: string };
 }) {
   return (
     <div className="group relative overflow-hidden rounded-xl border border-gray-800 bg-gray-900/50 p-5 transition-all duration-150 hover:border-gray-700 hover:bg-gray-900/70">
@@ -50,7 +55,21 @@ function StatCard({
           ) : (
             <p className="text-sm text-gray-500">{label}</p>
           )}
-          <p className="mt-1.5 text-3xl font-bold tracking-tight">{value}</p>
+          <div className="mt-1.5 flex items-baseline gap-2">
+            <p className="text-3xl font-bold tracking-tight">{value}</p>
+            {trend && trend.value !== 0 && (
+              <span className={`inline-flex items-center gap-0.5 text-xs font-medium ${
+                trend.value > 0 ? 'text-amber-400' : 'text-emerald-400'
+              }`}>
+                {trend.value > 0 ? (
+                  <TrendingUp className="h-3 w-3" />
+                ) : (
+                  <TrendingDown className="h-3 w-3" />
+                )}
+                {trend.label}
+              </span>
+            )}
+          </div>
         </div>
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg bg-gray-800/80`}>
           <Icon aria-hidden="true" className="h-5 w-5 text-gray-400" />
@@ -106,6 +125,18 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Compute weekly trend from daily stats (last 7d vs prior 7d)
+  const changesTrend = useMemo(() => {
+    const daily = changesStats.daily;
+    if (daily.length < 14) return null;
+    const sum = (arr: typeof daily) => arr.reduce((s, d) => s + d.critical + d.high + d.medium + d.low, 0);
+    const recent = sum(daily.slice(-7));
+    const prior = sum(daily.slice(-14, -7));
+    if (prior === 0) return null;
+    const pct = Math.round(((recent - prior) / prior) * 100);
+    return { value: pct, label: `${Math.abs(pct)}% vs last week` };
+  }, [changesStats.daily]);
 
   // Derive stats
   const totalSources = sources.length;
@@ -284,7 +315,7 @@ export default function DashboardPage() {
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Rss} label="Monitored APIs" value={totalSources} accent="bg-violet-500" tooltip="Total API changelog sources being monitored" />
-        <StatCard icon={GitCompareArrows} label="Changes (30d)" value={totalChanges} accent="bg-blue-500" tooltip="Total changes detected across all sources in the last 30 days" />
+        <StatCard icon={GitCompareArrows} label="Changes (30d)" value={totalChanges} accent="bg-blue-500" tooltip="Total changes detected across all sources in the last 30 days" trend={changesTrend ?? undefined} />
         <StatCard icon={Bell} label="Alerts Sent" value={activeAlerts} accent="bg-amber-500" tooltip="Alerts successfully delivered to your configured channels" />
         <StatCard icon={Clock} label="Last Crawl" value={timeAgo(lastCrawl ?? null)} accent="bg-emerald-500" tooltip="When APIDelta last checked your API sources for changes" />
       </div>

@@ -8,6 +8,7 @@ import { SidebarToggle } from './sidebar-toggle';
 import { CommandPalette } from './command-palette';
 import { ShortcutsProvider } from './shortcuts-dialog';
 import { NavLinks } from './nav-links';
+import { MobileNav } from './mobile-nav';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -94,8 +95,11 @@ export default async function DashboardLayout({
         </div>
       </aside>
 
-      {/* Main content */}
-      <main id="main-content" className="min-w-0 flex-1 p-6 pt-20 lg:ml-64 lg:p-8 lg:pt-8">{children}</main>
+      {/* Main content — pb-20 on mobile for bottom nav bar */}
+      <main id="main-content" className="min-w-0 flex-1 p-6 pb-20 pt-20 lg:ml-64 lg:p-8 lg:pb-8 lg:pt-8">{children}</main>
+
+      {/* Mobile bottom navigation */}
+      <MobileNav />
 
       {/* Command palette (Cmd+K) + keyboard shortcuts */}
       <CommandPalette />

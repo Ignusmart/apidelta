@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Command } from 'cmdk';
 import {
@@ -12,8 +12,12 @@ import {
   Plus,
   Search,
   Keyboard,
-  Play,
 } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
+import { useDemo } from '@/lib/use-demo';
+import { DEMO_SOURCES, DEMO_CHANGES } from '@/lib/demo-data';
+import type { ApiSource, ChangeEntry } from '@/lib/types';
+import { SEVERITY_STYLES } from '@/lib/shared';
 
 const NAVIGATION_ITEMS = [
   { label: 'Overview', href: '/dashboard', icon: LayoutDashboard, group: 'Navigate' },
@@ -31,7 +35,12 @@ const ACTION_ITEMS = [
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [dynamicSources, setDynamicSources] = useState<ApiSource[]>([]);
+  const [dynamicChanges, setDynamicChanges] = useState<ChangeEntry[]>([]);
   const router = useRouter();
+  const isDemo = useDemo();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -44,12 +53,60 @@ export function CommandPalette() {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
+  // Reset state when palette closes
+  useEffect(() => {
+    if (!open) {
+      setQuery('');
+      setDynamicSources([]);
+      setDynamicChanges([]);
+    }
+  }, [open]);
+
+  // Debounced dynamic search
+  const searchDynamic = useCallback((q: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!q || q.length < 2) {
+      setDynamicSources([]);
+      setDynamicChanges([]);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      if (isDemo) {
+        const lower = q.toLowerCase();
+        setDynamicSources(DEMO_SOURCES.filter((s) => s.name.toLowerCase().includes(lower)));
+        setDynamicChanges(DEMO_CHANGES.filter((c) =>
+          c.title.toLowerCase().includes(lower) ||
+          c.description.toLowerCase().includes(lower)
+        ).slice(0, 5));
+        return;
+      }
+      try {
+        const [srcData, chgData] = await Promise.all([
+          apiFetch<ApiSource[]>(`/sources/search?q=${encodeURIComponent(q)}`).catch(() => []),
+          apiFetch<{ changes: ChangeEntry[] }>(`/changes/search?q=${encodeURIComponent(q)}&limit=5`).catch(() => ({ changes: [] })),
+        ]);
+        setDynamicSources(Array.isArray(srcData) ? srcData : []);
+        setDynamicChanges(chgData.changes ?? []);
+      } catch {
+        // Silently ignore search errors
+      }
+    }, 250);
+  }, [isDemo]);
+
+  function handleQueryChange(value: string) {
+    setQuery(value);
+    searchDynamic(value);
+  }
+
   function navigate(href: string) {
     setOpen(false);
     router.push(href);
   }
 
   if (!open) return null;
+
+  const hasDynamic = dynamicSources.length > 0 || dynamicChanges.length > 0;
 
   return (
     <div
@@ -59,12 +116,15 @@ export function CommandPalette() {
       <Command
         className="w-full max-w-lg rounded-xl border border-gray-800 bg-gray-950 shadow-2xl animate-modal-content overflow-hidden"
         label="Command palette"
+        shouldFilter={!hasDynamic}
       >
         <div className="flex items-center gap-3 border-b border-gray-800 px-4">
           <Search className="h-4 w-4 text-gray-500 shrink-0" />
           <Command.Input
-            placeholder="Search commands..."
+            placeholder="Search commands, sources, changes..."
             autoFocus
+            value={query}
+            onValueChange={handleQueryChange}
             className="w-full bg-transparent py-3.5 text-sm text-white placeholder-gray-500 outline-none"
             onKeyDown={(e) => { if (e.key === 'Escape') setOpen(false); }}
           />
@@ -72,10 +132,59 @@ export function CommandPalette() {
             ESC
           </kbd>
         </div>
-        <Command.List className="max-h-72 overflow-y-auto p-2">
+        <Command.List className="max-h-80 overflow-y-auto p-2">
           <Command.Empty className="py-8 text-center text-sm text-gray-500">
             No results found.
           </Command.Empty>
+
+          {/* Dynamic: Sources */}
+          {dynamicSources.length > 0 && (
+            <>
+              <Command.Group heading="Sources" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-gray-500">
+                {dynamicSources.map((src) => (
+                  <Command.Item
+                    key={`src-${src.id}`}
+                    value={`source ${src.name} ${src.url}`}
+                    onSelect={() => navigate('/dashboard/sources')}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-300 transition-colors aria-selected:bg-gray-800/80 aria-selected:text-white"
+                  >
+                    <Rss className="h-4 w-4 text-gray-500" />
+                    <div className="min-w-0 flex-1">
+                      <span className="block truncate">{src.name}</span>
+                      <span className="block truncate text-xs text-gray-600">{src.url}</span>
+                    </div>
+                  </Command.Item>
+                ))}
+              </Command.Group>
+              <Command.Separator className="my-1 h-px bg-gray-800/50" />
+            </>
+          )}
+
+          {/* Dynamic: Changes */}
+          {dynamicChanges.length > 0 && (
+            <>
+              <Command.Group heading="Changes" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-gray-500">
+                {dynamicChanges.map((change) => {
+                  const sev = SEVERITY_STYLES[change.severity] ?? SEVERITY_STYLES.INFO;
+                  return (
+                    <Command.Item
+                      key={`chg-${change.id}`}
+                      value={`change ${change.title} ${change.severity}`}
+                      onSelect={() => navigate(`/dashboard/changes?highlight=${change.id}`)}
+                      className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-300 transition-colors aria-selected:bg-gray-800/80 aria-selected:text-white"
+                    >
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${sev.bg} ${sev.text}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${sev.dot}`} />
+                        {change.severity}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">{change.title}</span>
+                    </Command.Item>
+                  );
+                })}
+              </Command.Group>
+              <Command.Separator className="my-1 h-px bg-gray-800/50" />
+            </>
+          )}
 
           <Command.Group heading="Navigate" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-gray-500">
             {NAVIGATION_ITEMS.map((item) => (
