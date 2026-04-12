@@ -25,7 +25,7 @@ export function AlertsBadge() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (isDemo) { setCount(3); return; }
+    if (isDemo) { setCount(2); return; }
     apiFetch<{ count: number }>('/alerts/unread-count')
       .then((data) => setCount(data.count))
       .catch(() => {});

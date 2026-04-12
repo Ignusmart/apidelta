@@ -455,32 +455,35 @@ const alertableChanges = DEMO_CHANGES.filter(
   (c) => c.severity === 'CRITICAL' || c.severity === 'HIGH',
 );
 
-export const DEMO_ALERTS: Alert[] = alertableChanges.flatMap((change, i) => [
-  {
-    id: `demo-alert-slack-${i}`,
-    alertRuleId: RULE_SLACK,
-    changeEntryId: change.id,
-    teamId: TEAM_ID,
-    status: 'SENT' as const,
-    sentAt: change.createdAt,
-    errorMessage: null,
-    createdAt: change.createdAt,
-    alertRule: DEMO_ALERT_RULES[0],
-    changeEntry: change,
-  },
-  {
-    id: `demo-alert-email-${i}`,
-    alertRuleId: RULE_EMAIL,
-    changeEntryId: change.id,
-    teamId: TEAM_ID,
-    status: 'SENT' as const,
-    sentAt: change.createdAt,
-    errorMessage: null,
-    createdAt: change.createdAt,
-    alertRule: DEMO_ALERT_RULES[1],
-    changeEntry: change,
-  },
-]);
+export const DEMO_ALERTS: Alert[] = alertableChanges.flatMap((change, i) => {
+  const isLast = i === alertableChanges.length - 1;
+  return [
+    {
+      id: `demo-alert-slack-${i}`,
+      alertRuleId: RULE_SLACK,
+      changeEntryId: change.id,
+      teamId: TEAM_ID,
+      status: (isLast ? 'PENDING' : 'SENT') as Alert['status'],
+      sentAt: isLast ? null : change.createdAt,
+      errorMessage: null,
+      createdAt: change.createdAt,
+      alertRule: DEMO_ALERT_RULES[0],
+      changeEntry: change,
+    },
+    {
+      id: `demo-alert-email-${i}`,
+      alertRuleId: RULE_EMAIL,
+      changeEntryId: change.id,
+      teamId: TEAM_ID,
+      status: (isLast ? 'FAILED' : 'SENT') as Alert['status'],
+      sentAt: isLast ? null : change.createdAt,
+      errorMessage: isLast ? 'Connection refused' : null,
+      createdAt: change.createdAt,
+      alertRule: DEMO_ALERT_RULES[1],
+      changeEntry: change,
+    },
+  ];
+});
 
 // ── Team plan ──
 

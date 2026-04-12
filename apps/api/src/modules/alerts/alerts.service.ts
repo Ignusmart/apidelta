@@ -58,11 +58,10 @@ export class AlertsService {
   // ── Unread Count ────────────────────────────────
 
   async getUnreadCount(teamId: string): Promise<{ count: number }> {
-    const count = await this.prisma.changeEntry.count({
+    const count = await this.prisma.alert.count({
       where: {
-        crawlRun: { source: { teamId } },
-        triageStatus: 'OPEN',
-        severity: { in: ['CRITICAL', 'HIGH'] },
+        teamId,
+        status: { in: ['PENDING', 'FAILED'] },
       },
     });
     return { count };

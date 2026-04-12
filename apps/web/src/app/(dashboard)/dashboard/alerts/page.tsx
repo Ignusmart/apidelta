@@ -66,6 +66,7 @@ export default function AlertsPage() {
 
   // UI
   const [activeTab, setActiveTab] = useState<'rules' | 'history'>('rules');
+  const [hasAutoSwitched, setHasAutoSwitched] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -88,13 +89,13 @@ export default function AlertsPage() {
     try {
       const [rulesData, alertsData, sourcesData] = await Promise.all([
         apiFetch<AlertRule[]>(`/alerts/rules?teamId=${teamId}`),
-        apiFetch<{ data: Alert[] }>(
+        apiFetch<{ alerts: Alert[] }>(
           `/alerts?teamId=${teamId}&page=1&pageSize=50`,
         ),
         apiFetch<ApiSource[]>(`/sources?teamId=${teamId}`),
       ]);
       setRules(rulesData);
-      setAlerts(alertsData.data ?? []);
+      setAlerts(alertsData.alerts ?? []);
       setSources(sourcesData);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not load alert data. Please try again.');
@@ -106,6 +107,15 @@ export default function AlertsPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (hasAutoSwitched) return;
+    const hasPending = alerts.some((a) => a.status === 'PENDING' || a.status === 'FAILED');
+    if (hasPending) {
+      setActiveTab('history');
+      setHasAutoSwitched(true);
+    }
+  }, [alerts, hasAutoSwitched]);
 
   const SEVERITY_DESCRIPTIONS: Record<Severity, string> = {
     CRITICAL: 'Only critical breaking changes',
