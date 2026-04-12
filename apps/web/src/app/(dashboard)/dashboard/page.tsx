@@ -127,7 +127,12 @@ export default function DashboardPage() {
   }, [fetchData]);
 
   // Compute weekly trend from daily stats (last 7d vs prior 7d)
+  // Deferred to client-only to avoid hydration mismatch from demo data timestamps
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   const changesTrend = useMemo(() => {
+    if (!mounted) return null;
     const daily = changesStats.daily;
     if (daily.length < 14) return null;
     const sum = (arr: typeof daily) => arr.reduce((s, d) => s + d.critical + d.high + d.medium + d.low, 0);
@@ -136,7 +141,7 @@ export default function DashboardPage() {
     if (prior === 0) return null;
     const pct = Math.round(((recent - prior) / prior) * 100);
     return { value: pct, label: `${Math.abs(pct)}% vs last week` };
-  }, [changesStats.daily]);
+  }, [changesStats.daily, mounted]);
 
   // Derive stats
   const totalSources = sources.length;

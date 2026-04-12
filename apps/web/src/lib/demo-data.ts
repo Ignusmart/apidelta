@@ -485,20 +485,45 @@ export const DEMO_ALERTS: Alert[] = alertableChanges.flatMap((change, i) => [
 // ── Team plan ──
 
 // Chart demo data — 30 days of realistic change activity
+// Deterministic daily stats — avoids hydration mismatch from Math.random()
+const DEMO_DAILY_STATS = [
+  { critical: 0, high: 0, medium: 2, low: 3 },
+  { critical: 0, high: 1, medium: 1, low: 2 },
+  { critical: 0, high: 0, medium: 0, low: 1 },
+  { critical: 1, high: 2, medium: 2, low: 3 },
+  { critical: 0, high: 1, medium: 1, low: 2 },
+  { critical: 0, high: 0, medium: 2, low: 0 },
+  { critical: 0, high: 0, medium: 1, low: 1 },
+  { critical: 0, high: 1, medium: 0, low: 3 },
+  { critical: 0, high: 0, medium: 2, low: 2 },
+  { critical: 0, high: 1, medium: 1, low: 1 },
+  { critical: 0, high: 0, medium: 0, low: 2 },
+  { critical: 1, high: 1, medium: 3, low: 3 },
+  { critical: 0, high: 2, medium: 1, low: 2 },
+  { critical: 0, high: 0, medium: 1, low: 0 },
+  { critical: 0, high: 0, medium: 2, low: 1 },
+  { critical: 0, high: 1, medium: 0, low: 2 },
+  { critical: 0, high: 0, medium: 1, low: 3 },
+  { critical: 0, high: 1, medium: 2, low: 1 },
+  { critical: 0, high: 0, medium: 0, low: 2 },
+  { critical: 0, high: 0, medium: 1, low: 1 },
+  { critical: 0, high: 1, medium: 2, low: 3 },
+  { critical: 0, high: 0, medium: 1, low: 0 },
+  { critical: 0, high: 0, medium: 0, low: 2 },
+  { critical: 0, high: 1, medium: 1, low: 1 },
+  { critical: 0, high: 0, medium: 2, low: 3 },
+  { critical: 0, high: 0, medium: 1, low: 2 },
+  { critical: 0, high: 1, medium: 0, low: 1 },
+  { critical: 0, high: 0, medium: 2, low: 0 },
+  { critical: 0, high: 0, medium: 1, low: 2 },
+  { critical: 0, high: 1, medium: 1, low: 3 },
+];
+
 export const DEMO_CHANGES_STATS = {
-  daily: Array.from({ length: 30 }, (_, i) => {
+  daily: DEMO_DAILY_STATS.map((d, i) => {
     const date = new Date();
     date.setDate(date.getDate() - (29 - i));
-    const dayKey = date.toISOString().slice(0, 10);
-    // Simulate realistic patterns: more activity mid-week, occasional spikes
-    const base = Math.random();
-    return {
-      date: dayKey,
-      critical: base > 0.9 ? 1 : 0,
-      high: base > 0.7 ? Math.floor(Math.random() * 2) + 1 : 0,
-      medium: Math.floor(Math.random() * 3),
-      low: Math.floor(Math.random() * 4),
-    };
+    return { date: date.toISOString().slice(0, 10), ...d };
   }),
   totals: { critical: 2, high: 8, medium: 24, low: 42 },
 };
