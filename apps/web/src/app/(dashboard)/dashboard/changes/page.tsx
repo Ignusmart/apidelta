@@ -23,6 +23,7 @@ import { SeverityBadge, ChangeTypeBadge, TriageStatusBadge } from '@/lib/compone
 import { SEVERITY_ORDER, getTeamId } from '@/lib/shared';
 import { useDemo } from '@/lib/use-demo';
 import { DEMO_CHANGES, DEMO_SOURCES } from '@/lib/demo-data';
+import { useSavedFilters } from '@/lib/use-saved-filters';
 
 // Rank used to sort: lower number = more important
 const SEVERITY_RANK: Record<Severity, number> = {
@@ -52,6 +53,9 @@ export default function ChangesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [showInfo, setShowInfo] = useState(false); // Default-hide INFO noise
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Saved filters
+  const { filters: savedFilters, save: saveFilter, remove: removeFilter } = useSavedFilters();
 
   // Detail panel
   const [selected, setSelected] = useState<ChangeEntry | null>(null);
@@ -322,6 +326,54 @@ export default function ChangesPage() {
         </div>
       )}
 
+      {/* Saved filters bar */}
+      {(savedFilters.length > 0 || activeFilterCount > 0) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {savedFilters.map((sf) => (
+            <button
+              key={sf.name}
+              onClick={() => {
+                setSeverityFilter(sf.severityFilter as Severity | '');
+                setSourceFilter(sf.sourceFilter);
+                setSearchInput(sf.searchQuery);
+                setSearchQuery(sf.searchQuery);
+                setShowInfo(sf.showInfo);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-800 bg-gray-900/50 px-3 py-1.5 text-xs text-gray-400 transition hover:border-gray-700 hover:text-white"
+            >
+              {sf.name}
+              <button
+                onClick={(e) => { e.stopPropagation(); removeFilter(sf.name); }}
+                aria-label={`Remove ${sf.name} filter`}
+                className="ml-0.5 rounded text-gray-600 hover:text-red-400"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </button>
+          ))}
+          {activeFilterCount > 0 && savedFilters.length < 5 && (
+            <button
+              onClick={() => {
+                const name = prompt('Filter name:');
+                if (!name?.trim()) return;
+                saveFilter({
+                  name: name.trim(),
+                  severityFilter,
+                  sourceFilter,
+                  searchQuery,
+                  showInfo,
+                });
+                toast.success(`Filter "${name.trim()}" saved`);
+              }}
+              className="inline-flex items-center gap-1 rounded-lg border border-dashed border-gray-700 px-3 py-1.5 text-xs text-gray-500 transition hover:border-violet-500/50 hover:text-violet-400"
+            >
+              <Plus className="h-3 w-3" />
+              Save filter
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Results count */}
       <div className="flex items-center justify-between text-sm text-gray-500">
         <span>
@@ -353,7 +405,9 @@ export default function ChangesPage() {
           {changes.length === 0 ? (
             <>
               <p className="mt-1 text-xs text-gray-600">
-                Changes appear here automatically after APIDelta crawls your API sources.
+                {sources.length === 0
+                  ? 'Add an API source and changes will appear within minutes.'
+                  : 'Changes appear here automatically after APIDelta crawls your API sources.'}
               </p>
               {sources.length === 0 && (
                 <Link
@@ -363,6 +417,11 @@ export default function ChangesPage() {
                   <Plus aria-hidden="true" className="h-4 w-4" />
                   Add your first API source
                 </Link>
+              )}
+              {sources.length > 0 && (
+                <p className="mt-3 text-xs text-gray-600">
+                  Your {sources.length} source{sources.length !== 1 ? 's are' : ' is'} being monitored. Changes will appear after the next crawl cycle.
+                </p>
               )}
             </>
           ) : (

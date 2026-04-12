@@ -354,6 +354,59 @@ export default function SettingsPage() {
           })}
         </div>
       </div>
+
+      {/* Team Members */}
+      <div className="rounded-xl border border-gray-800 bg-gray-900/30 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Team Members</h2>
+            <p className="mt-1 text-sm text-gray-500">Manage who has access to your APIDelta workspace.</p>
+          </div>
+          <span className="rounded-full border border-gray-700 bg-gray-800 px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            Coming Soon
+          </span>
+        </div>
+        <div className="mt-4 rounded-lg border border-gray-800/50 bg-gray-950/30 p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500/20 text-sm font-medium text-violet-300">
+              {(session?.user?.name?.[0] ?? session?.user?.email?.[0] ?? 'A').toUpperCase()}
+            </div>
+            <div>
+              <p className="text-sm font-medium">{session?.user?.name ?? 'You'}</p>
+              <p className="text-xs text-gray-500">{session?.user?.email ?? ''} &middot; Owner</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Notification Preferences */}
+      <div className="rounded-xl border border-gray-800 bg-gray-900/30 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Notification Preferences</h2>
+            <p className="mt-1 text-sm text-gray-500">Configure how and when you receive alerts.</p>
+          </div>
+          <span className="rounded-full border border-gray-700 bg-gray-800 px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+            Coming Soon
+          </span>
+        </div>
+        <div className="mt-4 space-y-3">
+          <label className="flex items-center justify-between rounded-lg border border-gray-800/50 bg-gray-950/30 px-4 py-3">
+            <div>
+              <p className="text-sm font-medium">Email digest</p>
+              <p className="text-xs text-gray-500">Receive a daily summary of all changes</p>
+            </div>
+            <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-700 bg-gray-900 text-violet-500 opacity-50" />
+          </label>
+          <label className="flex items-center justify-between rounded-lg border border-gray-800/50 bg-gray-950/30 px-4 py-3">
+            <div>
+              <p className="text-sm font-medium">Breaking changes only</p>
+              <p className="text-xs text-gray-500">Only notify on CRITICAL and HIGH severity</p>
+            </div>
+            <input type="checkbox" disabled defaultChecked className="h-4 w-4 rounded border-gray-700 bg-gray-900 text-violet-500 opacity-50" />
+          </label>
+        </div>
+      </div>
     </div>
   );
 }

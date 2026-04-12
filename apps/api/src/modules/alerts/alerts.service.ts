@@ -55,6 +55,19 @@ export class AlertsService {
     return this.prisma.alertRule.delete({ where: { id } });
   }
 
+  // ── Unread Count ────────────────────────────────
+
+  async getUnreadCount(teamId: string): Promise<{ count: number }> {
+    const count = await this.prisma.changeEntry.count({
+      where: {
+        crawlRun: { source: { teamId } },
+        triageStatus: 'OPEN',
+        severity: { in: ['CRITICAL', 'HIGH'] },
+      },
+    });
+    return { count };
+  }
+
   // ── Triggered Alerts List ───────────────────────
 
   async listAlerts(teamId: string, page = 1, pageSize = 20) {

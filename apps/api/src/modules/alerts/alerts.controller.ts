@@ -38,6 +38,13 @@ export class AlertsController {
     await this.alertsService.deleteRule(id);
   }
 
+  // ── Unread Count ─────────────────────────────────
+
+  @Get('unread-count')
+  async getUnreadCount(@Headers('x-team-id') teamId: string) {
+    return this.alertsService.getUnreadCount(teamId);
+  }
+
   // ── Triggered Alerts ────────────────────────────
 
   @Get()
