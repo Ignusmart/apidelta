@@ -60,6 +60,7 @@ export class ClassifierService {
     const BATCH_SIZE = 20;
     let classified = 0;
     let dropped = 0;
+    let batchFailures = 0;
 
     for (let i = 0; i < entries.length; i += BATCH_SIZE) {
       const batch = entries.slice(i, i + BATCH_SIZE);
@@ -80,12 +81,21 @@ export class ClassifierService {
           dropped += droppedIds.length;
         }
       } catch (error) {
+        batchFailures++;
         const msg = error instanceof Error ? error.message : String(error);
         this.logger.error(
           `Classification failed for batch starting at index ${i}: ${msg}`,
         );
         // Continue with next batch — don't fail the whole run
       }
+    }
+
+    if (batchFailures > 0) {
+      const totalBatches = Math.ceil(entries.length / BATCH_SIZE);
+      this.logger.warn(
+        `${batchFailures}/${totalBatches} classification batches failed for crawl run ${crawlRunId}. ` +
+        `${entries.length - classified - dropped} entries left unclassified (will retry on next crawl).`,
+      );
     }
 
     this.logger.log(
