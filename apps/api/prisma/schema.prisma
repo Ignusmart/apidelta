@@ -199,7 +199,7 @@ model ChangeEntry {
   aiSummary     String?    // AI-generated summary from classifier (never overwrites description)
   affectedEndpoints String[] // e.g. ["/v1/charges", "/v1/customers"]
   rawExcerpt    String?    // Original changelog text this was extracted from
-  contentHash   String?    // SHA-256 of sourceId + normalized title + description prefix for cross-run dedup
+  contentHash   String?    @unique // SHA-256 of sourceId + normalized title for cross-run dedup
   changeDate    DateTime?  // Date of the change (if parseable from changelog)
   isNew         Boolean    @default(true) // False if seen in a previous crawl
   createdAt     DateTime   @default(now())
@@ -212,7 +212,6 @@ model ChangeEntry {
   @@index([severity])
   @@index([changeDate])
   @@index([isNew])
-  @@index([contentHash])
 }
 
 // ──────────────────────────────────────────────
