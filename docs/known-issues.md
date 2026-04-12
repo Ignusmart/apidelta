@@ -2,7 +2,59 @@
 
 Tracking outstanding problems found during testing that weren't fixed in the current work. Each item has enough context to pick up cold. Update as things get fixed or new issues surface.
 
-Last updated: 2026-04-11
+Last updated: 2026-04-12
+
+---
+
+## Fixed in data quality audit (2026-04-12)
+
+### Web Prisma schema out of sync — FIXED
+
+Web schema was missing `aiSummary`, `contentHash` fields and `@@unique([alertRuleId, changeEntryId])` constraint. Now synced with API schema.
+
+### contentHash had no unique constraint at DB level — FIXED
+
+Upgraded from `@@index` to `@unique` constraint. Prevents race-condition duplicates between concurrent crawl runs. Migration drops old index, creates unique index.
+
+### isNew stuck as TRUE after alert evaluation — FIXED
+
+`evaluateCrawlRun()` now marks all entries as `isNew: false` after processing, even when no alert rules exist or no rules match. Previously entries stayed `isNew: true` indefinitely if the source wasn't re-crawled.
+
+### Cloudflare category badges contaminating titles — FIXED
+
+Parser appended category tags (e.g. "AI Gateway", "Workers") to titles and descriptions. New `stripTrailingCategoryTag()` detects and removes repeated suffix phrases and trailing short category lines.
+
+### Linear mega-entries not split into individual changes — FIXED
+
+Linear publishes single release notes with 20+ sub-sections. New `splitMegaEntries()` detects entries with 5+ headed sections and expands them into individual entries with "Parent Title — Section" naming.
+
+### GKE version-bump noise passing through — FIXED
+
+Google Cloud GKE release channel entries (walls of version numbers) now filtered as noise when 5+ GKE version strings appear, or when title matches channel patterns.
+
+### No retry on transient fetch failures — FIXED
+
+Crawl fetches now retry once after 5 seconds on network errors or 5xx. 4xx errors (permanent) are not retried.
+
+### Classifier batch failures silently swallowed — FIXED
+
+Now tracks and logs warning with failure count per crawl run, including count of unclassified entries remaining.
+
+### No direct sourceId on ChangeEntry — FIXED
+
+Added optional `sourceId` FK on ChangeEntry with migration that backfills from CrawlRun. Enables direct source→changes queries without joining through CrawlRun.
+
+### LOW-severity entries dominating feed — FIXED
+
+New roll-up logic groups 3+ consecutive LOW entries from same source into digest objects in the API response. MEDIUM+ entries are never grouped.
+
+### affectedEndpoints often empty on API-mentioning entries — FIXED
+
+Expanded classifier prompt to scan entire entry text, include product/service names, CLI commands, and be thorough about extraction. Reduces empty arrays.
+
+### Low-quality parsed entries not flagged — FIXED
+
+Classifier now detects when title/summary word overlap is <20% and prefixes aiSummary with `[LOW_QUALITY_PARSE]` to signal parser captured wrong text.
 
 ---
 
