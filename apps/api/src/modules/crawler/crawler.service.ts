@@ -114,6 +114,49 @@ export class CrawlerService {
     return this.prisma.apiSource.delete({ where: { id } });
   }
 
+  // ── HTTP fetch with retry ───────────────────
+
+  /**
+   * Fetch a URL with a single retry on transient failures.
+   * Retries after 5 seconds on network errors or 5xx status codes.
+   * 4xx errors are not retried (permanent client errors).
+   */
+  private async fetchWithRetry(url: string): Promise<string> {
+    const fetchOpts: RequestInit = {
+      headers: {
+        'User-Agent': 'APIDelta/1.0 (changelog-monitor)',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      },
+      signal: AbortSignal.timeout(30_000),
+    };
+
+    try {
+      const response = await fetch(url, fetchOpts);
+      if (response.ok) return response.text();
+      // Don't retry 4xx — permanent errors
+      if (response.status >= 400 && response.status < 500) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    } catch (firstError) {
+      const errMsg = firstError instanceof Error ? firstError.message : String(firstError);
+      // Don't retry 4xx
+      if (errMsg.startsWith('HTTP 4')) throw firstError;
+
+      this.logger.warn(`Fetch failed for ${url}: ${errMsg} — retrying in 5s`);
+      await new Promise((r) => setTimeout(r, 5_000));
+
+      const response = await fetch(url, {
+        ...fetchOpts,
+        signal: AbortSignal.timeout(30_000), // fresh signal for retry
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText} (after retry)`);
+      }
+      return response.text();
+    }
+  }
+
   // ── Crawl execution ─────────────────────────
 
   async triggerCrawl(sourceId: string) {
@@ -134,20 +177,8 @@ export class CrawlerService {
     try {
       this.logger.log(`Starting crawl for ${source.name} (${source.url})`);
 
-      // Fetch the page
-      const response = await fetch(source.url, {
-        headers: {
-          'User-Agent': 'APIDelta/1.0 (changelog-monitor)',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        },
-        signal: AbortSignal.timeout(30_000),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const html = await response.text();
+      // Fetch the page (with single retry on transient failures)
+      const html = await this.fetchWithRetry(source.url);
 
       // Parse changelog entries
       const rawEntries = this.parseChangelog(html, source.url);
