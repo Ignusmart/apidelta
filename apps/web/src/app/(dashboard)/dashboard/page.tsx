@@ -11,12 +11,14 @@ import {
   RefreshCw,
   Plus,
   Zap,
+  AlertTriangle,
+  CheckCircle2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
-import type { ApiSource, Alert } from '@/lib/types';
-import { SeverityBadge } from '@/lib/components';
+import type { ApiSource, Alert, ChangeEntry } from '@/lib/types';
+import { SeverityBadge, ChangeTypeBadge } from '@/lib/components';
 import { timeAgo, getTeamId } from '@/lib/shared';
 import { useDemo } from '@/lib/use-demo';
 import { DEMO_SOURCES, DEMO_ALERTS, DEMO_CHANGES_STATS } from '@/lib/demo-data';
@@ -61,6 +63,7 @@ export default function DashboardPage() {
     daily: Array<{ date: string; critical: number; high: number; medium: number; low: number }>;
     totals: { critical: number; high: number; medium: number; low: number };
   }>(isDemo ? DEMO_CHANGES_STATS : { daily: [], totals: { critical: 0, high: 0, medium: 0, low: 0 } });
+  const [attentionItems, setAttentionItems] = useState<ChangeEntry[]>([]);
   const [loading, setLoading] = useState(!isDemo);
 
   const fetchData = useCallback(async () => {
@@ -68,14 +71,20 @@ export default function DashboardPage() {
     if (!teamId) return;
     setLoading(true);
     try {
-      const [srcData, alertData, statsData] = await Promise.all([
+      const [srcData, alertData, statsData, changesData] = await Promise.all([
         apiFetch<ApiSource[]>(`/sources?teamId=${teamId}`),
         apiFetch<{ data: Alert[] }>(`/alerts?teamId=${teamId}&page=1&pageSize=10`),
         apiFetch<typeof changesStats>(`/changes/stats?days=30`),
+        apiFetch<{ data: ChangeEntry[] }>(`/changes?teamId=${teamId}&triageStatus=OPEN&page=1&pageSize=5`),
       ]);
       setSources(srcData);
       setAlerts(alertData.data ?? []);
       setChangesStats(statsData);
+      // Filter to only CRITICAL and HIGH unresolved changes
+      const urgent = (changesData.data ?? []).filter(
+        (c) => c.severity === 'CRITICAL' || c.severity === 'HIGH'
+      );
+      setAttentionItems(urgent);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not load dashboard data. Please try again.');
     } finally {
@@ -220,6 +229,50 @@ export default function DashboardPage() {
               <span className="text-xs text-gray-600">Takes less than 30 seconds</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Needs Attention — unresolved CRITICAL/HIGH changes */}
+      {attentionItems.length > 0 && (
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5">
+          <div className="flex items-center gap-2 border-b border-amber-500/10 px-5 py-3">
+            <AlertTriangle aria-hidden="true" className="h-4 w-4 text-amber-400" />
+            <h2 className="text-sm font-semibold text-amber-300">
+              Needs Attention ({attentionItems.length})
+            </h2>
+          </div>
+          <div className="divide-y divide-amber-500/10">
+            {attentionItems.map((change) => (
+              <div key={change.id} className="flex items-center gap-4 px-5 py-3">
+                <SeverityBadge severity={change.severity} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{change.title}</p>
+                  <p className="text-xs text-gray-500">
+                    {change.crawlRun?.source?.name ?? 'Unknown'}
+                    {change.changeDate && (
+                      <> &middot; {new Date(change.changeDate).toLocaleDateString()}</>
+                    )}
+                  </p>
+                </div>
+                <Link
+                  href="/dashboard/changes"
+                  className="shrink-0 rounded-lg border border-amber-500/20 px-3 py-1.5 text-xs font-medium text-amber-300 transition hover:bg-amber-500/10"
+                >
+                  Triage
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All clear state — only show if sources exist but nothing needs attention */}
+      {attentionItems.length === 0 && totalSources > 0 && !loading && (
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-5 py-3.5">
+          <CheckCircle2 aria-hidden="true" className="h-5 w-5 text-emerald-400" />
+          <p className="text-sm text-emerald-300">
+            All clear — no unresolved critical or high-severity changes.
+          </p>
         </div>
       )}
 

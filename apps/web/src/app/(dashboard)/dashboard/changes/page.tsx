@@ -59,6 +59,7 @@ export default function ChangesPage() {
 
   // Detail panel
   const [selected, setSelected] = useState<ChangeEntry | null>(null);
+  const [focusedIdx, setFocusedIdx] = useState<number>(-1);
 
   // Debounced search — 300ms
   function handleSearchChange(value: string) {
@@ -74,16 +75,6 @@ export default function ChangesPage() {
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     };
   }, []);
-
-  // Close detail panel on Escape
-  useEffect(() => {
-    if (!selected) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setSelected(null);
-    }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [selected]);
 
   const fetchData = useCallback(async () => {
     if (isDemo) return;
@@ -159,6 +150,36 @@ export default function ChangesPage() {
 
   const activeFilterCount =
     (severityFilter ? 1 : 0) + (sourceFilter ? 1 : 0) + (searchInput ? 1 : 0);
+
+  // Keyboard navigation: j/k to move, Enter to open, Escape to close
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      if (e.key === 'Escape') {
+        setSelected(null);
+        return;
+      }
+      if (e.key === 'j' || e.key === 'k') {
+        e.preventDefault();
+        setFocusedIdx((prev) => {
+          const max = filtered.length - 1;
+          if (max < 0) return -1;
+          if (e.key === 'j') return Math.min(prev + 1, max);
+          return Math.max(prev - 1, 0);
+        });
+        return;
+      }
+      if (e.key === 'Enter' && focusedIdx >= 0 && focusedIdx < filtered.length) {
+        e.preventDefault();
+        setSelected(filtered[focusedIdx]);
+        return;
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected, filtered, focusedIdx]);
 
   if (loading && !changes.length) {
     return (
@@ -374,11 +395,26 @@ export default function ChangesPage() {
         </div>
       )}
 
-      {/* Results count */}
+      {/* Results count + keyboard hints */}
       <div className="flex items-center justify-between text-sm text-gray-500">
         <span>
           {filtered.length} change{filtered.length !== 1 ? 's' : ''}{' '}
           {activeFilterCount > 0 && `(filtered from ${changes.length})`}
+        </span>
+        <span className="hidden items-center gap-3 text-xs text-gray-600 md:flex">
+          <span>
+            <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 text-[10px]">j</kbd>
+            <kbd className="ml-0.5 rounded border border-gray-700 bg-gray-800 px-1 py-0.5 text-[10px]">k</kbd>
+            {' '}navigate
+          </span>
+          <span>
+            <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 text-[10px]">Enter</kbd>
+            {' '}open
+          </span>
+          <span>
+            <kbd className="rounded border border-gray-700 bg-gray-800 px-1 py-0.5 text-[10px]">Esc</kbd>
+            {' '}close
+          </span>
         </span>
         {!showInfo && hiddenInfoCount > 0 && (
           <button
@@ -432,12 +468,14 @@ export default function ChangesPage() {
         </div>
       ) : (
         <ul className="divide-y divide-gray-900 overflow-hidden rounded-xl border border-gray-800 bg-gray-900/20">
-          {filtered.map((change) => (
+          {filtered.map((change, idx) => (
             <li key={change.id}>
               <button
                 type="button"
-                onClick={() => setSelected(change)}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-900/60 focus-visible:bg-gray-900/60 focus-visible:outline-none"
+                onClick={() => { setSelected(change); setFocusedIdx(idx); }}
+                className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-gray-900/60 focus-visible:bg-gray-900/60 focus-visible:outline-none ${
+                  focusedIdx === idx ? 'bg-gray-900/60 ring-1 ring-inset ring-violet-500/40' : ''
+                }`}
               >
                 <SeverityBadge severity={change.severity} />
                 <ChangeTypeBadge type={change.changeType} />

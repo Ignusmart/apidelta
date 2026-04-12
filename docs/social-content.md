@@ -1,7 +1,7 @@
 # APIDelta — Social Launch Content
 
 **Created**: 2026-04-05 (Iteration 24)
-**Status**: Ready to publish (adjust [link] placeholders with actual URLs before posting)
+**Status**: Ready to publish. All links set to https://apidelta.dev. False Postman "52%" stat removed. Kill criteria updated to 14-day/30-day checkpoints.
 **Constraint**: No competitor names in any user-facing content. Use "existing tools", "basic change detection", "enterprise monitoring platforms" instead.
 
 ---
@@ -42,7 +42,7 @@
 >
 > If your team integrates with third-party APIs (and whose doesn't?), I'd love your feedback.
 >
-> [link]
+> https://apidelta.dev
 >
 > #devtools #api #saas #engineering #monitoring
 
@@ -65,7 +65,7 @@
 >
 > And this is what engineering teams are expected to monitor manually.
 >
-> The Postman 2025 State of APIs report found that 52% of developers cite breaking changes as their top API integration concern. It's not surprising — the monitoring infrastructure basically doesn't exist.
+> Breaking changes are one of the most common causes of API integration failures. And yet the monitoring infrastructure for third-party changelogs basically doesn't exist.
 >
 > Most teams do one of four things:
 >
@@ -145,7 +145,7 @@
 >
 > For most teams, it's (b). Every time.
 
-> **4/** 52% of developers cite breaking changes as their top API integration concern (Postman 2025).
+> **4/** Breaking changes consistently rank among the top concerns in API developer surveys.
 >
 > Yet the tooling barely exists. Most teams either check manually (unsustainable) or use generic website monitors (too noisy).
 
@@ -331,7 +331,7 @@
 >
 > The core problem seems to be that changelogs are unstructured text. You need something that actually *understands* what "we're deprecating the /v1/users endpoint" means vs "we've added a new dashboard feature."
 >
-> I ended up building a tool that uses AI to read changelogs and classify changes by severity (breaking, deprecation, informational). It sends Slack/email alerts only for changes that actually need attention. Called it APIDelta — [link] if anyone's curious.
+> I ended up building a tool that uses AI to read changelogs and classify changes by severity (breaking, deprecation, informational). It sends Slack/email alerts only for changes that actually need attention. Called it APIDelta — https://apidelta.dev if anyone's curious.
 >
 > But I'm more interested in hearing: **what's your current approach?** Have you built internal tooling for this? Do you just accept the risk? Is there a workflow I'm missing?
 
@@ -359,7 +359,7 @@
 >
 > But nobody reads changelogs for 15+ API dependencies consistently. The formats are all different (HTML pages, RSS, GitHub releases, blog posts), there's no standard notification system, and the signal-to-noise ratio is terrible — 90% of changelog entries are new features and bug fixes that don't affect your integration.
 >
-> I've been working on this problem and built an AI-based changelog monitor (APIDelta — [link]) that crawls changelog pages and classifies each entry as breaking, deprecation, or informational. The idea is that you get an alert *before* the change hits, not after your error rate spikes.
+> I've been working on this problem and built an AI-based changelog monitor (APIDelta — https://apidelta.dev) that crawls changelog pages and classifies each entry as breaking, deprecation, or informational. The idea is that you get an alert *before* the change hits, not after your error rate spikes.
 >
 > For the devops/SRE crowd: **where does third-party API change monitoring fit in your incident prevention strategy?** Is this a problem you've formalized, or is it still in the "hope for the best" category?
 >
@@ -389,7 +389,7 @@
 >
 > **Cost is negligible.** Haiku processes a typical changelog entry (~200-500 tokens) for fractions of a cent. Even monitoring 50 APIs with daily crawls, the AI cost is under $5/month.
 >
-> The project is APIDelta ([link]) — open to feedback on the approach. The broader question I'm interested in: **what other developer tooling problems are fundamentally NLU problems being solved with regex?**
+> The project is APIDelta (https://apidelta.dev) — open to feedback on the approach. The broader question I'm interested in: **what other developer tooling problems are fundamentally NLU problems being solved with regex?**
 
 **Posting notes**: r/programming wants technical depth. Lead with the technical insights, not the product. The product mention is a single sentence near the end. Post Tuesday, 9-11 AM ET. The closing question drives technical discussion.
 
@@ -409,7 +409,7 @@
 >
 > Engineering teams integrate with dozens of third-party APIs (Stripe, Twilio, GitHub, OpenAI, etc.). Each API publishes changes on their own changelog page — different formats, different schedules, no standard notification.
 >
-> When a breaking change ships, most teams find out from their error logs, not from the changelog. The Postman 2025 report found that 52% of developers cite breaking changes as their top API integration concern.
+> When a breaking change ships, most teams find out from their error logs, not from the changelog. Breaking changes are one of the top reasons API integrations fail silently.
 >
 > ### What APIDelta does
 >
@@ -451,7 +451,7 @@
 > - SEO pages targeting "API changelog monitoring", "API breaking change alerts"
 > - Newsletter submissions (TLDR, Changelog, DevOps Weekly, Console.dev)
 >
-> Kill criteria: $0 MRR after 60 days with consistent marketing effort.
+> Kill criteria: < 5 trial signups by day 14, or < 2 paying customers by day 30.
 >
 > ### What I'd do differently
 >
@@ -755,3 +755,31 @@ I'd love feedback on the approach, the classification accuracy, or the developer
 ---
 
 *Built with Next.js 15, NestJS, Prisma, Claude API, and Cheerio. Deployed on Vercel + Railway + Neon.*
+
+---
+
+## Show HN Post
+
+**BLOCKED**: HN account `Ignusmart` has 1 karma, 0 comments. Need 50+ karma and 15-20 comments before posting. Target date: ~April 28-May 2.
+
+**Title**: Show HN: APIDelta — AI-powered API changelog monitoring for engineering teams
+
+**URL**: https://apidelta.dev
+
+**Body** (text field on Show HN):
+
+> APIDelta monitors third-party API changelogs (Stripe, Twilio, Cloudflare, etc.) and uses AI to classify each entry as breaking, deprecation, or informational. When something needs attention, it alerts your team via Slack or email.
+>
+> The problem: most teams integrate with 10-30 APIs. Each publishes changes on their own changelog page in different formats (HTML, RSS, GitHub Releases). Nobody monitors these consistently. Teams find out about breaking changes from production errors.
+>
+> How it works: paste a changelog URL → AI reads and classifies every entry → alert rules dispatch Slack/email notifications for the changes that matter.
+>
+> The AI classification is the key differentiator over generic website change monitors. Instead of "this page changed," you get "the /v2/payments endpoint now requires an idempotency header — breaking, severity critical."
+>
+> Built solo with Next.js 15, NestJS, Prisma, Claude API (Haiku for classification), and Cheerio for HTML parsing. Monthly infra cost: ~$25.
+>
+> Free trial: 3 APIs, 14 days, no credit card. Pricing: $49/mo (10 APIs) or $99/mo (50 APIs).
+>
+> Would love feedback on the approach — especially whether the AI classification accuracy matches what you'd expect from real changelogs you follow.
+
+**Posting notes**: Post Tuesday or Wednesday, 9-11 AM ET. Keep the text factual and understated — HN penalizes hype. Engage with every comment for at least 6 hours. Do NOT ask friends to upvote.

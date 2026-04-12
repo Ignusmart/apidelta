@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { SidebarToggle } from './sidebar-toggle';
 import { CommandPalette } from './command-palette';
 import { ShortcutsProvider } from './shortcuts-dialog';
-import { AlertsBadge } from './nav-badge';
+import { NavLinks } from './nav-links';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -54,17 +54,7 @@ export default async function DashboardLayout({
 
         {/* Nav */}
         <nav aria-label="Dashboard navigation" className="flex-1 space-y-1 px-3 py-4">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-gray-400 transition-colors duration-150 hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-            >
-              <item.icon aria-hidden="true" className="h-4 w-4" />
-              <span className="flex-1">{item.label}</span>
-              {item.label === 'Alerts' && <AlertsBadge />}
-            </Link>
-          ))}
+          <NavLinks items={NAV_ITEMS} />
 
           {/* Command palette hint */}
           <div className="mt-4 px-3">

@@ -319,10 +319,10 @@ export default function HomePage() {
               <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </a>
             <a
-              href="#how-it-works"
+              href="/dashboard?demo=true"
               className="inline-flex items-center gap-2 rounded-lg border border-gray-700 px-8 py-3.5 text-base font-medium text-gray-300 transition hover:border-gray-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
             >
-              See how it works
+              See it in action
             </a>
           </div>
 
