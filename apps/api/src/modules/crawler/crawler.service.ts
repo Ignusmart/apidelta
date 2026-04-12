@@ -153,8 +153,16 @@ export class CrawlerService {
       const rawEntries = this.parseChangelog(html, source.url);
       this.logger.log(`Parsed ${rawEntries.length} raw entries from ${source.name}`);
 
+      // Split mega-entries (e.g. Linear's single release note with 20+ sub-sections)
+      const splitEntries = this.splitMegaEntries(rawEntries);
+      if (splitEntries.length !== rawEntries.length) {
+        this.logger.log(
+          `Split ${rawEntries.length} entries into ${splitEntries.length} after mega-entry expansion`,
+        );
+      }
+
       // Filter obvious noise (nav chrome, date headers, archive indices) and dedupe
-      const entries = this.filterNoiseAndDedupe(rawEntries);
+      const entries = this.filterNoiseAndDedupe(splitEntries);
       this.logger.log(
         `Kept ${entries.length}/${rawEntries.length} entries after noise filter`,
       );
@@ -659,6 +667,89 @@ export class CrawlerService {
     }
 
     return text;
+  }
+
+  /**
+   * Split mega-entries that contain multiple distinct changes into separate
+   * entries. Detects entries whose description contains multiple headed
+   * sections (e.g. Linear publishes one release note with 20+ sub-sections
+   * like "Fixes", "Improvements", "API", each with distinct changes).
+   *
+   * Heuristic: if description has 5+ lines starting with a bold/heading
+   * pattern, split into the primary entry (title + first section) plus
+   * individual sub-entries for each section heading.
+   */
+  splitMegaEntries(entries: ParsedChangelogEntry[]): ParsedChangelogEntry[] {
+    const result: ParsedChangelogEntry[] = [];
+
+    for (const entry of entries) {
+      // Only split entries with substantial description
+      if (!entry.description || entry.description.length < 500) {
+        result.push(entry);
+        continue;
+      }
+
+      // Detect section headings in the description:
+      // Lines that look like "FixesSome fix description" (Linear's collapsed headings),
+      // or "## Section" (markdown), or lines ending with a heading-like pattern
+      const lines = entry.description.split('\n');
+      const sectionIndices: number[] = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        // Match common section patterns in changelog descriptions:
+        // - "Fixes" / "Improvements" / "API" as standalone short lines followed by content
+        // - Lines that are all-caps short labels
+        // - "## Heading" markdown
+        if (
+          /^#{1,3}\s+/.test(line) ||
+          (line.length <= 50 && /^[A-Z][A-Za-z\s&/]+$/.test(line) && i < lines.length - 1)
+        ) {
+          sectionIndices.push(i);
+        }
+      }
+
+      // Only split if there are 5+ identifiable sections
+      if (sectionIndices.length < 5) {
+        result.push(entry);
+        continue;
+      }
+
+      // Build sub-entries from each section
+      for (let s = 0; s < sectionIndices.length; s++) {
+        const startIdx = sectionIndices[s];
+        const endIdx = s + 1 < sectionIndices.length
+          ? sectionIndices[s + 1]
+          : lines.length;
+
+        const sectionTitle = lines[startIdx].trim().replace(/^#+\s*/, '');
+        const sectionBody = lines
+          .slice(startIdx + 1, endIdx)
+          .join('\n')
+          .trim();
+
+        // Skip empty sections or pure heading-only sections
+        if (!sectionBody || sectionBody.length < 20) continue;
+
+        // Combine parent title with section heading for context
+        const subTitle = `${entry.title} — ${sectionTitle}`;
+        result.push({
+          title: subTitle.slice(0, 500),
+          description: sectionBody.slice(0, 2000),
+          date: entry.date,
+          rawExcerpt: `${subTitle}\n\n${sectionBody}`.slice(0, 5000),
+        });
+      }
+
+      // If we didn't extract any sub-entries, keep the original
+      if (result.length === 0 || result[result.length - 1].title === entries[entries.indexOf(entry) - 1]?.title) {
+        result.push(entry);
+      }
+    }
+
+    return result;
   }
 
   private parseDateFromText(text: string): Date | null {
