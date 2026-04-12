@@ -162,8 +162,9 @@ model ApiSource {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  team      Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  team      Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
   crawlRuns CrawlRun[]
+  changes   ChangeEntry[] // Direct relation for efficient source→changes queries
 
   @@unique([teamId, url])
   @@index([teamId])
@@ -192,6 +193,7 @@ model CrawlRun {
 model ChangeEntry {
   id            String     @id @default(cuid())
   crawlRunId    String
+  sourceId      String?    // Direct FK for efficient source→changes queries
   changeType    ChangeType
   severity      Severity
   title         String     // Short summary of the change
@@ -204,10 +206,12 @@ model ChangeEntry {
   isNew         Boolean    @default(true) // False if seen in a previous crawl
   createdAt     DateTime   @default(now())
 
-  crawlRun CrawlRun @relation(fields: [crawlRunId], references: [id], onDelete: Cascade)
+  crawlRun CrawlRun  @relation(fields: [crawlRunId], references: [id], onDelete: Cascade)
+  source   ApiSource? @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   alerts   Alert[]
 
   @@index([crawlRunId])
+  @@index([sourceId])
   @@index([changeType])
   @@index([severity])
   @@index([changeDate])

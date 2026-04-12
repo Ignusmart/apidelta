@@ -212,7 +212,8 @@ export class CrawlerService {
 
         const created = await this.prisma.changeEntry.create({
           data: {
-            crawlRunId: crawlRun.id,
+            crawlRun: { connect: { id: crawlRun.id } },
+            source: { connect: { id: sourceId } },
             title: entry.title.slice(0, 500),
             description: entry.description.slice(0, 2000),
             rawExcerpt: entry.rawExcerpt.slice(0, 5000),
