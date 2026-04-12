@@ -197,6 +197,7 @@ export class CrawlerService {
             status: true,
             startedAt: true,
             completedAt: true,
+            errorMessage: true,
             _count: { select: { changes: true } },
           },
         },

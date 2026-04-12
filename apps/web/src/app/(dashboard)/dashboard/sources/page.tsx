@@ -557,22 +557,48 @@ export default function SourcesPage() {
                   <td className="px-5 py-4 text-sm text-gray-400">
                     Every {src.crawlIntervalHours}h
                   </td>
-                  <td className="px-5 py-4 text-sm text-gray-500">
-                    {timeAgo(src.lastCrawledAt)}
+                  <td className="px-5 py-4">
+                    <div className="text-sm text-gray-500">{timeAgo(src.lastCrawledAt)}</div>
+                    {src.lastCrawledAt && src.isActive && (
+                      <div className="mt-0.5 text-[11px] text-gray-600">
+                        Next in ~{Math.max(1, src.crawlIntervalHours - Math.round((Date.now() - new Date(src.lastCrawledAt).getTime()) / 3_600_000))}h
+                      </div>
+                    )}
                   </td>
                   <td className="px-5 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 text-xs font-medium ${
-                        src.isActive ? 'text-emerald-400' : 'text-gray-600'
-                      }`}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${
-                          src.isActive ? 'bg-emerald-500' : 'bg-gray-600'
-                        }`}
-                      />
-                      {src.isActive ? 'Active' : 'Paused'}
-                    </span>
+                    {(() => {
+                      const lastRun = (src as ApiSource & { crawlRuns?: Array<{ status: string; errorMessage?: string | null }> }).crawlRuns?.[0];
+                      if (!src.isActive) {
+                        return (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-gray-600" />
+                            Paused
+                          </span>
+                        );
+                      }
+                      if (lastRun?.status === 'FAILED') {
+                        return (
+                          <span className="group inline-flex items-center gap-1.5 text-xs font-medium text-red-400" title={lastRun.errorMessage ?? 'Crawl failed'}>
+                            <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                            Failed
+                          </span>
+                        );
+                      }
+                      if (lastRun?.status === 'RUNNING') {
+                        return (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-400">
+                            <span className="h-1.5 w-1.5 animate-ping rounded-full bg-violet-500" />
+                            Crawling
+                          </span>
+                        );
+                      }
+                      return (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-400">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          Healthy
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center justify-end gap-1">
