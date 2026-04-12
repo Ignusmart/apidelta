@@ -136,7 +136,8 @@ export class AlertsService {
     });
 
     if (rules.length === 0) {
-      this.logger.log(`No active alert rules for team ${teamId}`);
+      this.logger.log(`No active alert rules for team ${teamId} — marking entries as processed`);
+      await this.markEntriesProcessed(crawlRunId);
       return 0;
     }
 
@@ -192,10 +193,25 @@ export class AlertsService {
       }
     }
 
+    // Mark all entries from this crawl run as processed
+    await this.markEntriesProcessed(crawlRunId);
+
     this.logger.log(
       `Created ${alertCount} alerts for crawl run ${crawlRunId}`,
     );
     return alertCount;
+  }
+
+  /**
+   * Mark all entries in a crawl run as no longer new.
+   * Called after alert evaluation (or when no rules exist) so entries
+   * don't stay isNew=true indefinitely if the source isn't re-crawled.
+   */
+  private async markEntriesProcessed(crawlRunId: string): Promise<void> {
+    await this.prisma.changeEntry.updateMany({
+      where: { crawlRunId, isNew: true },
+      data: { isNew: false },
+    });
   }
 
   // ── Rule Matching ───────────────────────────────
