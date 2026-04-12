@@ -577,7 +577,7 @@ export class CrawlerService {
   ): ParsedChangelogEntry | null {
     // Try to find a heading within this element
     const $heading = $el.find('h1, h2, h3, h4').first();
-    const title = $heading.length ? $heading.text().trim() : '';
+    let title = $heading.length ? $heading.text().trim() : '';
 
     // Get date from time element or heading text
     const $time = $el.find('time').first();
@@ -591,12 +591,21 @@ export class CrawlerService {
     }
 
     // Get description — all paragraph text
-    const description = $el
+    let description = $el
       .find('p, li')
       .map((_, p) => $(p).text().trim())
       .get()
       .join('\n')
       .trim();
+
+    // Strip trailing category/product tags from title and description.
+    // Many changelogs (e.g. Cloudflare) render category badges as child
+    // elements inside or adjacent to the heading, producing titles like:
+    // "Automatically retry on upstream provider failures on AI Gateway AI Gateway"
+    // We detect this by checking if the title ends with a short phrase
+    // that also appears earlier in the same title.
+    title = this.stripTrailingCategoryTag(title);
+    description = this.stripTrailingCategoryTag(description);
 
     // Build rawExcerpt from the content we actually extracted, not the full
     // descendant text. $el.text() can bleed sibling content when the matched
@@ -612,6 +621,44 @@ export class CrawlerService {
       date,
       rawExcerpt: rawExcerpt.slice(0, 5000),
     };
+  }
+
+  /**
+   * Strip trailing category/product tags that some changelogs append.
+   * Detects two patterns:
+   * 1. Repeated suffix: "Retry failures on AI Gateway AI Gateway" → "Retry failures on AI Gateway"
+   * 2. Trailing short tag on newline: "Some title\nWorkers" → "Some title"
+   */
+  private stripTrailingCategoryTag(text: string): string {
+    if (!text) return text;
+
+    // Pattern 1: title ends with a short phrase (1-4 words) that duplicates
+    // text already present earlier in the same string.
+    // Split on double-space or trailing whitespace to find the candidate tag.
+    const words = text.split(/\s+/);
+    for (let tagLen = 1; tagLen <= 4 && tagLen < words.length - 2; tagLen++) {
+      const candidate = words.slice(-tagLen).join(' ');
+      const prefix = words.slice(0, -tagLen).join(' ');
+      if (candidate.length >= 2 && prefix.toLowerCase().includes(candidate.toLowerCase())) {
+        return prefix.trim();
+      }
+    }
+
+    // Pattern 2: trailing short line that looks like a product category tag.
+    // "Some description text\nWorkers" or "Some text\nAI Gateway"
+    const lines = text.split('\n');
+    if (lines.length >= 2) {
+      const lastLine = lines[lines.length - 1].trim();
+      const wordCount = lastLine.split(/\s+/).length;
+      if (wordCount <= 4 && lastLine.length <= 40) {
+        const rest = lines.slice(0, -1).join('\n');
+        if (rest.toLowerCase().includes(lastLine.toLowerCase())) {
+          return rest.trim();
+        }
+      }
+    }
+
+    return text;
   }
 
   private parseDateFromText(text: string): Date | null {
