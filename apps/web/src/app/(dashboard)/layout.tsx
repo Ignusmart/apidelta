@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { auth, signOut } from '@/auth';
-import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows, Search } from 'lucide-react';
+import { Zap, LogOut, Search } from 'lucide-react';
 import Link from 'next/link';
 import { SidebarToggle } from './sidebar-toggle';
 import { CommandPalette } from './command-palette';
@@ -12,14 +12,6 @@ import { NavLinks } from './nav-links';
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
-
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-  { href: '/dashboard/sources', label: 'API Sources', icon: Rss },
-  { href: '/dashboard/changes', label: 'Changes', icon: GitCompareArrows },
-  { href: '/dashboard/alerts', label: 'Alerts', icon: Bell },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-];
 
 export default async function DashboardLayout({
   children,
@@ -54,7 +46,7 @@ export default async function DashboardLayout({
 
         {/* Nav */}
         <nav aria-label="Dashboard navigation" className="flex-1 space-y-1 px-3 py-4">
-          <NavLinks items={NAV_ITEMS} />
+          <NavLinks />
 
           {/* Command palette hint */}
           <div className="mt-4 px-3">

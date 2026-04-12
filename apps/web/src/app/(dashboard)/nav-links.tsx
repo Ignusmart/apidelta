@@ -2,16 +2,19 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Rss, GitCompareArrows, Bell, Settings } from 'lucide-react';
 import { AlertsBadge } from './nav-badge';
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-}
+const NAV_ITEMS = [
+  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
+  { href: '/dashboard/sources', label: 'API Sources', icon: Rss },
+  { href: '/dashboard/changes', label: 'Changes', icon: GitCompareArrows },
+  { href: '/dashboard/alerts', label: 'Alerts', icon: Bell },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+];
 
-export function NavLinks({ items }: { items: NavItem[] }) {
+export function NavLinks() {
+  const items = NAV_ITEMS;
   const pathname = usePathname();
 
   return (
