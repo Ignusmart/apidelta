@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { auth, signOut } from '@/auth';
-import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows } from 'lucide-react';
+import { Zap, LogOut, LayoutDashboard, Rss, Bell, Settings, GitCompareArrows, Search } from 'lucide-react';
 import Link from 'next/link';
 import { SidebarToggle } from './sidebar-toggle';
+import { CommandPalette } from './command-palette';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -61,6 +62,17 @@ export default async function DashboardLayout({
               {item.label}
             </Link>
           ))}
+
+          {/* Command palette hint */}
+          <div className="mt-4 px-3">
+            <div className="flex items-center gap-2 rounded-lg border border-gray-800/50 px-3 py-2 text-xs text-gray-600">
+              <Search aria-hidden="true" className="h-3 w-3" />
+              <span className="flex-1">Search...</span>
+              <kbd className="rounded border border-gray-700 bg-gray-800 px-1.5 py-0.5 text-[10px] text-gray-500">
+                &#8984;K
+              </kbd>
+            </div>
+          </div>
         </nav>
 
         {/* User footer */}
@@ -99,6 +111,9 @@ export default async function DashboardLayout({
 
       {/* Main content */}
       <main id="main-content" className="min-w-0 flex-1 p-6 pt-20 lg:ml-64 lg:p-8 lg:pt-8">{children}</main>
+
+      {/* Command palette (Cmd+K) */}
+      <CommandPalette />
     </div>
   );
 }
