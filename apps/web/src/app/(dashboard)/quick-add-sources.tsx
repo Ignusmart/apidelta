@@ -196,13 +196,19 @@ function SourceGrid({
   sources,
   onSelect,
   disabled,
+  accentColor,
 }: {
   sources: QuickAddSource[];
   onSelect: (source: QuickAddSource) => void;
   disabled?: boolean;
+  accentColor: 'violet' | 'blue';
 }) {
+  const iconTint = accentColor === 'violet' ? 'text-violet-400' : 'text-blue-400';
+  const borderHover = accentColor === 'violet' ? 'hover:border-violet-500/40' : 'hover:border-blue-500/40';
+  const bgHover = accentColor === 'violet' ? 'hover:bg-violet-500/5' : 'hover:bg-blue-500/5';
+
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
       {sources.map((source) => {
         const Icon = source.icon;
         return (
@@ -210,12 +216,14 @@ function SourceGrid({
             key={source.name}
             onClick={() => onSelect(source)}
             disabled={disabled}
-            className="flex items-center gap-2.5 rounded-lg border border-gray-800 bg-gray-900/30 px-3 py-2.5 text-left text-sm transition-colors duration-150 hover:border-violet-500/30 hover:bg-violet-500/5 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+            className={`group flex items-center gap-3 rounded-lg border border-gray-800 bg-gray-900/40 px-3 py-3 text-left transition-all duration-150 ${borderHover} ${bgHover} disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500`}
           >
-            <Icon aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-500" />
-            <div className="min-w-0">
-              <p className="truncate font-medium text-white">{source.name}</p>
-              <p className="truncate text-[10px] text-gray-600">{source.category}</p>
+            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gray-800/60 ${iconTint} transition-colors group-hover:bg-gray-800`}>
+              <Icon aria-hidden="true" className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-white">{source.name}</p>
+              <p className="truncate text-[11px] text-gray-500">{source.category}</p>
             </div>
           </button>
         );
@@ -238,22 +246,28 @@ export function QuickAddGrid({
   if (availablePopular.length === 0 && availableWeb3.length === 0) return null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {availablePopular.length > 0 && (
-        <div>
-          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
-            Popular APIs — add with one click
-          </p>
-          <SourceGrid sources={availablePopular} onSelect={onSelect} disabled={disabled} />
-        </div>
+        <section aria-labelledby="quick-add-popular-heading">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h3 id="quick-add-popular-heading" className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              Popular APIs
+            </h3>
+            <span className="text-[11px] text-gray-600">{availablePopular.length} available</span>
+          </div>
+          <SourceGrid sources={availablePopular} onSelect={onSelect} disabled={disabled} accentColor="violet" />
+        </section>
       )}
       {availableWeb3.length > 0 && (
-        <div>
-          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
-            Web3 — SDKs, libraries &amp; infrastructure
-          </p>
-          <SourceGrid sources={availableWeb3} onSelect={onSelect} disabled={disabled} />
-        </div>
+        <section aria-labelledby="quick-add-web3-heading">
+          <div className="mb-3 flex items-baseline justify-between">
+            <h3 id="quick-add-web3-heading" className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+              Web3 — SDKs, libraries &amp; infrastructure
+            </h3>
+            <span className="text-[11px] text-gray-600">{availableWeb3.length} available</span>
+          </div>
+          <SourceGrid sources={availableWeb3} onSelect={onSelect} disabled={disabled} accentColor="blue" />
+        </section>
       )}
     </div>
   );
