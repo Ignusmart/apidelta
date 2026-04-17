@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import { Providers } from './providers';
 import './globals.css';
 
@@ -64,6 +65,10 @@ export default function RootLayout({
         </a>
         <Providers>{children}</Providers>
       </body>
+      {process.env.NEXT_PUBLIC_GA_ID &&
+        process.env.NODE_ENV === 'production' && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+        )}
     </html>
   );
 }
