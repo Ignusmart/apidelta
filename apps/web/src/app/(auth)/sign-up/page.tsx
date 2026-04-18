@@ -29,6 +29,15 @@ export default async function SignUpPage({
   const params = await searchParams;
   const callbackUrl = params.callbackUrl ?? '/dashboard';
   const error = params.error;
+  // Append GA4 tracking params only when using the default dashboard redirect,
+  // so callers passing a custom callbackUrl are respected.
+  const isDefaultCallback = !params.callbackUrl;
+  const githubCallback = isDefaultCallback
+    ? '/dashboard?welcome=1&method=github'
+    : callbackUrl;
+  const emailCallback = isDefaultCallback
+    ? '/dashboard?welcome=1&method=email'
+    : callbackUrl;
 
   return (
     <div className="w-full max-w-sm">
@@ -59,7 +68,7 @@ export default async function SignUpPage({
         <form
           action={async () => {
             'use server';
-            await signIn('github', { redirectTo: callbackUrl });
+            await signIn('github', { redirectTo: githubCallback });
           }}
         >
           <SubmitButton
@@ -94,7 +103,7 @@ export default async function SignUpPage({
             const email = formData.get('email') as string;
             await signIn('nodemailer', {
               email,
-              redirectTo: callbackUrl,
+              redirectTo: emailCallback,
             });
           }}
         >

@@ -9,6 +9,7 @@ import { CommandPalette } from './command-palette';
 import { ShortcutsProvider } from './shortcuts-dialog';
 import { NavLinks } from './nav-links';
 import { MobileNav } from './mobile-nav';
+import { SignupSuccessEvent } from '@/app/_components/ga-events';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -104,6 +105,9 @@ export default async function DashboardLayout({
       {/* Command palette (Cmd+K) + keyboard shortcuts */}
       <CommandPalette />
       <ShortcutsProvider />
+
+      {/* GA4: fires sign_up when user first lands from /sign-up */}
+      <SignupSuccessEvent />
     </div>
   );
 }

@@ -16,6 +16,10 @@ import {
 import { apiFetch } from '@/lib/api';
 import { getTeamId } from '@/lib/shared';
 import type { PlanTier, PlanStatus, TeamPlan } from '@/lib/types';
+import {
+  trackBeginCheckout,
+  trackPurchaseFromSession,
+} from '@/app/_components/ga-events';
 
 const PLANS = [
   {
@@ -89,6 +93,7 @@ export default function SettingsPage() {
     const billing = searchParams.get('billing');
     if (billing === 'success') {
       setSuccessMessage('Plan upgraded. Your new limits are active now.');
+      trackPurchaseFromSession();
       // Clear URL param
       window.history.replaceState({}, '', '/dashboard/settings');
     } else if (billing === 'cancelled') {
@@ -125,6 +130,7 @@ export default function SettingsPage() {
         body: JSON.stringify({ teamId, planTier }),
       });
       if (url) {
+        trackBeginCheckout(planTier);
         window.location.href = url;
       }
     } catch (e) {
