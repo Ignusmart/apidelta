@@ -48,7 +48,8 @@ pnpm dev:api   # http://localhost:3001
 
 ## Key Constraints
 
-- NO Python backends — everything is TypeScript
+- NO Python in the core API (`apps/api`) or web (`apps/web`) — TypeScript only
+- ML inference service (`apps/ml/`) is a carved-out Python microservice deployed to Modal, called over HTTP from NestJS. See `apps/ml/README.md` and `docs/TRACKER.md`.
 - NO TypeORM or Drizzle — use Prisma only
 - NO MUI, Chakra, or other component libs — shadcn/ui only
 - NO Supabase Auth or Firebase Auth — NextAuth.js only
