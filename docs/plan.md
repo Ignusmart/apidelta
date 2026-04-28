@@ -4,10 +4,11 @@
 
 **Target**: $49-99/mo per team. Buyer: engineering leads at B2B SaaS (10-100 person teams).
 
-**Kill criteria**:
-- If after 4 weeks of build, zero teams sign up for free beta → kill
-- If crawler accuracy < 70% on breaking change classification → pivot approach
-- If competitor ships identical AI-classification feature before our launch → reassess differentiation
+**Kill criteria** (deferred to post-V2, see `docs/v2-tracker.md`):
+
+The original MVP-phase kill criteria (zero beta signups in 4 weeks, classifier <70% accuracy, competitor ships identical AI feature) have been **deferred**. As of 2026-04-28, the MVP is launched but tracking 0 signups / 0 MRR; rather than kill against pre-V2 metrics, the product is being pushed to a V2 with a real moat (curated catalog, MCP server, workflow integrations) before any kill decision.
+
+Active kill criteria now live in `docs/v2-tracker.md` Phase 4 — Day 30 from V2 launch, scaled to V2 differentiation. Hard rule: $0 MRR after 60 days post-V2 launch → reassess product-market fit.
 
 ---
 

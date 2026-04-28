@@ -2,8 +2,8 @@
 
 **Goal**: Ship a fine-tuned ML classifier for API diffs as a paid tier on APIDelta. Doubles as a portfolio artifact demonstrating production AI/ML engineering (fine-tuning, distillation, conformal calibration, Modal serving).
 
-**Status**: BUILDING (Weekend 1, Phase 1 complete)
-**Gated by**: APIDelta surviving the 2026-05-15 kill-checkpoint. If APIDelta is killed, this dies with it.
+**Status**: BUILDING (Weekend 1, Phase 1 complete) — gating updated 2026-04-28
+**Gated by**: APIDelta surviving the post-V2 kill checkpoint (see `docs/v2-tracker.md` Phase 4). The original 2026-05-15 / Day 30 checkpoint was deferred 2026-04-28 in favor of a post-V2 evaluation. If APIDelta fails the post-V2 checkpoint, this ML feature dies with it.
 **Research source**: `research/reports/2026-04-20-ml-portfolio-product-ideas.md` §Direction 1
 
 ---
@@ -81,7 +81,7 @@ apidelta/
 
 | Risk | Mitigation |
 |------|-----------|
-| APIDelta killed 2026-05-15 | Don't start weekend 2 until checkpoint clears |
+| APIDelta killed at post-V2 checkpoint | Don't start weekend 2 until V2 ships and the post-V2 checkpoint clears (see `docs/v2-tracker.md` Phase 4) |
 | Label quality from `oasdiff` is weak | Gold set is the real ceiling; Haiku distillation is the safety net |
 | Fine-tune doesn't beat baseline | Ship baseline; still a portfolio win with honest write-up |
 | Modal cold starts >100ms | Budget $10-30/mo for keep-warm containers |

@@ -532,19 +532,24 @@ Subject: `APIDelta — AI changelog monitoring for API dependencies (just launch
 
 ## Success Metrics
 
-### 30-Day Targets
+### Status: deferred to post-V2 (2026-04-28)
 
-| Metric | Target | Kill Signal |
-|--------|--------|-------------|
-| Website visitors (total) | > 2,000 | < 200 |
-| Free trial signups | > 30 | < 5 |
-| Trial → Paid conversion | > 10% | < 3% |
-| Paying customers (month 1) | > 3 | 0 |
-| MRR (month 1) | > $150 | $0 |
-| Product Hunt upvotes | > 100 | < 20 |
-| HN points | > 30 | < 5 |
-| Google Ads signups | > 5 from $200 | 0 from full spend |
-| Dev.to article views | > 1,000 total | < 100 |
+The original 30-Day Targets / Day 30 kill checkpoint has been **deferred**. As of 2026-04-28 (Day 13 of MVP launch), the product was tracking ~13 visitors/7d, 0 trial signups, 0 MRR — well below the original survival floor. Rather than kill on pre-V2 metrics, the product is being pushed to a V2 with a real moat (curated catalog, MCP server, workflow integrations, named competitor compare, "why not just build this?" content) before any kill decision.
+
+**Live tracker**: `docs/v2-tracker.md` owns V2 phases 0-4 and the new post-V2 checkpoint criteria.
+
+### Post-V2 checkpoint (Phase 4 of v2-tracker)
+
+Day 30 from V2 launch (estimated ≈ 2026-07-25 if V2 ships ≈ 2026-06-25):
+
+| Metric | Survival Floor | Healthy Signal |
+|--------|----------------|----------------|
+| Website visitors / week | > 500 | > 1,500 |
+| Free trial signups (cumulative) | > 10 | > 30 |
+| Paying customers (any tier) | > 2 | > 5 |
+| MRR | > $98 (1 Team or 2 Starter) | > $300 |
+| Catalog page visits / week | > 100 | > 500 |
+| MCP integrations connected (any team) | > 1 | > 5 |
 
 ### Channel Attribution
 - Tag all links with UTM parameters:
@@ -556,22 +561,36 @@ Subject: `APIDelta — AI changelog monitoring for API dependencies (just launch
   - `?utm_source=google&utm_medium=cpc&utm_campaign=demand_validation` (already in deploy.md)
   - `?utm_source=reddit&utm_medium=referral&utm_campaign=webdev`
 
-### Decision Framework (Day 30)
-- **3+ paying customers**: Continue. Double down on best-performing channel. Increase ads budget.
-- **1-2 paying customers + 20+ trials**: Optimize. Improve onboarding, trial-to-paid conversion. Keep marketing.
-- **0 paying customers + 10+ trials**: Investigate. Activation problem or pricing problem? Survey trial users.
-- **0 paying customers + <5 trials from 2K+ visitors**: Landing page problem. Run page-cro again.
-- **<200 visitors total**: Distribution problem. Increase ad spend, post more content, try new channels.
-- **Kill criteria**: $0 MRR after 60 days with consistent marketing effort → reassess product-market fit.
+### Decision Framework (Post-V2 Day 30)
+
+- **>2 paying customers + healthy MRR**: Continue. Optimize the highest-converting V2 surface.
+- **>10 trials + 0-1 customers**: Activation/onboarding problem — survey trial users, prioritize the curated catalog UX.
+- **<10 trials from >500 visitors/week**: Landing-page problem — re-run credibility audit against the V2 surface.
+- **<500 visitors/week**: Distribution problem — V2 didn't move the needle on traffic, reassess the channel mix.
+- **Hard kill criteria**: $0 MRR after 60 days post-V2 launch with consistent marketing effort → reassess product-market fit and consider Phase 5 (full pivot or sunset).
 
 ---
 
 ## Internal Notes (not for user-facing content)
 
 ### Competitive Positioning
-- Primary competitor: API Drift Alert ($149-749/mo, basic diff comparison, no AI)
-- We undercut on price by 3-7x and differentiate on AI classification
-- Secondary competitors: generic website change monitors (PageCrawl, Visualping) — no API-specific intelligence
-- oasdiff: open-source, only handles OpenAPI spec diffing in CI/CD, not third-party changelog monitoring
-- NEVER mention competitor names in any user-facing content, ads, or social posts
-- Use phrases like "enterprise monitoring tools", "basic change detection tools", "most monitoring platforms" instead
+- Direct competitor at similar price point: PageCrawl.io ($80/yr Standard, $300/yr Enterprise) — ships AI summarization and an MCP server. Lower-priced, growing into the same use case.
+- Direct competitor at higher price point: API Drift Alert ($149-749/mo) — basic diff comparison without AI classification.
+- Adjacent generic monitors: Visualping, ChangeTower, Distill.io — built for marketers tracking competitor pages, not API changelogs.
+- Adjacent spec tooling: oasdiff (open-source CLI, paid Pro tier) — handles OpenAPI breaking-change detection in CI/CD, not third-party changelog monitoring.
+- See `docs/competitive-teardown.md` for full feature/pricing breakdown.
+
+### Competitor naming policy (updated 2026-04-28)
+
+| Surface | Name competitors? |
+|---------|-------------------|
+| `/compare/*` SEO pages (e.g. `/compare/apidelta-vs-pagecrawl`) | **YES** — honest, head-to-head tables. Capture high-intent evaluation traffic. |
+| Use-case / guide / homepage marketing copy | **NO** — use phrases like "generic page monitors" or "basic change detection tools". |
+| Paid ads (Google, social) | **NO** — never name a competitor in an ad creative. |
+| Social posts (LinkedIn, Twitter, Reddit) | **NO** — describe categories, not specific competitors. |
+| PR / press releases | **NO** — no competitor mentions. |
+| Internal docs (this file, competitive-teardown.md, audit-log.md) | **YES** — name them; we need precise context internally. |
+
+**Rationale for the /compare exception**: named competitor compare pages are standard B2B SaaS practice (Notion vs Evernote, Linear vs Jira, Webflow vs Squarespace). The policy update was driven by audit finding F16 — generic compare pages dodge the comparisons evaluators actually run, and miss the highest-intent search traffic in the funnel.
+
+**Hard rule**: comparison pages must use only public information (pricing pages, public docs). Acknowledge competitor strengths honestly to reduce trademark risk and build evaluator trust.
