@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, Inject, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSourceDto } from './dto/create-source.dto';
-import { CrawlStatus, ChangeType, Severity, TriageStatus } from '@prisma/client';
+import { CrawlStatus, ChangeType, Severity, TriageStatus, SourceType } from '@prisma/client';
 import { ClassifierService } from '../classifier/classifier.service';
 import { AlertsService } from '../alerts/alerts.service';
 import * as cheerio from 'cheerio';
@@ -310,8 +310,11 @@ export class CrawlerService {
       // Fetch the page (with single retry on transient failures)
       const html = await this.fetchWithRetry(source.url);
 
-      // Parse changelog entries
-      const rawEntries = this.parseChangelog(html, source.url);
+      // Parse changelog entries — RSS feeds use a dedicated XML parser,
+      // everything else falls through the universal HTML strategy.
+      const rawEntries = source.sourceType === SourceType.RSS_FEED
+        ? this.parseRssFeed(html)
+        : this.parseChangelog(html, source.url);
       this.logger.log(`Parsed ${rawEntries.length} raw entries from ${source.name}`);
 
       // Split mega-entries (e.g. Linear's single release note with 20+ sub-sections)
@@ -617,13 +620,21 @@ export class CrawlerService {
     )
       return true;
 
-    // Description is essentially a repeat of the title (no new info)
+    // Description is essentially a repeat of the title (no new info).
+    // Some changelog index pages (GitHub Blog) expose only titles — the
+    // body lives on per-entry pages we don't crawl. Keep those when the
+    // title alone is descriptive (long enough + multiple substantive
+    // words); the classifier can work from a good title.
     if (
       description.length > 0 &&
       description.length < title.length * 1.3 &&
       description.toLowerCase().startsWith(title.toLowerCase().slice(0, 30))
-    )
-      return true;
+    ) {
+      const wordCount = title
+        .split(/\s+/)
+        .filter((w) => w.length > 2).length;
+      if (title.length < 25 || wordCount < 4) return true;
+    }
 
     // High ratio of single-word lines (nav menus captured as content)
     const lines = description.split(/\s+/).filter(Boolean);
@@ -664,8 +675,16 @@ export class CrawlerService {
     // Strategy: try multiple common changelog DOM patterns
 
     // Pattern 1: Sections with date headings (Stripe, GitHub, many others)
-    // Look for article/section elements, or h2/h3 headings followed by content
+    // Look for article/section elements, or h2/h3 headings followed by content.
+    // Order matters: more specific selectors come first so we match them
+    // before the generic `article` fallback.
     const selectors = [
+      // GitHub Blog (github.blog/changelog) — DOM uses `.ChangelogItem`
+      // wrappers with `.ChangelogItem-title` / `.ChangelogItem-content`.
+      '.ChangelogItem',
+      // GitLab (docs.gitlab.com/releases) — card-based layout under
+      // `.release-posts-list`. Title sits in `.card-title` (no heading tag).
+      '.release-posts-list .card, .release-posts-list .card-body',
       // Common changelog patterns
       'article',
       '[class*="changelog"] > div, [class*="changelog"] > section',
@@ -756,6 +775,65 @@ export class CrawlerService {
     return entries.slice(0, 50);
   }
 
+  // ── RSS / Atom feed parser ───────────────────
+
+  /**
+   * Parse an RSS 2.0 or Atom feed into ParsedChangelogEntry[]. Used for
+   * sources whose `sourceType` is `RSS_FEED` (e.g. AWS What's New).
+   *
+   * The universal HTML parser does not work on XML feeds because Cheerio's
+   * default mode treats unknown tags loosely; we explicitly load in xmlMode
+   * here. Description bodies are often HTML inside CDATA — we re-parse those
+   * to strip tags so the classifier sees clean text.
+   */
+  parseRssFeed(xml: string): ParsedChangelogEntry[] {
+    const $ = cheerio.load(xml, { xmlMode: true });
+    const entries: ParsedChangelogEntry[] = [];
+
+    // RSS 2.0 uses <item>; Atom uses <entry>.
+    const items = $('item, entry').toArray().slice(0, 50);
+
+    for (const el of items) {
+      const $el = $(el);
+      const title = $el.find('title').first().text().trim();
+
+      // RSS: <description>. Atom: <summary> or <content>.
+      let description =
+        $el.find('description').first().text().trim() ||
+        $el.find('summary').first().text().trim() ||
+        $el.find('content').first().text().trim();
+
+      // Descriptions are often HTML wrapped in CDATA. Re-parse to strip tags
+      // so the classifier sees clean prose, not <p>/<a> markup.
+      if (description && /<[a-z]/i.test(description)) {
+        const $desc = cheerio.load(description);
+        description = $desc.text().trim().replace(/\s+/g, ' ');
+      }
+
+      // RSS: <pubDate>. Atom: <published> or <updated>.
+      const dateText =
+        $el.find('pubDate').first().text().trim() ||
+        $el.find('published').first().text().trim() ||
+        $el.find('updated').first().text().trim();
+      let date: Date | null = null;
+      if (dateText) {
+        const d = new Date(dateText);
+        if (!isNaN(d.getTime())) date = d;
+      }
+
+      if (title.length < 5 && description.length < 20) continue;
+
+      entries.push({
+        title: title.slice(0, 500),
+        description: description.slice(0, 2000),
+        date,
+        rawExcerpt: `${title}\n\n${description}`.slice(0, 5000),
+      });
+    }
+
+    return entries;
+  }
+
   private extractEntryFromElement(
     $: cheerio.CheerioAPI,
     $el: ReturnType<cheerio.CheerioAPI>,
@@ -763,6 +841,29 @@ export class CrawlerService {
     // Try to find a heading within this element
     const $heading = $el.find('h1, h2, h3, h4').first();
     let title = $heading.length ? $heading.text().trim() : '';
+
+    // Some changelogs (GitHub Blog) put the *date / category tag* in the
+    // heading and the real title in a non-heading element. Detect the
+    // "meta heading" pattern via class name and prefer the title element
+    // when present.
+    const headingClass = $heading.attr('class') ?? '';
+    const isMetaHeading = /content-meta|item-meta|\bmeta\b/i.test(headingClass);
+
+    // Fallback: some changelogs (GitHub Blog `.ChangelogItem-title`, GitLab
+    // `.card-title`) put the title in a non-heading element. Prefer the
+    // title-class element when no heading matched, OR when the heading
+    // looks like just metadata.
+    if (!title || isMetaHeading) {
+      const $titleEl = $el
+        .find(
+          '.ChangelogItem-title, .card-title, .post-title, .entry-title, .item-title',
+        )
+        .first();
+      if ($titleEl.length) {
+        const t = $titleEl.text().trim();
+        if (t) title = t;
+      }
+    }
 
     // Get date from time element or heading text
     const $time = $el.find('time').first();

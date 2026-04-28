@@ -122,47 +122,55 @@ Removed: "50+ changelog formats", "weekly digest emails", "team members" limits,
 
 These sources are set to `isActive = false`. They can be re-enabled once their specific issues are resolved.
 
-### Stripe — `stripe.com/docs/changelog`
+### Stripe — `stripe.com/docs/changelog` — STILL DISABLED
 
 **Problem**: React SPA. `fetch()` returns server-rendered shell only — actual changelog loads client-side.
 
 **Fix needed**: Playwright integration for JS rendering, or point at Stripe's JSON changelog endpoint.
 
-**Impact**: High-value source. Playwright would also unlock other SPA-based changelogs.
+**Impact**: High-value source. Playwright would also unlock other SPA-based changelogs (notably the original GitLab releases page).
 
-### GitHub Blog — `github.blog/changelog/`
+**V2 phase**: planned for Phase 0.1 (dedicated Playwright session) per `docs/v2-tracker.md`.
 
-**Problem**: DOM mismatch. Parser captures date/category labels instead of actual entry titles. All entries rejected as noise.
-
-**Fix needed**: Source-specific parser that walks `.post-list__item` or similar. Alternatively, detect `title === description` and drill deeper.
-
-**Impact**: High-value — Copilot/Actions/Security announcements go through here.
-
-### GitLab — `about.gitlab.com/releases/categories/releases/`
-
-**Problem**: DOM mismatch. Generic selectors don't match GitLab's card-based release layout. Only marketing hero text is captured.
-
-**Fix needed**: Inspect DOM and add selector for release cards (likely `.release-post` or similar).
-
-**Impact**: Lower priority — monthly/major releases, not daily.
-
-### AWS — RSS feed
-
-**Problem**: RSS URL returns HTTP 404. Feed URL likely moved to `https://aws.amazon.com/new/feed/`.
-
-**Fix needed**: Find correct URL, update `ApiSource.url`, re-enable.
-
-### SendGrid — HTML changelog
-
-**Problem**: Release notes URL returns HTTP 404. Possibly folded into main docs site.
-
-**Fix needed**: Find replacement URL or remove source.
-
-### OpenAI — HTML changelog
+### OpenAI — HTML changelog — STILL DISABLED
 
 **Problem**: HTTP 403 — OpenAI blocks bots.
 
 **Fix needed**: Playwright with realistic UA, or find an alternative source (community changelog, GitHub).
+
+**V2 phase**: planned alongside Stripe in Phase 0.1.
+
+### GitHub Blog — `github.blog/changelog/` — FIXED 2026-04-28
+
+**Original problem**: DOM mismatch. Parser captured date/category labels instead of actual entry titles; entries rejected as noise.
+
+**Fix shipped**: added `.ChangelogItem` to the universal selector list; added `.ChangelogItem-title` (and similar `.card-title` / `.post-title`) as a fallback when the matched element's heading has class `*-meta` (date+category placeholder); relaxed the "description == title" noise filter when titles are descriptive (≥25 chars and ≥4 substantive words). GitHub Blog index pages expose only entry titles — the classifier works fine on a rich title alone.
+
+**Verification**: smoke test (`apps/api/scripts/smoke-parsers.ts`) parses 50 real entries with correct titles + dates.
+
+### GitLab — `about.gitlab.com/atom.xml` — FIXED 2026-04-28
+
+**Original problem**: `about.gitlab.com/releases/categories/releases/` (now redirects to `docs.gitlab.com/releases/`) is a JS-rendered SPA — the initial HTML is a 16KB shell with no release cards.
+
+**Fix shipped**: switched the source URL to GitLab's blog Atom feed (`about.gitlab.com/atom.xml`, `SourceType.RSS_FEED`). The Atom feed is server-rendered and includes release announcements alongside engineering blog posts.
+
+**Caveat**: the Atom feed is the GitLab blog (broader than pure release content) — the AI classifier filters non-release noise based on content. Acceptable trade-off until GitLab ships a dedicated release feed or we wire Playwright (Phase 0.1).
+
+**Verification**: smoke test parses 20 entries with full descriptions + dates.
+
+### AWS — `https://aws.amazon.com/about-aws/whats-new/recent/feed/` — FIXED 2026-04-28
+
+**Original problem**: previous RSS URL returned HTTP 404.
+
+**Fix shipped**: corrected URL to AWS's canonical "What's New" RSS feed, plus added RSS/Atom parsing support in the crawler (`CrawlerService.parseRssFeed` — handles RSS 2.0 `<item>` and Atom `<entry>`, strips HTML/CDATA from descriptions). `SourceType.RSS_FEED` was already in the enum but had no dispatch path before this fix.
+
+**Verification**: smoke test parses 50 raw entries → 48 kept after dedupe.
+
+### SendGrid — `github.com/sendgrid/sendgrid-nodejs/releases` — FIXED 2026-04-28
+
+**Original problem**: `docs.sendgrid.com/release-notes` returned HTTP 404 (retired post-Twilio acquisition).
+
+**Fix shipped**: switched the source to the official SendGrid Node SDK GitHub releases page (`SourceType.GITHUB_RELEASES`). The existing GitHub releases parser path handles it without code changes.
 
 ---
 

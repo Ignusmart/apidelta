@@ -37,13 +37,13 @@ The original 2026-05-15 / Day 30 kill checkpoint is **deferred** until V2 ships.
 
 ### Tasks
 
-- [ ] **Stripe parser** — add Playwright support. Shared fix unlocks GitLab + future SPA changelogs. See `docs/known-issues.md` for context.
-- [ ] **GitHub Blog parser** — fix DOM mismatch (entries currently rejected as noise).
-- [ ] **OpenAI source** — realistic UA / alternate URL (currently HTTP 403).
-- [ ] **AWS RSS** — URL fix (low effort).
-- [ ] **SendGrid** — replacement URL (current returns 404).
-- [ ] **GitLab parser** — DOM fix (shares Playwright path with Stripe; do as part of 0.1).
-- [ ] Update `apps/api/prisma/seed.ts` if catalog seed names changed.
+- [ ] **Stripe parser** — add Playwright support. Shared fix unlocks future SPA changelogs. See `docs/known-issues.md` for context. **Pending Phase 0.1 (Playwright session).**
+- [x] **GitHub Blog parser** — fixed 2026-04-28: added `.ChangelogItem` selector, `*-title` class fallback when heading has a `*-meta` class, relaxed "description==title" noise filter for descriptive titles. 50 entries parsing successfully.
+- [ ] **OpenAI source** — realistic UA / alternate URL (currently HTTP 403). **Pending Phase 0.1 (Playwright session).**
+- [x] **AWS RSS** — fixed 2026-04-28: URL corrected to canonical `/about-aws/whats-new/recent/feed/`, added `parseRssFeed()` to handle RSS 2.0 + Atom. 48 entries kept after dedupe.
+- [x] **SendGrid** — fixed 2026-04-28: switched to `github.com/sendgrid/sendgrid-nodejs/releases` (`GITHUB_RELEASES` type — no parser change needed).
+- [x] **GitLab parser** — fixed 2026-04-28: switched URL to `about.gitlab.com/atom.xml` (GitLab blog Atom feed). The original docs page is a JS-rendered SPA and remains pending Playwright (Phase 0.1) for pure release content; the Atom feed covers release announcements + engineering blog as a working interim.
+- [x] Update `apps/api/prisma/seed.ts` — SendGrid URL/type updated, AWS + GitLab sources added so a fresh local seed exercises the new code paths.
 
 ### Files
 
@@ -62,6 +62,8 @@ The original 2026-05-15 / Day 30 kill checkpoint is **deferred** until V2 ships.
 - All 6 previously-disabled sources have a successful CrawlRun in the last 24hr
 - Existing 9 working sources (Cloudflare, Slack, Linear, GCP, Twilio, Vercel, Supabase, Prisma, Next.js) remain green
 - No regression in classifier pipeline
+
+**Status (2026-04-28)**: 4 of 6 fixed in this session (AWS RSS, SendGrid, GitHub Blog, GitLab). Stripe + OpenAI remain — both blocked on Playwright integration, deferred to Phase 0.1 (dedicated Playwright session).
 
 ---
 
@@ -258,3 +260,18 @@ Day 30 from V2 launch (≈ 2026-07-25 if launch is 2026-06-25):
 - Decisions locked: name competitors on /compare, new tracker file (this one), leave homepage logos pending Phase 0 parser fixes.
 
 **Next session**: Phase 0 — start with Stripe Playwright integration (highest-impact parser fix; shared work unlocks GitLab + other SPA changelogs).
+
+### 2026-04-28 — Phase 0 partial
+
+**Done**:
+- Added `parseRssFeed()` to `CrawlerService` (RSS 2.0 + Atom; handles HTML/CDATA inside `<description>`). Wired RSS dispatch into `triggerCrawl()` based on `SourceType.RSS_FEED`.
+- Extended the universal HTML parser's selector list with `.ChangelogItem` (GitHub Blog) and `.release-posts-list .card` (GitLab card layout, kept for future).
+- Added title-class fallback in `extractEntryFromElement` (`.ChangelogItem-title`, `.card-title`, `.post-title`, `.entry-title`, `.item-title`) — kicks in when the matched element has no heading OR when its heading has a `*-meta` class (date+category placeholder).
+- Relaxed the "description == title" noise filter for descriptive titles (≥25 chars, ≥4 substantive words). GitHub Blog index pages expose only entry titles; the classifier works fine on a rich title alone.
+- Updated `apps/api/prisma/seed.ts`: SendGrid switched to `github.com/sendgrid/sendgrid-nodejs/releases` (GITHUB_RELEASES); added AWS (`/about-aws/whats-new/recent/feed/`, RSS_FEED) and GitLab (`about.gitlab.com/atom.xml`, RSS_FEED).
+- Added `apps/api/scripts/smoke-parsers.ts` — diagnostic that fetches live URLs and runs them through the parsers without DI. Verified 4 fixed sources + 3 regression-check sources (Cloudflare, Twilio, Vercel) all parse healthy entry counts.
+- Updated `docs/known-issues.md`: marked GitHub Blog / GitLab / AWS / SendGrid as fixed, with the full fix description; flagged Stripe + OpenAI as still-disabled pending Phase 0.1.
+
+**Pending**:
+- Stripe + OpenAI — Phase 0.1 (Playwright integration).
+- Production DB updates: this session shipped code + seed only. Production source records (different from `seed.ts`) need their `url`, `sourceType`, and `isActive` toggled to match. Recommended approach: a one-off migration script or admin-UI update before declaring Phase 0 complete in production.

@@ -24,9 +24,11 @@ const API_SOURCES = [
     sourceType: SourceType.HTML_CHANGELOG,
   },
   {
+    // SendGrid's docs.sendgrid.com/release-notes was retired after the Twilio
+    // acquisition; we monitor the official Node SDK releases instead.
     name: 'SendGrid',
-    url: 'https://docs.sendgrid.com/release-notes',
-    sourceType: SourceType.HTML_CHANGELOG,
+    url: 'https://github.com/sendgrid/sendgrid-nodejs/releases',
+    sourceType: SourceType.GITHUB_RELEASES,
   },
   {
     name: 'OpenAI',
@@ -42,6 +44,16 @@ const API_SOURCES = [
     name: 'Prisma',
     url: 'https://github.com/prisma/prisma/releases',
     sourceType: SourceType.GITHUB_RELEASES,
+  },
+  {
+    name: 'AWS',
+    url: 'https://aws.amazon.com/about-aws/whats-new/recent/feed/',
+    sourceType: SourceType.RSS_FEED,
+  },
+  {
+    name: 'GitLab',
+    url: 'https://docs.gitlab.com/releases/',
+    sourceType: SourceType.HTML_CHANGELOG,
   },
 ];
 
