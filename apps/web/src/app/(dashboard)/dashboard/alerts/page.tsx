@@ -17,6 +17,11 @@ import {
   Filter,
   Rss,
   Zap,
+  Webhook,
+  Copy,
+  RotateCw,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -82,6 +87,10 @@ export default function AlertsPage() {
   const [ruleFormErrors, setRuleFormErrors] = useState<Record<string, string>>({});
   const [ruleFieldsTouched, setRuleFieldsTouched] = useState<Record<string, boolean>>({});
 
+  // WEBHOOK rule secret affordances
+  const [revealedSecrets, setRevealedSecrets] = useState<Record<string, boolean>>({});
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+
   const fetchData = useCallback(async () => {
     if (isDemo) return;
     if (!teamId) return;
@@ -128,11 +137,25 @@ export default function AlertsPage() {
     const errors: Record<string, string> = {};
     if (!formName.trim()) errors.name = 'Give this rule a name to identify it later';
     if (!formDestination.trim()) {
-      errors.destination = formChannel === 'EMAIL' ? 'Enter the email address to receive alerts' : 'Enter your Slack webhook URL';
+      errors.destination =
+        formChannel === 'EMAIL'
+          ? 'Enter the email address to receive alerts'
+          : formChannel === 'SLACK'
+            ? 'Enter your Slack webhook URL'
+            : 'Enter the webhook URL APIDelta should POST to';
     } else if (formChannel === 'EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formDestination)) {
       errors.destination = 'Enter a valid email address';
     } else if (formChannel === 'SLACK') {
       try { new URL(formDestination); } catch { errors.destination = 'Enter a valid Slack webhook URL (starts with https://)'; }
+    } else if (formChannel === 'WEBHOOK') {
+      try {
+        const u = new URL(formDestination);
+        if (u.protocol !== 'https:' && u.protocol !== 'http:') {
+          errors.destination = 'Webhook URL must start with https:// (or http:// for local testing)';
+        }
+      } catch {
+        errors.destination = 'Enter a valid webhook URL (starts with https://)';
+      }
     }
     setRuleFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -166,7 +189,7 @@ export default function AlertsPage() {
         .split(',')
         .map((k) => k.trim())
         .filter(Boolean);
-      await apiFetch('/alerts/rules', {
+      const created = await apiFetch<AlertRule>('/alerts/rules', {
         method: 'POST',
         body: JSON.stringify({
           teamId,
@@ -181,11 +204,57 @@ export default function AlertsPage() {
       resetRuleForm();
       setShowCreateForm(false);
       await fetchData();
-      toast.success('Alert rule created');
+      // For webhook rules, expand the secret on the freshly-created card so
+      // the user can copy it immediately. The secret is also retrievable
+      // later from the same card.
+      if (created?.channel === 'WEBHOOK') {
+        setRevealedSecrets((prev) => ({ ...prev, [created.id]: true }));
+        toast.success('Webhook rule created — copy your signing secret below.');
+      } else {
+        toast.success('Alert rule created');
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not create alert rule. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  // ── WEBHOOK secret affordances ───────────────────
+
+  async function handleCopySecret(secret: string) {
+    try {
+      await navigator.clipboard.writeText(secret);
+      toast.success('Webhook secret copied to clipboard');
+    } catch {
+      toast.error('Could not copy — select the text and copy manually');
+    }
+  }
+
+  async function handleRegenerateSecret(ruleId: string) {
+    if (isDemo) {
+      toast.success('Webhook secret regenerated.');
+      return;
+    }
+    const confirmed = await confirm({
+      title: 'Regenerate webhook secret',
+      description: 'Your previous secret stops working immediately. Receivers must be updated atomically.',
+      confirmLabel: 'Regenerate',
+      confirmVariant: 'danger',
+    });
+    if (!confirmed) return;
+    setRegeneratingId(ruleId);
+    try {
+      const updated = await apiFetch<AlertRule>(`/alerts/rules/${ruleId}/regenerate-secret`, {
+        method: 'POST',
+      });
+      setRules((prev) => prev.map((r) => (r.id === ruleId ? { ...r, ...updated } : r)));
+      setRevealedSecrets((prev) => ({ ...prev, [ruleId]: true }));
+      toast.success('Webhook secret regenerated — copy the new one below.');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not regenerate webhook secret.');
+    } finally {
+      setRegeneratingId(null);
     }
   }
 
@@ -419,6 +488,18 @@ export default function AlertsPage() {
                       <MessageSquare aria-hidden="true" className="h-3.5 w-3.5" />
                       Slack
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => { setFormChannel('WEBHOOK'); setFormDestination(''); setRuleFormErrors((prev) => ({ ...prev, destination: '' })); }}
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
+                        formChannel === 'WEBHOOK'
+                          ? 'border-violet-500/50 bg-violet-500/10 text-white'
+                          : 'border-gray-700 bg-gray-800 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <Webhook aria-hidden="true" className="h-3.5 w-3.5" />
+                      Webhook
+                    </button>
                   </div>
                   <span>to</span>
                 </div>
@@ -431,7 +512,13 @@ export default function AlertsPage() {
                   value={formDestination}
                   onChange={(e) => { setFormDestination(e.target.value); setRuleFormErrors((prev) => ({ ...prev, destination: '' })); }}
                   onBlur={() => touchRuleField('destination')}
-                  placeholder={formChannel === 'EMAIL' ? 'team@company.com' : 'https://hooks.slack.com/services/...'}
+                  placeholder={
+                    formChannel === 'EMAIL'
+                      ? 'team@company.com'
+                      : formChannel === 'SLACK'
+                        ? 'https://hooks.slack.com/services/...'
+                        : 'https://your-server.com/webhooks/apidelta'
+                  }
                   aria-invalid={ruleFieldsTouched.destination && !!ruleFormErrors.destination}
                   className={`w-full rounded-lg border bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:ring-1 ${
                     ruleFieldsTouched.destination && ruleFormErrors.destination
@@ -439,6 +526,11 @@ export default function AlertsPage() {
                       : 'border-gray-800 focus:border-violet-500 focus:ring-violet-500/30'
                   }`}
                 />
+                {formChannel === 'WEBHOOK' && !ruleFormErrors.destination && (
+                  <p className="text-xs text-gray-500">
+                    APIDelta will POST a signed JSON payload. We&apos;ll mint a signing secret you can verify against the <code className="rounded bg-gray-900 px-1 py-0.5 text-[11px] text-gray-400">X-APIDelta-Signature</code> header (HMAC-SHA256).
+                  </p>
+                )}
                 {ruleFieldsTouched.destination && ruleFormErrors.destination && (
                   <p className="text-xs text-red-400">{ruleFormErrors.destination}</p>
                 )}
@@ -562,100 +654,175 @@ export default function AlertsPage() {
                 const source = sources.find(
                   (s) => s.id === rule.sourceFilter,
                 );
+                const ChannelIcon =
+                  rule.channel === 'EMAIL'
+                    ? Mail
+                    : rule.channel === 'SLACK'
+                      ? MessageSquare
+                      : Webhook;
+                const channelLabel =
+                  rule.channel === 'EMAIL'
+                    ? 'Email'
+                    : rule.channel === 'SLACK'
+                      ? 'Slack'
+                      : 'Webhook';
+                const isWebhook = rule.channel === 'WEBHOOK';
+                const isRevealed = !!revealedSecrets[rule.id];
                 return (
                   <div
                     key={rule.id}
-                    className="flex items-center gap-4 rounded-xl border border-gray-800 bg-gray-900/30 p-5 transition-colors duration-150 hover:border-gray-700 hover:bg-gray-900/50"
+                    className="rounded-xl border border-gray-800 bg-gray-900/30 transition-colors duration-150 hover:border-gray-700 hover:bg-gray-900/50"
                   >
-                    {/* Channel icon */}
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-800/80">
-                      {rule.channel === 'EMAIL' ? (
-                        <Mail className="h-5 w-5 text-gray-400" />
-                      ) : (
-                        <MessageSquare className="h-5 w-5 text-gray-400" />
-                      )}
-                    </div>
+                    <div className="flex items-center gap-4 p-5">
+                      {/* Channel icon */}
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-800/80">
+                        <ChannelIcon className="h-5 w-5 text-gray-400" />
+                      </div>
 
-                    {/* Rule info */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">{rule.name}</p>
-                        <span
-                          className={`inline-flex items-center gap-1 text-xs ${
-                            rule.isActive
-                              ? 'text-emerald-400'
-                              : 'text-gray-600'
-                          }`}
-                        >
+                      {/* Rule info */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium">{rule.name}</p>
                           <span
-                            className={`h-1.5 w-1.5 rounded-full ${
+                            className={`inline-flex items-center gap-1 text-xs ${
                               rule.isActive
-                                ? 'bg-emerald-500'
-                                : 'bg-gray-600'
+                                ? 'text-emerald-400'
+                                : 'text-gray-600'
                             }`}
-                          />
-                          {rule.isActive ? 'Active' : 'Paused'}
-                        </span>
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${
+                                rule.isActive
+                                  ? 'bg-emerald-500'
+                                  : 'bg-gray-600'
+                              }`}
+                            />
+                            {rule.isActive ? 'Active' : 'Paused'}
+                          </span>
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                          <span className="truncate">
+                            {channelLabel} &rarr; {rule.destination}
+                          </span>
+                          <span className="text-gray-700">&middot;</span>
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                              SEVERITY_BADGE[rule.minSeverity] ??
+                              'bg-gray-800 text-gray-400'
+                            }`}
+                          >
+                            {rule.minSeverity}+
+                          </span>
+                          {source && (
+                            <>
+                              <span className="text-gray-700">&middot;</span>
+                              <span>{source.name}</span>
+                            </>
+                          )}
+                          {rule.keywordFilter.length > 0 && (
+                            <>
+                              <span className="text-gray-700">&middot;</span>
+                              <span>
+                                Keywords: {rule.keywordFilter.join(', ')}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                        <span>
-                          {rule.channel === 'EMAIL' ? 'Email' : 'Slack'}{' '}
-                          &rarr; {rule.destination}
-                        </span>
-                        <span className="text-gray-700">&middot;</span>
-                        <span
-                          className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                            SEVERITY_BADGE[rule.minSeverity] ??
-                            'bg-gray-800 text-gray-400'
-                          }`}
+
+                      {/* Actions */}
+                      <div className="flex shrink-0 items-center gap-1">
+                        <button
+                          onClick={() => handleTestRule(rule.id)}
+                          disabled={testingId === rule.id}
+                          aria-label={`Test rule ${rule.name}`}
+                          title="Send test alert"
+                          className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-amber-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                         >
-                          {rule.minSeverity}+
-                        </span>
-                        {source && (
-                          <>
-                            <span className="text-gray-700">&middot;</span>
-                            <span>{source.name}</span>
-                          </>
-                        )}
-                        {rule.keywordFilter.length > 0 && (
-                          <>
-                            <span className="text-gray-700">&middot;</span>
-                            <span>
-                              Keywords: {rule.keywordFilter.join(', ')}
-                            </span>
-                          </>
-                        )}
+                          {testingId === rule.id ? (
+                            <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Zap aria-hidden="true" className="h-4 w-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRule(rule.id)}
+                          disabled={deletingId === rule.id}
+                          aria-label={`Delete rule ${rule.name}`}
+                          className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-red-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                        >
+                          {deletingId === rule.id ? (
+                            <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 aria-hidden="true" className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex shrink-0 items-center gap-1">
-                      <button
-                        onClick={() => handleTestRule(rule.id)}
-                        disabled={testingId === rule.id}
-                        aria-label={`Test rule ${rule.name}`}
-                        title="Send test alert"
-                        className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-amber-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-                      >
-                        {testingId === rule.id ? (
-                          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Zap aria-hidden="true" className="h-4 w-4" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteRule(rule.id)}
-                        disabled={deletingId === rule.id}
-                        aria-label={`Delete rule ${rule.name}`}
-                        className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-red-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
-                      >
-                        {deletingId === rule.id ? (
-                          <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 aria-hidden="true" className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
+                    {/* Webhook signing secret — only on WEBHOOK rules */}
+                    {isWebhook && rule.webhookSecret && (
+                      <div className="border-t border-gray-800/80 px-5 py-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">
+                              Signing secret
+                            </p>
+                            <p className="mt-1 truncate font-mono text-xs text-gray-300">
+                              {isRevealed
+                                ? rule.webhookSecret
+                                : '•'.repeat(48)}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setRevealedSecrets((prev) => ({
+                                  ...prev,
+                                  [rule.id]: !prev[rule.id],
+                                }))
+                              }
+                              aria-label={isRevealed ? 'Hide secret' : 'Reveal secret'}
+                              title={isRevealed ? 'Hide secret' : 'Reveal secret'}
+                              className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                            >
+                              {isRevealed ? (
+                                <EyeOff aria-hidden="true" className="h-3.5 w-3.5" />
+                              ) : (
+                                <Eye aria-hidden="true" className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleCopySecret(rule.webhookSecret!)}
+                              aria-label="Copy secret"
+                              title="Copy secret"
+                              className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                            >
+                              <Copy aria-hidden="true" className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleRegenerateSecret(rule.id)}
+                              disabled={regeneratingId === rule.id}
+                              aria-label="Regenerate secret"
+                              title="Regenerate secret"
+                              className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-amber-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                            >
+                              {regeneratingId === rule.id ? (
+                                <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <RotateCw aria-hidden="true" className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                        <p className="mt-2 text-[11px] text-gray-600">
+                          Verify each delivery by computing <code className="rounded bg-gray-900 px-1 py-0.5 text-gray-400">HMAC-SHA256(secret, raw_body)</code> and matching it against the <code className="rounded bg-gray-900 px-1 py-0.5 text-gray-400">X-APIDelta-Signature</code> header.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -743,6 +910,8 @@ export default function AlertsPage() {
                           <span className="inline-flex items-center gap-1.5 text-xs text-gray-400">
                             {alert.alertRule?.channel === 'SLACK' ? (
                               <MessageSquare aria-hidden="true" className="h-3.5 w-3.5" />
+                            ) : alert.alertRule?.channel === 'WEBHOOK' ? (
+                              <Webhook aria-hidden="true" className="h-3.5 w-3.5" />
                             ) : (
                               <Mail aria-hidden="true" className="h-3.5 w-3.5" />
                             )}

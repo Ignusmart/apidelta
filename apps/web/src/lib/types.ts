@@ -4,7 +4,7 @@ export type SourceType = 'HTML_CHANGELOG' | 'RSS_FEED' | 'GITHUB_RELEASES';
 export type CrawlStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
 export type ChangeType = 'BREAKING' | 'DEPRECATION' | 'NON_BREAKING' | 'INFO';
 export type Severity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-export type AlertChannel = 'EMAIL' | 'SLACK';
+export type AlertChannel = 'EMAIL' | 'SLACK' | 'WEBHOOK';
 export type AlertStatus = 'SENT' | 'FAILED' | 'PENDING';
 export type TriageStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED';
 
@@ -64,6 +64,7 @@ export interface AlertRule {
   name: string;
   channel: AlertChannel;
   destination: string;
+  webhookSecret: string | null;
   minSeverity: Severity;
   sourceFilter: string | null;
   keywordFilter: string[];

@@ -86,7 +86,7 @@ Foundation for everything else — once webhooks ship, GitHub Issues, Linear, Pa
 - [x] Wire dispatch in `AlertsService.sendNotification()` for `AlertChannel.WEBHOOK`. `evaluateCrawlRun` + `retryFailed` updated to pass `alert.id` and `source.id` so each delivery carries stable identifiers receivers can dedupe on.
 - [x] `POST /alerts/rules/:id/regenerate-secret` for HMAC rotation (rejects non-WEBHOOK rules).
 - [x] Verified end-to-end via `apps/api/scripts/smoke-webhook.ts`: in-process HTTP receiver captures the POST, HMAC verifies, all headers present.
-- [ ] Settings UI — pending next session. The existing `/dashboard/alerts` rule editor needs a WEBHOOK option in the channel dropdown and a "show secret" / "rotate" affordance.
+- [x] Settings UI — `/dashboard/alerts` rule editor now exposes a Webhook channel button alongside Email/Slack with URL validation, and each WEBHOOK rule card shows a reveal/copy/regenerate affordance for the signing secret. Newly-created webhook rules auto-reveal the secret on the rule card so it can be copied immediately. History tab also renders the new channel icon.
 
 ### 1.2 GitHub Issues integration
 
@@ -316,8 +316,17 @@ Day 30 from V2 launch (≈ 2026-07-25 if launch is 2026-06-25):
 - Added `POST /alerts/rules/:id/regenerate-secret` for HMAC rotation (rejects non-WEBHOOK rules with 404).
 - Verified end-to-end with `apps/api/scripts/smoke-webhook.ts`: in-process HTTP receiver captures the POST, HMAC matches `createHmac('sha256', secret).update(body).digest('hex')`, and all standard headers are present.
 
-**Pending (Phase 1.1 finish in next session)**:
-- Settings UI: extend the existing `/dashboard/alerts` rule editor with a `WEBHOOK` channel option, plus a way to surface + rotate the secret. No new settings page needed.
+### 2026-04-28 — Phase 1.1 UI shipped (Phase 1.1 closed)
+
+- Extended `apps/web/src/lib/types.ts`: `AlertChannel` now includes `'WEBHOOK'`, `AlertRule` carries `webhookSecret: string | null`. Demo data updated.
+- `apps/web/src/app/(dashboard)/dashboard/alerts/page.tsx`:
+  - New "Webhook" channel button alongside Email/Slack in the create-rule modal, with URL validation (https:// preferred, http:// allowed for local testing).
+  - Per-WEBHOOK-rule card now renders a "Signing secret" row with reveal/hide, copy-to-clipboard, and regenerate buttons. Regenerate hits `POST /alerts/rules/:id/regenerate-secret` and re-reveals the new secret on success.
+  - Newly-created webhook rules auto-reveal the secret so it can be copied immediately after creation.
+  - History tab channel column now renders the Webhook icon for WEBHOOK alerts.
+- Verified the page compiles + renders 200 in `pnpm dev`; `tsc --noEmit` clean across the web workspace.
+
+**Phase 1.1 closed** — generic outbound webhooks are end-to-end self-serve. Phase 1.2 (GitHub Issues integration) is next.
 
 ### 2026-04-28 — Production migrations applied
 
