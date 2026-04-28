@@ -318,4 +318,13 @@ Day 30 from V2 launch (≈ 2026-07-25 if launch is 2026-06-25):
 
 **Pending (Phase 1.1 finish in next session)**:
 - Settings UI: extend the existing `/dashboard/alerts` rule editor with a `WEBHOOK` channel option, plus a way to surface + rotate the secret. No new settings page needed.
-- Production migration: run `pnpm db:deploy` (production) or `pnpm db:migrate` (local) to apply `20260428010000_add_webhook_alert_channel` (PostgreSQL `ALTER TYPE` + `ALTER TABLE`).
+
+### 2026-04-28 — Production migrations applied
+
+Both Phase 0.1 + Phase 1.1 migrations applied to local and production (Neon Postgres):
+- `20260428000000_add_source_requires_js` (adds `ApiSource.requiresJs`)
+- `20260428010000_add_webhook_alert_channel` (adds `WEBHOOK` enum value + `AlertRule.webhookSecret`)
+
+**Still blocking a clean prod-ready Phase 0.1 + 1.1**:
+1. **Dockerfile** (`apps/api/Dockerfile`) still uses `node:20-alpine`. Playwright won't install on Alpine. Switch to `mcr.microsoft.com/playwright:v1.59.1-jammy` or `node:20-bookworm-slim` + `playwright install --with-deps chromium` before the next deploy that actually runs SPA crawls.
+2. **Production `ApiSource` rows** are different from `seed.ts`. To activate the Phase 0 / 0.1 fixes in prod, the existing records need updates: mark Stripe + OpenAI with `requiresJs = true`, switch SendGrid to `github.com/sendgrid/sendgrid-nodejs/releases` (GITHUB_RELEASES), point AWS at `aws.amazon.com/about-aws/whats-new/recent/feed/` (RSS_FEED), point GitLab at `about.gitlab.com/atom.xml` (RSS_FEED), set `isActive = true` on all four. Recommended path: a one-off SQL script or admin UI flip — `seed.ts` is for fresh demo seeds only.
