@@ -12,6 +12,7 @@
     "lint": "turbo lint",
     "test": "pnpm -r test",
     "db:migrate": "pnpm --filter @apidelta/api prisma:migrate",
+    "db:deploy": "pnpm --filter @apidelta/api prisma:deploy",
     "db:generate": "pnpm --filter @apidelta/api prisma:generate"
   },
   "pnpm": {

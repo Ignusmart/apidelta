@@ -65,7 +65,7 @@ The original 2026-05-15 / Day 30 kill checkpoint is **deferred** until V2 ships.
 
 **Status (2026-04-28, Phase 0.1 done)**: all 6 originally-disabled sources now have a working crawl path. Stripe + OpenAI ship via Playwright + the new `requiresJs` flag. GitLab continues via the Atom feed (the `docs.gitlab.com/releases/` page loads via Playwright but the parser captures the cookie banner — Phase 0.2 follow-up).
 
-**Deployment requirement** (not yet shipped): `apps/api/Dockerfile` currently uses `node:20-alpine`, which is not officially supported by Playwright (glibc/Chromium incompatibility). Before deploying Phase 0.1 to production, switch the base image to `mcr.microsoft.com/playwright:v1.59.1-jammy` (Chromium pre-installed) or to `node:20-bookworm-slim` with `npx playwright install --with-deps chromium` in the build step. The Prisma migration `prisma/migrations/20260428000000_add_source_requires_js` also needs to be applied (`pnpm prisma:migrate deploy`). Production source records (different from `seed.ts`) need their `url` / `sourceType` / `requiresJs` / `isActive` fields updated to match — recommended via a one-off migration script or admin UI before declaring Phase 0 complete in production.
+**Deployment requirement** (not yet shipped): `apps/api/Dockerfile` currently uses `node:20-alpine`, which is not officially supported by Playwright (glibc/Chromium incompatibility). Before deploying Phase 0.1 to production, switch the base image to `mcr.microsoft.com/playwright:v1.59.1-jammy` (Chromium pre-installed) or to `node:20-bookworm-slim` with `npx playwright install --with-deps chromium` in the build step. The Prisma migration `prisma/migrations/20260428000000_add_source_requires_js` also needs to be applied (`pnpm db:deploy` (production) or `pnpm db:migrate` (local)). Production source records (different from `seed.ts`) need their `url` / `sourceType` / `requiresJs` / `isActive` fields updated to match — recommended via a one-off migration script or admin UI before declaring Phase 0 complete in production.
 
 ---
 
@@ -287,7 +287,7 @@ Day 30 from V2 launch (≈ 2026-07-25 if launch is 2026-06-25):
 
 **Done**:
 - Added `playwright` runtime dep to `apps/api` and downloaded Chromium binary locally.
-- Added `requiresJs Boolean @default(false)` field to `ApiSource` in `prisma/schema.prisma`. Generated Prisma client. Wrote migration SQL (`prisma/migrations/20260428000000_add_source_requires_js/migration.sql`) — not auto-applied; user runs `pnpm prisma:migrate deploy` (prod) or `pnpm prisma:migrate dev` (local).
+- Added `requiresJs Boolean @default(false)` field to `ApiSource` in `prisma/schema.prisma`. Generated Prisma client. Wrote migration SQL (`prisma/migrations/20260428000000_add_source_requires_js/migration.sql`) — not auto-applied; user runs `pnpm db:deploy` (production) or `pnpm db:migrate` (local).
 - Implemented `fetchWithPlaywright()` in `CrawlerService`: headless Chromium with realistic Chrome UA, locale `en-US`, viewport 1280x800. Uses `domcontentloaded` + 3s settle (rather than `networkidle`, which never fires on Stripe's continuously-polling page). Browser launched per crawl for clean state.
 - Wired dispatch in `triggerCrawl()`: `source.requiresJs ? fetchWithPlaywright() : fetchWithRetry()`.
 - Added `<main>` narrowing to `parseChangelog()`: when `<main>` exists with ≥3 articles/headings, scope downstream selectors to that subtree. Cuts out sidebar nav, cookie banners, and footers. Verified no regression on Cloudflare / Twilio / Vercel.
@@ -318,4 +318,4 @@ Day 30 from V2 launch (≈ 2026-07-25 if launch is 2026-06-25):
 
 **Pending (Phase 1.1 finish in next session)**:
 - Settings UI: extend the existing `/dashboard/alerts` rule editor with a `WEBHOOK` channel option, plus a way to surface + rotate the secret. No new settings page needed.
-- Production migration: run `pnpm prisma:migrate deploy` to apply `20260428010000_add_webhook_alert_channel` (PostgreSQL `ALTER TYPE` + `ALTER TABLE`).
+- Production migration: run `pnpm db:deploy` (production) or `pnpm db:migrate` (local) to apply `20260428010000_add_webhook_alert_channel` (PostgreSQL `ALTER TYPE` + `ALTER TABLE`).
