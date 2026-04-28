@@ -140,7 +140,7 @@ export function SeoNav() {
 
 export function SeoCtaBanner({
   headline = "Your next API outage is preventable.",
-  subtext = "Engineering teams lose an average of 4 hours per incident caused by surprise API changes. Start monitoring in under 2 minutes — no credit card required, nothing to install.",
+  subtext = "Surprise API changes cost teams hours of debugging at the worst possible time. Start monitoring in under 2 minutes — no credit card required, nothing to install.",
 }: {
   headline?: string;
   subtext?: string;

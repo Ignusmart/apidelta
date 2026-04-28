@@ -179,8 +179,9 @@ export default function BreakingChangeDetectionPage() {
                 </p>
                 <p className="mb-1 text-2xl font-bold">$400+</p>
                 <p className="text-sm text-gray-400">
-                  per incident — 4 hours of engineer time at $100/hr, plus
-                  customer impact, on-call disruption, and post-mortem overhead
+                  per incident — even a single 4-hour debug session at typical
+                  senior engineer rates ($100/hr), before customer impact,
+                  on-call disruption, and post-mortem overhead
                 </p>
               </div>
               <div className="rounded-xl border border-green-500/30 bg-green-950/10 p-6 text-left">

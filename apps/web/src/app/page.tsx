@@ -20,7 +20,7 @@ import {
 export const metadata: Metadata = {
   title: "APIDelta — AI-Powered API Change Monitoring",
   description:
-    "Monitor third-party API changelogs, classify breaking changes with AI, and alert your team via Slack and email. Smarter alerts at a fraction of the price.",
+    "Monitor third-party API changelogs, classify breaking changes with AI, and alert your team via Slack and email. Purpose-built for the messy reality of how APIs publish updates.",
   openGraph: {
     title: "APIDelta — AI-Powered API Change Monitoring",
     description:
@@ -61,9 +61,9 @@ const FEATURES = [
   },
   {
     icon: Users,
-    title: "Flexible Alert Routing",
+    title: "Team Ownership",
     description:
-      "Create alert rules per source, severity level, or keyword. Route breaking changes to Slack and lower-priority updates to email — each rule targets exactly who needs to know.",
+      "Assign each API to the engineer who owns that integration, and route alerts by source, severity, or keyword. The right person gets paged — and nobody else gets noise.",
   },
   {
     icon: Clock,
@@ -84,7 +84,7 @@ const HOW_IT_WORKS = [
     step: "1",
     title: "Paste your changelog URLs",
     description:
-      "Add the changelog URL for any third-party API your product depends on. Twilio, Cloudflare, Slack, Vercel, and more work out of the box — any URL with an HTML changelog or RSS feed works.",
+      "Add the changelog URL for any third-party API your product depends on. Stripe, OpenAI, GitHub, Twilio, and more work out of the box — any URL with an HTML changelog or RSS feed works.",
   },
   {
     step: "2",
@@ -108,6 +108,7 @@ const PLANS = [
     description: "For small teams with a handful of key integrations",
     features: [
       "10 monitored APIs",
+      "2 team members",
       "Email + Slack alerts",
       "AI classification",
       "Hourly monitoring",
@@ -123,6 +124,7 @@ const PLANS = [
     description: "For teams managing dozens of API dependencies",
     features: [
       "50 monitored APIs",
+      "10 team members",
       "Email + Slack alerts",
       "AI classification",
       "Hourly monitoring",
@@ -136,15 +138,15 @@ const PLANS = [
 const FAQS = [
   {
     q: "What APIs can APIDelta monitor?",
-    a: "Any API that publishes a changelog as an HTML page, RSS/Atom feed, or GitHub Releases page. Paste the URL and APIDelta handles the parsing automatically. We actively monitor changelogs from Twilio, Cloudflare, Slack, Vercel, Prisma, Supabase, Linear, Google Cloud, and more.",
+    a: "Any API that publishes a changelog as an HTML page, RSS/Atom feed, or GitHub Releases page. Paste the URL and APIDelta handles the parsing automatically. We actively monitor changelogs from Stripe, OpenAI, GitHub, Twilio, Cloudflare, Slack, Vercel, Prisma, and more.",
   },
   {
     q: "How does the AI classification work?",
     a: "APIDelta uses AI to read each changelog entry and classify it by type (breaking, deprecation, non-breaking, informational) and severity (critical, high, medium, low). It also extracts affected endpoints and generates a plain-English summary your whole team can act on.",
   },
   {
-    q: "How is this different from basic change detection tools?",
-    a: "Most monitoring tools charge $149-749/mo for basic text diffing with no intelligence layer. APIDelta uses AI to understand what changed and whether it affects your integration — at a fraction of the cost. You get smarter alerts for less money.",
+    q: "How is this different from generic page monitors?",
+    a: "Generic page monitors (Visualping, ChangeTower, Distill) were built for marketers tracking competitor pages. They show you raw diffs and leave the reading to you. APIDelta is purpose-built for API changelogs: AI classifies every entry by severity, extracts the affected endpoints, and writes a plain-English summary so engineers act only on what matters. We also handle the messy reality of how APIs actually publish updates — HTML pages, RSS feeds, GitHub Releases — without per-page configuration.",
   },
   {
     q: "Do I need to install anything?",
@@ -347,14 +349,14 @@ export default function HomePage() {
             Monitors changelogs from APIs you already depend on
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-lg font-semibold text-gray-500">
+            <span>Stripe</span>
+            <span>OpenAI</span>
+            <span>GitHub</span>
             <span>Twilio</span>
             <span>Cloudflare</span>
             <span>Slack</span>
             <span>Vercel</span>
             <span>Prisma</span>
-            <span>Supabase</span>
-            <span>Linear</span>
-            <span>Google Cloud</span>
           </div>
         </div>
       </section>
@@ -573,16 +575,17 @@ export default function HomePage() {
               Pricing
             </p>
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              AI-powered monitoring at a
+              Purpose-built for
               <br />
               <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-                fraction of the price.
+                API changelogs.
               </span>
             </h2>
             <p className="mx-auto max-w-xl text-gray-400">
-              Most monitoring platforms charge $149-749/mo for basic text
-              diffing with no intelligence layer. APIDelta uses AI to
-              understand what changed and why it matters — starting at $49/mo.
+              Generic page monitors weren't designed for the messy reality of
+              API changelogs. APIDelta classifies every entry with AI, parses
+              HTML / RSS / GitHub Releases out of the box, and routes alerts to
+              the engineer who owns each integration — starting at $49/mo.
             </p>
           </div>
 
@@ -694,9 +697,9 @@ export default function HomePage() {
             Your next API outage is preventable.
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-lg text-gray-400">
-            Engineering teams lose an average of 4 hours per incident caused by
-            surprise API changes. Start monitoring in under 2 minutes — no
-            credit card required, nothing to install.
+            Surprise API changes cost teams hours of debugging at the worst
+            possible time. Start monitoring in under 2 minutes — no credit
+            card required, nothing to install.
           </p>
           <a
             href="/sign-up"

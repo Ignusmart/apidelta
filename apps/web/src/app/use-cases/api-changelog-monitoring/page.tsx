@@ -43,9 +43,9 @@ const FEATURES = [
   },
   {
     icon: Rss,
-    title: "50+ Changelog Formats",
+    title: "HTML, RSS & GitHub Releases",
     description:
-      "HTML pages, RSS feeds, GitHub Releases — APIDelta handles the messy reality of how APIs publish updates. Paste a URL and it figures out the rest.",
+      "APIDelta handles the messy reality of how APIs publish updates — HTML changelog pages, RSS/Atom feeds, and GitHub Releases. Paste a URL and it figures out the rest.",
   },
   {
     icon: Bell,
@@ -175,10 +175,11 @@ export default function ApiChangelogMonitoringPage() {
               AI-powered monitoring from $49/mo
             </h2>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-400">
-              Most monitoring platforms charge $149-749/mo for basic text
-              diffing with no intelligence layer. APIDelta uses AI to
-              understand what changed and why it matters — at a fraction of the
-              cost.
+              Generic page monitors leave you to read raw diffs and figure out
+              what actually broke. APIDelta is purpose-built for API
+              changelogs — AI classifies each entry by severity, extracts the
+              affected endpoints, and writes a plain-English summary your team
+              can act on.
             </p>
             <a
               href="/#pricing"
