@@ -38,6 +38,14 @@ export class AlertsController {
     await this.alertsService.deleteRule(id);
   }
 
+  @Post('rules/:id/regenerate-secret')
+  async regenerateWebhookSecret(
+    @Headers('x-team-id') teamId: string,
+    @Param('id') id: string,
+  ) {
+    return this.alertsService.regenerateWebhookSecret(teamId, id);
+  }
+
   // ── Unread Count ─────────────────────────────────
 
   @Get('unread-count')

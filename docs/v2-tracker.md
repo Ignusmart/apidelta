@@ -78,10 +78,15 @@ The original 2026-05-15 / Day 30 kill checkpoint is **deferred** until V2 ships.
 
 Foundation for everything else — once webhooks ship, GitHub Issues, Linear, PagerDuty, Jira become payload-config tasks instead of new transports.
 
-- [ ] Prisma model: `WebhookEndpoint` (teamId, url, secret, events[], active, lastDeliveryAt)
-- [ ] Extend `AlertChannel` enum to include `WEBHOOK`
-- [ ] New transport: `apps/api/src/modules/alerts/transports/webhook.transport.ts` — mirror `slack.transport.ts` pattern, HMAC-signed payloads
-- [ ] Settings UI: `apps/web/src/app/(dashboard)/dashboard/settings/integrations/page.tsx` (does not exist yet)
+**Design pivot (2026-04-28):** original plan called for a separate `WebhookEndpoint` model, but webhook subscriptions map cleanly onto the existing `AlertRule` pattern (just like SLACK already does — channel + destination URL). Extending the rule model is a smaller change with the same delivered surface — webhook URLs live as alert rules with `channel = WEBHOOK`, and each rule carries its own HMAC secret. We can revisit a separate Endpoint table if we ever need to share secrets across rules.
+
+- [x] Extend `AlertChannel` enum to include `WEBHOOK` (migration `20260428010000_add_webhook_alert_channel`)
+- [x] Add `webhookSecret String?` field to `AlertRule` (auto-minted on rule create when channel is WEBHOOK)
+- [x] New transport: `apps/api/src/modules/alerts/transports/webhook.transport.ts` — HMAC-SHA256 payload signing, `X-APIDelta-Signature: sha256=…` header, plus `X-APIDelta-Event` / `X-APIDelta-Delivery` headers; body shape `{event, delivery_id, change, source, dashboard_url}`. Mirrors the slack/email transport contract.
+- [x] Wire dispatch in `AlertsService.sendNotification()` for `AlertChannel.WEBHOOK`. `evaluateCrawlRun` + `retryFailed` updated to pass `alert.id` and `source.id` so each delivery carries stable identifiers receivers can dedupe on.
+- [x] `POST /alerts/rules/:id/regenerate-secret` for HMAC rotation (rejects non-WEBHOOK rules).
+- [x] Verified end-to-end via `apps/api/scripts/smoke-webhook.ts`: in-process HTTP receiver captures the POST, HMAC verifies, all headers present.
+- [ ] Settings UI — pending next session. The existing `/dashboard/alerts` rule editor needs a WEBHOOK option in the channel dropdown and a "show secret" / "rotate" affordance.
 
 ### 1.2 GitHub Issues integration
 
@@ -301,3 +306,16 @@ Day 30 from V2 launch (≈ 2026-07-25 if launch is 2026-06-25):
 - Per-source selector overrides — current parser is fully heuristic; an explicit URL→selector map would make adding new sources more deterministic.
 
 **Production deployment**: Dockerfile (`apps/api/Dockerfile`) currently uses `node:20-alpine` which doesn't support Playwright. Switch to `mcr.microsoft.com/playwright:v1.59.1-jammy` or Debian-based Node + `playwright install --with-deps chromium` before deploying.
+
+### 2026-04-28 — Phase 1.1 backend (generic outbound webhooks)
+
+**Done**:
+- Pivoted from the originally-planned `WebhookEndpoint` model to extending `AlertRule` directly. `AlertChannel` enum now includes `WEBHOOK`; AlertRule carries an optional `webhookSecret` minted automatically on rule creation when channel is `WEBHOOK`. Migration SQL: `apps/api/prisma/migrations/20260428010000_add_webhook_alert_channel/`.
+- Implemented `WebhookTransport` with HMAC-SHA256 body signing. Outbound POST headers include `X-APIDelta-Signature: sha256=<hex>`, `X-APIDelta-Event: change.alert`, `X-APIDelta-Delivery: <alertId>`. Body: stable JSON shape `{event, delivery_id, change, source, dashboard_url}` — receivers can pin on these field names.
+- Wired the new transport through the existing `AlertsService.sendNotification()` dispatch so webhooks reuse the rule-matching, retry, and Alert-record-tracking flow. Updated `evaluateCrawlRun` and `retryFailed` to pass `alert.id` + `source.id` so delivery identifiers are stable across retries.
+- Added `POST /alerts/rules/:id/regenerate-secret` for HMAC rotation (rejects non-WEBHOOK rules with 404).
+- Verified end-to-end with `apps/api/scripts/smoke-webhook.ts`: in-process HTTP receiver captures the POST, HMAC matches `createHmac('sha256', secret).update(body).digest('hex')`, and all standard headers are present.
+
+**Pending (Phase 1.1 finish in next session)**:
+- Settings UI: extend the existing `/dashboard/alerts` rule editor with a `WEBHOOK` channel option, plus a way to surface + rotate the secret. No new settings page needed.
+- Production migration: run `pnpm prisma:migrate deploy` to apply `20260428010000_add_webhook_alert_channel` (PostgreSQL `ALTER TYPE` + `ALTER TABLE`).

@@ -47,6 +47,7 @@ enum TriageStatus {
 enum AlertChannel {
   EMAIL
   SLACK
+  WEBHOOK
 }
 
 enum PlanStatus {
@@ -241,7 +242,11 @@ model AlertRule {
   teamId          String
   name            String       // e.g. "Critical Stripe changes"
   channel         AlertChannel
-  destination     String       // Email address or Slack webhook URL
+  destination     String       // Email address, Slack webhook URL, or generic webhook URL
+  // For channel=WEBHOOK: HMAC-SHA256 secret. Receiver verifies the
+  // X-APIDelta-Signature header against the request body. Auto-generated
+  // on rule creation; null for non-WEBHOOK channels.
+  webhookSecret   String?
   minSeverity     Severity     @default(MEDIUM) // Only alert on this severity or higher
   sourceFilter    String?      // Optional: only alert for specific ApiSource ID
   keywordFilter   String[]     // Optional: only alert if these keywords appear

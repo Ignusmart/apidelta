@@ -1,8 +1,10 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AlertChannel, AlertStatus, ChangeType, Severity } from '@prisma/client';
 import { EmailTransport, AlertEmailPayload } from './transports/email.transport';
 import { SlackTransport, AlertSlackPayload } from './transports/slack.transport';
+import { WebhookTransport, AlertWebhookPayload } from './transports/webhook.transport';
 import { CreateAlertRuleDto } from './dto/create-alert-rule.dto';
 
 // Severity ranking for threshold comparison
@@ -23,6 +25,7 @@ export class AlertsService {
     private readonly prisma: PrismaService,
     private readonly emailTransport: EmailTransport,
     private readonly slackTransport: SlackTransport,
+    private readonly webhookTransport: WebhookTransport,
   ) {}
 
   // ── Alert Rules CRUD ────────────────────────────
@@ -41,11 +44,37 @@ export class AlertsService {
         name: dto.name,
         channel: dto.channel,
         destination: dto.destination,
+        // Mint a fresh HMAC secret for WEBHOOK rules so receivers can
+        // verify the X-APIDelta-Signature header on every delivery.
+        webhookSecret:
+          dto.channel === AlertChannel.WEBHOOK
+            ? randomBytes(32).toString('hex')
+            : null,
         minSeverity: dto.minSeverity ?? Severity.MEDIUM,
         sourceFilter: dto.sourceFilter ?? null,
         keywordFilter: dto.keywordFilter ?? [],
         isActive: dto.isActive ?? true,
       },
+    });
+  }
+
+  /**
+   * Rotate the HMAC secret on a WEBHOOK rule. The previous secret stops
+   * verifying immediately — receivers should be updated atomically.
+   */
+  async regenerateWebhookSecret(teamId: string, ruleId: string) {
+    const rule = await this.prisma.alertRule.findFirst({
+      where: { id: ruleId, teamId },
+    });
+    if (!rule) throw new NotFoundException(`Alert rule ${ruleId} not found`);
+    if (rule.channel !== AlertChannel.WEBHOOK) {
+      throw new NotFoundException(
+        `Rule ${ruleId} is not a WEBHOOK rule — secret rotation only applies to webhook channels`,
+      );
+    }
+    return this.prisma.alertRule.update({
+      where: { id: ruleId },
+      data: { webhookSecret: randomBytes(32).toString('hex') },
     });
   }
 
@@ -189,6 +218,8 @@ export class AlertsService {
           rule,
           change,
           crawlRun.source.name,
+          crawlRun.source.id,
+          alert.id,
         );
 
         // Update alert status
@@ -278,7 +309,7 @@ export class AlertsService {
         changeEntry: {
           include: {
             crawlRun: {
-              include: { source: { select: { name: true } } },
+              include: { source: { select: { id: true, name: true } } },
             },
           },
         },
@@ -299,7 +330,14 @@ export class AlertsService {
       if (!rule || !change) continue;
 
       const sourceName = change.crawlRun?.source?.name ?? 'Unknown';
-      const success = await this.sendNotification(rule, change, sourceName);
+      const sourceId = change.crawlRun?.source?.id ?? '';
+      const success = await this.sendNotification(
+        rule,
+        change,
+        sourceName,
+        sourceId,
+        alert.id,
+      );
 
       await this.prisma.alert.update({
         where: { id: alert.id },
@@ -320,15 +358,23 @@ export class AlertsService {
   // ── Notification Dispatch ───────────────────────
 
   private async sendNotification(
-    rule: { channel: AlertChannel; destination: string },
+    rule: {
+      channel: AlertChannel;
+      destination: string;
+      webhookSecret: string | null;
+    },
     change: {
+      id: string;
       title: string;
       changeType: ChangeType;
       severity: Severity;
       description: string;
       affectedEndpoints: string[];
+      changeDate: Date | null;
     },
     sourceName: string,
+    sourceId: string,
+    alertId: string,
   ): Promise<boolean> {
     const dashboardUrl = `${DASHBOARD_BASE_URL}/dashboard/changes`;
 
@@ -358,6 +404,32 @@ export class AlertsService {
         dashboardUrl,
       };
       return this.slackTransport.send(payload);
+    }
+
+    if (rule.channel === AlertChannel.WEBHOOK) {
+      // Should never happen — createRule mints a secret for every webhook
+      // rule — but defend against legacy rows or manual SQL inserts.
+      if (!rule.webhookSecret) {
+        this.logger.error(
+          `Webhook rule has no secret; refusing to deliver. Regenerate the secret for this rule.`,
+        );
+        return false;
+      }
+      const payload: AlertWebhookPayload = {
+        webhookUrl: rule.destination,
+        secret: rule.webhookSecret,
+        alertId,
+        sourceName,
+        sourceId,
+        changeType: change.changeType,
+        severity: change.severity,
+        title: change.title,
+        description: change.description,
+        affectedEndpoints: change.affectedEndpoints,
+        changeDate: change.changeDate?.toISOString() ?? null,
+        dashboardUrl,
+      };
+      return this.webhookTransport.send(payload);
     }
 
     this.logger.warn(`Unknown alert channel: ${rule.channel}`);
