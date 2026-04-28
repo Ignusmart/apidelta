@@ -1,5 +1,5 @@
 # ── Stage 1: Install dependencies + generate Prisma client ──
-FROM node:20-alpine AS deps
+FROM node:20-bookworm-slim AS deps
 
 RUN corepack enable && corepack prepare pnpm@9 --activate
 
@@ -24,13 +24,9 @@ COPY apps/api/ apps/api/
 RUN cd apps/api && pnpm build
 
 # ── Stage 3: Production image ──
-FROM node:20-alpine AS runner
+FROM node:20-bookworm-slim AS runner
 
 RUN corepack enable && corepack prepare pnpm@9 --activate
-
-# Create non-root user
-RUN addgroup --system --gid 1001 apidelta && \
-    adduser --system --uid 1001 --ingroup apidelta apidelta
 
 WORKDIR /app
 
@@ -38,8 +34,17 @@ WORKDIR /app
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api/package.json apps/api/
 
-# Install production deps only
+# Install production deps only — playwright npm is in apps/api dependencies,
+# so it lands in node_modules here and `pnpm exec playwright` resolves to
+# the version pinned in the lockfile.
 RUN pnpm install --frozen-lockfile --prod
+
+# Install Chromium + Playwright's system dependencies into a stable
+# shared path so the non-root runtime user can read the browser. Done as
+# root because `--with-deps` shells out to apt-get.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN pnpm --filter @apidelta/api exec playwright install --with-deps chromium && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy Prisma schema + regenerate client for production node_modules
 COPY apps/api/prisma/ apps/api/prisma/
@@ -52,14 +57,18 @@ COPY --from=builder /app/apps/api/dist apps/api/dist
 COPY apps/api/scripts/start.sh apps/api/scripts/start.sh
 RUN chmod +x apps/api/scripts/start.sh
 
-# Switch to non-root user
-RUN chown -R apidelta:apidelta /app
+# Create non-root runtime user. Use groupadd/useradd (Debian shadow
+# package) instead of Alpine's addgroup/adduser.
+RUN groupadd --system --gid 1001 apidelta && \
+    useradd --system --uid 1001 --gid apidelta apidelta && \
+    chown -R apidelta:apidelta /app /ms-playwright
 USER apidelta
 
 ENV NODE_ENV=production
 EXPOSE 3001
 
+# bookworm-slim has no wget/curl — use Node for the healthcheck instead.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
+  CMD node -e "require('http').get('http://localhost:3001/api/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))" || exit 1
 
 CMD ["apps/api/scripts/start.sh"]

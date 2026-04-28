@@ -325,6 +325,22 @@ Both Phase 0.1 + Phase 1.1 migrations applied to local and production (Neon Post
 - `20260428000000_add_source_requires_js` (adds `ApiSource.requiresJs`)
 - `20260428010000_add_webhook_alert_channel` (adds `WEBHOOK` enum value + `AlertRule.webhookSecret`)
 
-**Still blocking a clean prod-ready Phase 0.1 + 1.1**:
-1. **Dockerfile** (`apps/api/Dockerfile`) still uses `node:20-alpine`. Playwright won't install on Alpine. Switch to `mcr.microsoft.com/playwright:v1.59.1-jammy` or `node:20-bookworm-slim` + `playwright install --with-deps chromium` before the next deploy that actually runs SPA crawls.
-2. **Production `ApiSource` rows** are different from `seed.ts`. To activate the Phase 0 / 0.1 fixes in prod, the existing records need updates: mark Stripe + OpenAI with `requiresJs = true`, switch SendGrid to `github.com/sendgrid/sendgrid-nodejs/releases` (GITHUB_RELEASES), point AWS at `aws.amazon.com/about-aws/whats-new/recent/feed/` (RSS_FEED), point GitLab at `about.gitlab.com/atom.xml` (RSS_FEED), set `isActive = true` on all four. Recommended path: a one-off SQL script or admin UI flip — `seed.ts` is for fresh demo seeds only.
+### 2026-04-28 — Production source rows + Dockerfile updated
+
+- Ran `apps/api/scripts/update-prod-sources.ts --apply` against production. 5 of the 6 originally-disabled sources flipped to active and pointed at the new URLs / `requiresJs` flags in a single Prisma transaction:
+
+  | Source | Before | After |
+  |--------|--------|-------|
+  | Stripe | `isActive=false`, `requiresJs=false` | `isActive=true`, `requiresJs=true` |
+  | OpenAI | `isActive=false`, `requiresJs=false` | `isActive=true`, `requiresJs=true` |
+  | SendGrid | `docs.sendgrid.com/release-notes` (HTML_CHANGELOG, inactive) | `github.com/sendgrid/sendgrid-nodejs/releases` (GITHUB_RELEASES, active) |
+  | AWS | `docs.aws.amazon.com/general/latest/gr/rss/aws-general.rss` (inactive) | `aws.amazon.com/about-aws/whats-new/recent/feed/` (active) |
+  | GitLab | `about.gitlab.com/releases/categories/releases/` (HTML_CHANGELOG, inactive) | `about.gitlab.com/atom.xml` (RSS_FEED, active) |
+
+  Script is idempotent — re-running is a no-op once these values are set.
+
+- **Open**: `GitHub` (the Blog source) is still `isActive=false` in prod even though Phase 0 fixed its parser (50 entries parsing in smoke tests). Wasn't part of the user's update list this round; flip it via the same script with `isActive: true` if you want it crawling.
+
+- Dockerfile (`apps/api/Dockerfile`) migrated from `node:20-alpine` to `node:20-bookworm-slim`, with Playwright + Chromium installed via `pnpm exec playwright install --with-deps chromium` in the runner stage. `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` set so the non-root runtime user can read the browser. HEALTHCHECK swapped from `wget` (not in slim) to a Node-based check.
+
+**Phase 0 / 0.1 are now production-ready** end-to-end: code, schema, data, and image.
