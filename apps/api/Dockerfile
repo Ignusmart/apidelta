@@ -58,9 +58,13 @@ COPY apps/api/scripts/start.sh apps/api/scripts/start.sh
 RUN chmod +x apps/api/scripts/start.sh
 
 # Create non-root runtime user. Use groupadd/useradd (Debian shadow
-# package) instead of Alpine's addgroup/adduser.
+# package) instead of Alpine's addgroup/adduser. `--create-home` is
+# REQUIRED — Debian's useradd doesn't create /home/<user> by default
+# (Alpine's adduser does), and npx writes its cache to $HOME/.npm. The
+# start.sh runs `npx prisma migrate deploy` on boot, which crash-loops
+# the container with EACCES on mkdir /home/apidelta otherwise.
 RUN groupadd --system --gid 1001 apidelta && \
-    useradd --system --uid 1001 --gid apidelta apidelta && \
+    useradd --system --uid 1001 --gid apidelta --create-home apidelta && \
     chown -R apidelta:apidelta /app /ms-playwright
 USER apidelta
 
