@@ -6,6 +6,7 @@ import { ClassifierService } from '../classifier/classifier.service';
 import { AlertsService } from '../alerts/alerts.service';
 import * as cheerio from 'cheerio';
 import { createHash } from 'crypto';
+import { chromium } from 'playwright';
 
 export interface ParsedChangelogEntry {
   title: string;
@@ -287,6 +288,42 @@ export class CrawlerService {
     }
   }
 
+  /**
+   * Fetch a JS-rendered page via headless Chromium. Used for SPA changelogs
+   * (Stripe, OpenAI, GitLab docs) where the initial HTML response is just an
+   * empty shell. Returns the post-render DOM as an HTML string so the rest
+   * of the parsing pipeline is unchanged.
+   *
+   * Cost: ~2-3s of browser startup per call. We launch a fresh browser per
+   * source for clean state and bounded memory; if this becomes a bottleneck
+   * once many SPA sources are crawling on a tight schedule, switch to a
+   * shared browser instance with a per-source `BrowserContext`.
+   */
+  private async fetchWithPlaywright(url: string): Promise<string> {
+    const browser = await chromium.launch({ headless: true });
+    try {
+      const context = await browser.newContext({
+        // Realistic Chrome UA — many target sites (notably OpenAI) block
+        // generic bot UAs at the edge. Pinning the string here keeps
+        // behavior stable across Playwright version bumps.
+        userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        viewport: { width: 1280, height: 800 },
+        locale: 'en-US',
+      });
+      const page = await context.newPage();
+      // `networkidle` is unreliable on pages with continuous polling
+      // (Stripe ships analytics/SDK pings that never quiet down). Use
+      // `domcontentloaded` for a fast initial signal and then a short
+      // settle delay so SPA hydration has a chance to render.
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+      await page.waitForTimeout(3_000);
+      return await page.content();
+    } finally {
+      await browser.close();
+    }
+  }
+
   // ── Crawl execution ─────────────────────────
 
   async triggerCrawl(sourceId: string) {
@@ -307,8 +344,11 @@ export class CrawlerService {
     try {
       this.logger.log(`Starting crawl for ${source.name} (${source.url})`);
 
-      // Fetch the page (with single retry on transient failures)
-      const html = await this.fetchWithRetry(source.url);
+      // Fetch the page. SPA-rendered changelogs (Stripe, OpenAI,
+      // GitLab docs) need a real browser; everything else uses fetch().
+      const html = source.requiresJs
+        ? await this.fetchWithPlaywright(source.url)
+        : await this.fetchWithRetry(source.url);
 
       // Parse changelog entries — RSS feeds use a dedicated XML parser,
       // everything else falls through the universal HTML strategy.
@@ -669,7 +709,23 @@ export class CrawlerService {
   // ── HTML changelog parser ────────────────────
 
   parseChangelog(html: string, url: string): ParsedChangelogEntry[] {
-    const $ = cheerio.load(html);
+    let $ = cheerio.load(html);
+
+    // Prefer the <main> region when it carries the real content. This
+    // scopes downstream selectors to the document body and skips nav,
+    // sidebars, cookie banners, and footers — which is what was polluting
+    // the OpenAI / GitLab feeds before. We only narrow when <main> looks
+    // substantive (≥3 articles or headings) to avoid breaking sites where
+    // <main> is an empty wrapper.
+    const $main = $('main').first();
+    if ($main.length > 0) {
+      const mainSignal = $main.find('article, h1, h2, h3').length;
+      if (mainSignal >= 3) {
+        const mainHtml = $.html($main);
+        if (mainHtml) $ = cheerio.load(mainHtml);
+      }
+    }
+
     const entries: ParsedChangelogEntry[] = [];
 
     // Strategy: try multiple common changelog DOM patterns

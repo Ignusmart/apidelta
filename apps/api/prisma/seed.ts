@@ -4,9 +4,12 @@ const prisma = new PrismaClient();
 
 const API_SOURCES = [
   {
+    // Stripe ships its changelog as a React SPA — the initial HTML is a
+    // shell with no entries until JS executes. Crawled via Playwright.
     name: 'Stripe',
     url: 'https://stripe.com/docs/changelog',
     sourceType: SourceType.HTML_CHANGELOG,
+    requiresJs: true,
   },
   {
     name: 'Twilio',
@@ -31,9 +34,12 @@ const API_SOURCES = [
     sourceType: SourceType.GITHUB_RELEASES,
   },
   {
+    // OpenAI blocks generic bot user-agents at the edge; Playwright
+    // negotiates a realistic Chrome UA and lets the SPA render.
     name: 'OpenAI',
     url: 'https://platform.openai.com/docs/changelog',
     sourceType: SourceType.HTML_CHANGELOG,
+    requiresJs: true,
   },
   {
     name: 'Vercel',
@@ -51,9 +57,15 @@ const API_SOURCES = [
     sourceType: SourceType.RSS_FEED,
   },
   {
+    // GitLab's docs releases page (docs.gitlab.com/releases/) is JS-rendered
+    // AND wraps content behind a cookie banner that the universal parser
+    // currently captures instead of release entries. Until per-source
+    // selector overrides (Phase 0.2) land, we use the GitLab blog Atom feed
+    // — server-rendered, includes release announcements alongside
+    // engineering posts; the AI classifier filters non-release noise.
     name: 'GitLab',
-    url: 'https://docs.gitlab.com/releases/',
-    sourceType: SourceType.HTML_CHANGELOG,
+    url: 'https://about.gitlab.com/atom.xml',
+    sourceType: SourceType.RSS_FEED,
   },
 ];
 

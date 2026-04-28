@@ -37,13 +37,13 @@ The original 2026-05-15 / Day 30 kill checkpoint is **deferred** until V2 ships.
 
 ### Tasks
 
-- [ ] **Stripe parser** — add Playwright support. Shared fix unlocks future SPA changelogs. See `docs/known-issues.md` for context. **Pending Phase 0.1 (Playwright session).**
+- [x] **Stripe parser** — fixed 2026-04-28 (Phase 0.1): Playwright path added (`fetchWithPlaywright()` + `requiresJs` flag). 11 kept entries with real version IDs.
 - [x] **GitHub Blog parser** — fixed 2026-04-28: added `.ChangelogItem` selector, `*-title` class fallback when heading has a `*-meta` class, relaxed "description==title" noise filter for descriptive titles. 50 entries parsing successfully.
-- [ ] **OpenAI source** — realistic UA / alternate URL (currently HTTP 403). **Pending Phase 0.1 (Playwright session).**
+- [x] **OpenAI source** — fixed 2026-04-28 (Phase 0.1): Playwright path + `<main>`-narrowing in the universal parser bypasses the bot block and skips sidebar nav. 30 month-grouped entries parsing.
 - [x] **AWS RSS** — fixed 2026-04-28: URL corrected to canonical `/about-aws/whats-new/recent/feed/`, added `parseRssFeed()` to handle RSS 2.0 + Atom. 48 entries kept after dedupe.
 - [x] **SendGrid** — fixed 2026-04-28: switched to `github.com/sendgrid/sendgrid-nodejs/releases` (`GITHUB_RELEASES` type — no parser change needed).
-- [x] **GitLab parser** — fixed 2026-04-28: switched URL to `about.gitlab.com/atom.xml` (GitLab blog Atom feed). The original docs page is a JS-rendered SPA and remains pending Playwright (Phase 0.1) for pure release content; the Atom feed covers release announcements + engineering blog as a working interim.
-- [x] Update `apps/api/prisma/seed.ts` — SendGrid URL/type updated, AWS + GitLab sources added so a fresh local seed exercises the new code paths.
+- [x] **GitLab parser** — fixed 2026-04-28: source uses `about.gitlab.com/atom.xml` (Atom feed, blog + releases). The `docs.gitlab.com/releases/` SPA loads via Playwright but the parser still picks up the cookie consent banner — Phase 0.2.
+- [x] Update `apps/api/prisma/seed.ts` — Stripe / OpenAI marked `requiresJs: true`; SendGrid switched to GITHUB_RELEASES; AWS + GitLab added as RSS_FEED.
 
 ### Files
 
@@ -63,7 +63,9 @@ The original 2026-05-15 / Day 30 kill checkpoint is **deferred** until V2 ships.
 - Existing 9 working sources (Cloudflare, Slack, Linear, GCP, Twilio, Vercel, Supabase, Prisma, Next.js) remain green
 - No regression in classifier pipeline
 
-**Status (2026-04-28)**: 4 of 6 fixed in this session (AWS RSS, SendGrid, GitHub Blog, GitLab). Stripe + OpenAI remain — both blocked on Playwright integration, deferred to Phase 0.1 (dedicated Playwright session).
+**Status (2026-04-28, Phase 0.1 done)**: all 6 originally-disabled sources now have a working crawl path. Stripe + OpenAI ship via Playwright + the new `requiresJs` flag. GitLab continues via the Atom feed (the `docs.gitlab.com/releases/` page loads via Playwright but the parser captures the cookie banner — Phase 0.2 follow-up).
+
+**Deployment requirement** (not yet shipped): `apps/api/Dockerfile` currently uses `node:20-alpine`, which is not officially supported by Playwright (glibc/Chromium incompatibility). Before deploying Phase 0.1 to production, switch the base image to `mcr.microsoft.com/playwright:v1.59.1-jammy` (Chromium pre-installed) or to `node:20-bookworm-slim` with `npx playwright install --with-deps chromium` in the build step. The Prisma migration `prisma/migrations/20260428000000_add_source_requires_js` also needs to be applied (`pnpm prisma:migrate deploy`). Production source records (different from `seed.ts`) need their `url` / `sourceType` / `requiresJs` / `isActive` fields updated to match — recommended via a one-off migration script or admin UI before declaring Phase 0 complete in production.
 
 ---
 
@@ -275,3 +277,27 @@ Day 30 from V2 launch (≈ 2026-07-25 if launch is 2026-06-25):
 **Pending**:
 - Stripe + OpenAI — Phase 0.1 (Playwright integration).
 - Production DB updates: this session shipped code + seed only. Production source records (different from `seed.ts`) need their `url`, `sourceType`, and `isActive` toggled to match. Recommended approach: a one-off migration script or admin-UI update before declaring Phase 0 complete in production.
+
+### 2026-04-28 — Phase 0.1 (Playwright integration)
+
+**Done**:
+- Added `playwright` runtime dep to `apps/api` and downloaded Chromium binary locally.
+- Added `requiresJs Boolean @default(false)` field to `ApiSource` in `prisma/schema.prisma`. Generated Prisma client. Wrote migration SQL (`prisma/migrations/20260428000000_add_source_requires_js/migration.sql`) — not auto-applied; user runs `pnpm prisma:migrate deploy` (prod) or `pnpm prisma:migrate dev` (local).
+- Implemented `fetchWithPlaywright()` in `CrawlerService`: headless Chromium with realistic Chrome UA, locale `en-US`, viewport 1280x800. Uses `domcontentloaded` + 3s settle (rather than `networkidle`, which never fires on Stripe's continuously-polling page). Browser launched per crawl for clean state.
+- Wired dispatch in `triggerCrawl()`: `source.requiresJs ? fetchWithPlaywright() : fetchWithRetry()`.
+- Added `<main>` narrowing to `parseChangelog()`: when `<main>` exists with ≥3 articles/headings, scope downstream selectors to that subtree. Cuts out sidebar nav, cookie banners, and footers. Verified no regression on Cloudflare / Twilio / Vercel.
+- Updated `apps/api/prisma/seed.ts`: Stripe + OpenAI marked `requiresJs: true`; GitLab source standardized on `about.gitlab.com/atom.xml` (the Atom feed proven working in the prior session).
+
+**Verification** via `apps/api/scripts/smoke-parsers.ts`:
+- Stripe: 38 raw → 11 kept. Real version IDs (e.g. `2026-04-22.dahlia`) with sparse descriptions; classifier still has signal from version + "Breaking changes" labels.
+- OpenAI: 30 month-grouped entries with full content in descriptions. Splitting individual changes per month is Phase 0.2.
+- GitLab docs (Playwright): loads, but parser picks up the cookie consent banner. Reverted seed to the working Atom feed.
+- AWS RSS / GitHub Blog / Cloudflare / Twilio / Vercel: no regression.
+
+**Pending (Phase 0.2 follow-up — not blocking V2 launch)**:
+- Stripe per-version drilldown — current entries lack body text; would need a second crawl per version page.
+- OpenAI mega-entry splitting — month-grouped entries should split into per-change entries; existing `splitMegaEntries` heuristic doesn't recognize OpenAI's format.
+- GitLab docs (`docs.gitlab.com/releases/`) — needs Playwright cookie dismissal or per-source DOM selectors.
+- Per-source selector overrides — current parser is fully heuristic; an explicit URL→selector map would make adding new sources more deterministic.
+
+**Production deployment**: Dockerfile (`apps/api/Dockerfile`) currently uses `node:20-alpine` which doesn't support Playwright. Switch to `mcr.microsoft.com/playwright:v1.59.1-jammy` or Debian-based Node + `playwright install --with-deps chromium` before deploying.

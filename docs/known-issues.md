@@ -122,23 +122,29 @@ Removed: "50+ changelog formats", "weekly digest emails", "team members" limits,
 
 These sources are set to `isActive = false`. They can be re-enabled once their specific issues are resolved.
 
-### Stripe — `stripe.com/docs/changelog` — STILL DISABLED
+### Stripe — `stripe.com/docs/changelog` — FIXED 2026-04-28 (Phase 0.1)
 
-**Problem**: React SPA. `fetch()` returns server-rendered shell only — actual changelog loads client-side.
+**Original problem**: React SPA. `fetch()` returned a server-rendered shell with no entries — the changelog loaded client-side after JS execution.
 
-**Fix needed**: Playwright integration for JS rendering, or point at Stripe's JSON changelog endpoint.
+**Fix shipped**: added Playwright fetcher (`fetchWithPlaywright()` in `CrawlerService`) and `requiresJs` boolean on `ApiSource`. Crawler routes Stripe through headless Chromium with a realistic Chrome UA; rest of the parsing pipeline is unchanged. Stripe's continuous-polling page made `networkidle` unreliable, so we use `domcontentloaded` + a 3s settle delay.
 
-**Impact**: High-value source. Playwright would also unlock other SPA-based changelogs (notably the original GitLab releases page).
+**Verification**: smoke test parses 38 raw entries → 11 kept after dedupe, including real version IDs (`2026-04-22.dahlia`, `2026-03-25.dahlia`) and a "Breaking changes" marker on the dated versions.
 
-**V2 phase**: planned for Phase 0.1 (dedicated Playwright session) per `docs/v2-tracker.md`.
+**Caveat**: Stripe's index page only lists version IDs + "Breaking changes" labels — actual change descriptions live on per-version pages. The classifier currently sees title + sparse description; deep per-version crawling is Phase 0.2 work.
 
-### OpenAI — HTML changelog — STILL DISABLED
+### OpenAI — `platform.openai.com/docs/changelog` — FIXED 2026-04-28 (Phase 0.1)
 
-**Problem**: HTTP 403 — OpenAI blocks bots.
+**Original problem**: HTTP 403 — OpenAI blocks generic bot user-agents at the edge.
 
-**Fix needed**: Playwright with realistic UA, or find an alternative source (community changelog, GitHub).
+**Fix shipped**: same Playwright path as Stripe (realistic Chrome UA negotiates past the bot block). Additionally, the universal parser now narrows to the `<main>` element when present, which scopes selectors past the sidebar nav and "Suggested" panels that were previously polluting the feed.
 
-**V2 phase**: planned alongside Stripe in Phase 0.1.
+**Verification**: smoke test parses 30 entries grouped by month ("April, 2026", "March, 2026", …) with full descriptions in each (model names, endpoint paths, change descriptions).
+
+**Caveat**: entries are month-aggregated rather than per-change. Splitting them into individual changes is Phase 0.2 work — the existing `splitMegaEntries` heuristic doesn't recognize OpenAI's format.
+
+### GitLab docs — `docs.gitlab.com/releases/` — DEFERRED to Phase 0.2
+
+**Status**: Playwright successfully renders the page, but the universal parser captures the cookie consent banner ("This website uses cookies", "Privacy Preference Center") instead of the release content. The current GitLab source uses the working `about.gitlab.com/atom.xml` feed; switching to the docs page needs either Playwright cookie dismissal or per-source DOM selectors.
 
 ### GitHub Blog — `github.blog/changelog/` — FIXED 2026-04-28
 

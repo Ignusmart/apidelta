@@ -10,15 +10,71 @@
  * Edit the `targets` array below to focus on a specific source while
  * iterating on parser changes.
  */
+import { chromium } from 'playwright';
 import { CrawlerService } from '../src/modules/crawler/crawler.service';
+
+async function fetchHtml(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: {
+      'User-Agent': 'APIDelta/1.0 (changelog-monitor)',
+      Accept:
+        'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    },
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.text();
+}
+
+async function fetchPlaywright(url: string): Promise<string> {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const ctx = await browser.newContext({
+      userAgent:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+      viewport: { width: 1280, height: 800 },
+      locale: 'en-US',
+    });
+    const page = await ctx.newPage();
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await page.waitForTimeout(3_000);
+    return await page.content();
+  } finally {
+    await browser.close();
+  }
+}
 
 async function main(): Promise<void> {
   // The parser methods don't touch `this.prisma` / classifier / alerts —
   // we can instantiate with nulls just to call them.
   const svc = new CrawlerService(null as never);
 
-  const targets: Array<{ name: string; url: string; kind: 'html' | 'rss' }> = [
-    // Phase 0 fixes (added 2026-04-28).
+  const targets: Array<{
+    name: string;
+    url: string;
+    kind: 'html' | 'rss';
+    fetcher?: 'fetch' | 'playwright';
+  }> = [
+    // Phase 0.1 — Playwright-rendered SPAs.
+    {
+      name: 'Stripe (Playwright)',
+      url: 'https://stripe.com/docs/changelog',
+      kind: 'html',
+      fetcher: 'playwright',
+    },
+    {
+      name: 'OpenAI (Playwright)',
+      url: 'https://platform.openai.com/docs/changelog',
+      kind: 'html',
+      fetcher: 'playwright',
+    },
+    {
+      name: 'GitLab docs (Playwright)',
+      url: 'https://docs.gitlab.com/releases/',
+      kind: 'html',
+      fetcher: 'playwright',
+    },
+    // Phase 0 (already shipped) fixes.
     {
       name: 'AWS RSS',
       url: 'https://aws.amazon.com/about-aws/whats-new/recent/feed/',
@@ -29,13 +85,7 @@ async function main(): Promise<void> {
       url: 'https://github.blog/changelog/',
       kind: 'html',
     },
-    {
-      name: 'GitLab Atom',
-      url: 'https://about.gitlab.com/atom.xml',
-      kind: 'rss',
-    },
-    // Regression check — these sources were working before the Phase 0
-    // changes and should continue to work.
+    // Regression checks — must still work after <main>-narrowing change.
     {
       name: 'Cloudflare',
       url: 'https://developers.cloudflare.com/changelog/',
@@ -54,24 +104,16 @@ async function main(): Promise<void> {
   ];
 
   for (const t of targets) {
-    console.log(`\n=== ${t.name} (${t.kind}) ===`);
+    const fetcher = t.fetcher ?? 'fetch';
+    console.log(`\n=== ${t.name} (${t.kind}, via ${fetcher}) ===`);
     console.log(`URL: ${t.url}`);
 
     let body: string;
     try {
-      const res = await fetch(t.url, {
-        headers: {
-          'User-Agent': 'APIDelta/1.0 (changelog-monitor)',
-          Accept:
-            'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        },
-        signal: AbortSignal.timeout(20_000),
-      });
-      if (!res.ok) {
-        console.log(`Fetch failed: HTTP ${res.status}`);
-        continue;
-      }
-      body = await res.text();
+      body =
+        fetcher === 'playwright'
+          ? await fetchPlaywright(t.url)
+          : await fetchHtml(t.url);
       console.log(`Fetched ${body.length} bytes`);
     } catch (e) {
       console.log(`Fetch error: ${e instanceof Error ? e.message : String(e)}`);

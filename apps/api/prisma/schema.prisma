@@ -164,6 +164,9 @@ model ApiSource {
   sourceType  SourceType
   teamId      String
   isActive    Boolean    @default(true)
+  // Set true for SPA-rendered changelogs (Stripe, OpenAI, GitLab docs).
+  // The crawler routes these through Playwright instead of plain fetch().
+  requiresJs  Boolean    @default(false)
   crawlIntervalHours Int @default(6)
   lastCrawledAt DateTime?
   createdAt   DateTime   @default(now())
