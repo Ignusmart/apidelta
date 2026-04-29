@@ -179,9 +179,9 @@ export default function ChangesPage() {
       }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
-        const matchesTitle = c.title.toLowerCase().includes(q);
-        const matchesDesc = c.description.toLowerCase().includes(q);
-        const matchesEndpoints = c.affectedEndpoints.some((ep) =>
+        const matchesTitle = (c.title ?? '').toLowerCase().includes(q);
+        const matchesDesc = (c.description ?? '').toLowerCase().includes(q);
+        const matchesEndpoints = (c.affectedEndpoints ?? []).some((ep) =>
           ep.toLowerCase().includes(q),
         );
         if (!matchesTitle && !matchesDesc && !matchesEndpoints) return false;
@@ -379,13 +379,13 @@ export default function ChangesPage() {
             onClick={() => {
               const headers = ['Title', 'Severity', 'Type', 'Source', 'Status', 'Date', 'Affected Endpoints'];
               const rows = filtered.map((c) => [
-                `"${c.title.replace(/"/g, '""')}"`,
+                `"${(c.title ?? '').replace(/"/g, '""')}"`,
                 c.severity,
                 c.changeType,
                 c.crawlRun?.source?.name ?? '',
                 c.triageStatus ?? 'OPEN',
                 c.changeDate ?? c.createdAt,
-                `"${c.affectedEndpoints.join(', ')}"`,
+                `"${(c.affectedEndpoints ?? []).join(', ')}"`,
               ]);
               const csv = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
               const blob = new Blob([csv], { type: 'text/csv' });
@@ -922,13 +922,13 @@ function ChangeDetailPanel({
             {change.description}
           </p>
 
-          {change.affectedEndpoints.length > 0 && (
+          {(change.affectedEndpoints ?? []).length > 0 && (
             <div className="mt-5">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                 Affected endpoints
               </h3>
               <div className="mt-2 flex flex-wrap gap-1.5">
-                {change.affectedEndpoints.map((ep) => (
+                {(change.affectedEndpoints ?? []).map((ep) => (
                   <code
                     key={ep}
                     className="rounded bg-gray-900 px-2 py-0.5 font-mono text-xs text-violet-300"
