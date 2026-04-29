@@ -172,9 +172,17 @@ export default function PrivacyPage() {
             <h2>5. Data Retention</h2>
             <p>
               We retain your account and configuration data for as long as
-              your account is active. Changelog data and change history are
-              retained according to your plan (7 days for Starter, 90 days
-              for Pro).
+              your account is active. Crawled changelog content and AI
+              classifications are retained for the lifetime of your team
+              account on Starter and Team, or per the agreement on Business.
+              Alert dispatch history is retained for 90 days. See our{' '}
+              <Link
+                href="/security"
+                className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
+              >
+                Security page
+              </Link>{' '}
+              for the full retention detail.
             </p>
             <p>
               When you delete your account, we remove your personal data
