@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
   GitCompareArrows,
@@ -42,6 +42,8 @@ export default function ChangesPage() {
   const isDemo = useDemo();
 
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const highlightId = searchParams.get('highlight');
 
   const [changes, setChanges] = useState<ChangeEntry[]>(isDemo ? DEMO_CHANGES : []);
@@ -66,6 +68,19 @@ export default function ChangesPage() {
   // Detail panel
   const [selected, setSelected] = useState<ChangeEntry | null>(null);
   const [focusedIdx, setFocusedIdx] = useState<number>(-1);
+
+  // Closing the detail panel must also strip ?highlight=… from the URL —
+  // otherwise the auto-open effect re-fires the moment `selected` is null
+  // and the panel pops back open.
+  const closeDetail = useCallback(() => {
+    setSelected(null);
+    if (highlightId) {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete('highlight');
+      const qs = next.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    }
+  }, [highlightId, pathname, router, searchParams]);
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -111,11 +126,23 @@ export default function ChangesPage() {
     fetchData();
   }, [fetchData]);
 
-  // Auto-open detail panel when navigating from alerts with ?highlight=ID
+  // Auto-open detail panel when navigating from alerts with ?highlight=ID.
+  // The ref tracks which highlight ID we've already opened so closing the
+  // panel can't trigger an immediate re-open during the brief render where
+  // `selected` has been cleared but the URL hasn't yet caught up.
+  const lastAutoOpenedRef = useRef<string | null>(null);
   useEffect(() => {
-    if (highlightId && changes.length > 0 && !selected) {
+    if (
+      highlightId &&
+      changes.length > 0 &&
+      !selected &&
+      lastAutoOpenedRef.current !== highlightId
+    ) {
       const match = changes.find((c) => c.id === highlightId);
-      if (match) setSelected(match);
+      if (match) {
+        setSelected(match);
+        lastAutoOpenedRef.current = highlightId;
+      }
     }
   }, [highlightId, changes, selected]);
 
@@ -268,7 +295,7 @@ export default function ChangesPage() {
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
 
       if (e.key === 'Escape') {
-        setSelected(null);
+        closeDetail();
         return;
       }
       if (e.key === 'j' || e.key === 'k') {
@@ -294,7 +321,7 @@ export default function ChangesPage() {
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [selected, filtered, focusedIdx, toggleSelect]);
+  }, [selected, filtered, focusedIdx, toggleSelect, closeDetail]);
 
   if (loading && !changes.length) {
     return (
@@ -795,7 +822,7 @@ export default function ChangesPage() {
       {selected && (
         <ChangeDetailPanel
           change={selected}
-          onClose={() => setSelected(null)}
+          onClose={closeDetail}
           onTriage={handleTriage}
         />
       )}
