@@ -122,6 +122,20 @@ export interface PendingInvite {
   createdAt: string;
 }
 
+export interface ApiKey {
+  id: string;
+  name: string;
+  prefix: string;
+  lastUsedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+}
+
+export interface ApiKeyCreated extends ApiKey {
+  /** Full key value — returned ONCE on creation. */
+  key: string;
+}
+
 // ── Billing types ──
 
 export type PlanTier = 'FREE_TRIAL' | 'STARTER' | 'PRO';

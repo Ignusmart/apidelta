@@ -10,6 +10,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { TeamService } from './team.service';
+import { ApiKeysService } from './api-keys.service';
 
 class CreateInviteDto {
   email!: string;
@@ -25,9 +26,17 @@ class ClaimPendingInviteDto {
   email!: string;
 }
 
+class CreateApiKeyDto {
+  name!: string;
+  createdById?: string;
+}
+
 @Controller('team')
 export class TeamController {
-  constructor(private readonly teamService: TeamService) {}
+  constructor(
+    private readonly teamService: TeamService,
+    private readonly apiKeysService: ApiKeysService,
+  ) {}
 
   @Get('members')
   async listMembers(@Headers('x-team-id') teamId: string) {
@@ -85,5 +94,33 @@ export class TeamController {
       userId: dto.userId,
       email: dto.email,
     });
+  }
+
+  // ── API Keys (MCP / programmatic access) ─────────
+
+  @Get('api-keys')
+  async listApiKeys(@Headers('x-team-id') teamId: string) {
+    return this.apiKeysService.listKeys(teamId);
+  }
+
+  @Post('api-keys')
+  async createApiKey(
+    @Headers('x-team-id') teamId: string,
+    @Body() dto: CreateApiKeyDto,
+  ) {
+    return this.apiKeysService.createKey({
+      teamId,
+      name: dto.name,
+      createdById: dto.createdById,
+    });
+  }
+
+  @Delete('api-keys/:id')
+  @HttpCode(HttpStatus.OK)
+  async revokeApiKey(
+    @Headers('x-team-id') teamId: string,
+    @Param('id') id: string,
+  ) {
+    return this.apiKeysService.revokeKey(teamId, id);
   }
 }

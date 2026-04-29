@@ -148,11 +148,12 @@ The single biggest moat available — the data work nobody else has done.
 
 PageCrawl already ships an MCP server. Closing this gap is time-sensitive.
 
-- [ ] New module: `apps/api/src/modules/mcp/`
-- [ ] Tools: `list_sources`, `recent_changes`, `search_changelog_entries`, `get_alert_history`
-- [ ] Auth: per-team API key
-- [ ] Marketing docs page: `apps/web/src/app/docs/mcp-setup/page.tsx`
-- [ ] Claude Desktop config example in docs
+- [x] New module: `apps/api/src/modules/mcp/` — hand-rolled JSON-RPC 2.0 over HTTP (Streamable HTTP transport). Implements `initialize`, `tools/list`, `tools/call`, `ping`, plus `notifications/initialized`. Stateless — no SSE, no session IDs.
+- [x] Tools: `list_sources`, `recent_changes` (severity + source-name filters), `search_changelog_entries` (free-text), `get_alert_history`, plus a bonus `list_catalog` so Claude can browse the public catalog.
+- [x] Auth: per-team API key (`Authorization: Bearer ad_live_…`). New `ApiKey` model — SHA-256-hashed storage + visible prefix hint. Mint/list/revoke endpoints under `/team/api-keys`.
+- [x] Settings UI: `/dashboard/settings` adds an API Keys section with create/copy/revoke and a one-time "Save this key now" reveal banner — same UX pattern as the webhook signing secret.
+- [x] Marketing docs page: `apps/web/src/app/docs/mcp-setup/page.tsx` — covers Claude Code (`claude mcp add --transport http …`) and Claude Desktop (via `npx mcp-remote`), tool reference, and example prompts.
+- [x] Smoke test: `apps/api/scripts/smoke-mcp.ts` — mints a temp key, verifies bad-bearer 401, exercises initialize/tools.list/tools.call against `list_catalog` and `list_sources`, then revokes the key.
 
 ### 2.3 "Why not just build this?" — F18
 
@@ -410,3 +411,25 @@ Both Phase 0.1 + Phase 1.1 migrations applied to local and production (Neon Post
 - **Verification** — API endpoints respond with shaped JSON for popular / categories / by-slug. Public page renders 200 with all 39 entries linked to their detail pages; bad slug → 404; query/category filters work via URL params.
 
 **Phase 2.1 mostly closed** — public catalog ships. Outstanding: catalog growth toward 100+ entries and the dashboard onboarding refactor (both tracked above as `[ ]`). Phase 2.2 (MCP server) is next; it'll reuse the catalog data via a new `list_catalog` MCP tool.
+
+### 2026-04-29 — Phase 2.2 shipped (MCP server)
+
+- **API key model + service** — new `ApiKey` row stores SHA-256 hash + a `prefix` hint (`ad_live_xxxx…YYYY`). The full key is shown once at creation and never echoed back. Migration `20260429015231_add_api_keys` applied locally + Neon prod.
+- **MCP module** (`apps/api/src/modules/mcp/`) — hand-rolled JSON-RPC 2.0 over HTTP. Single `POST /api/mcp` endpoint handles `initialize`, `tools/list`, `tools/call`, `ping`, and the `notifications/initialized` no-op. Auth via `Authorization: Bearer <key>`; team scope is sourced from the key, never a header. `GET /api/mcp` returns server identity for sanity checks.
+- **Five tools**, all team-scoped via the API key:
+  - `list_sources` (with `activeOnly` flag)
+  - `recent_changes` (severity threshold + source-name substring filter, returns markdown)
+  - `search_changelog_entries` (free-text across title + description)
+  - `get_alert_history` (with optional `status` filter)
+  - `list_catalog` (bonus — browse the public catalog by `query` / `category` / `popular`)
+- **Settings UI** — new "API Keys" card on `/dashboard/settings` with create-by-name, copy, revoke, and a one-time amber reveal banner that disappears once the user dismisses it. Active keys list shows the prefix hint and last-used timestamp.
+- **Marketing docs** — `/docs/mcp-setup` covers the Claude Code path (`claude mcp add --transport http`) and the Claude Desktop path (`npx mcp-remote`), tool reference, and example prompts.
+- **Smoke test** — `apps/api/scripts/smoke-mcp.ts` mints a temp key, verifies 401 on bad bearer, runs initialize → tools/list → tools/call (list_catalog + list_sources), then deletes the key. Passing.
+
+### 2026-04-29 — Vercel build hotfix (single Prisma schema source)
+
+The Phase 2.2 push exposed a long-standing duplicate-schema problem: `apps/web/prisma/schema.prisma` was a stale copy of the API's schema, missing `TeamInvite` / `ApiKey` / `CatalogEntry`. Vercel's `prisma generate` step ran from web's stale schema, regenerating the client without the new types and breaking the typecheck on `apps/web/src/auth.ts`'s `prisma.teamInvite.findUnique()` call (Phase 1.3 had snuck through earlier deploys via Vercel's build cache).
+
+**Fix**: pointed web's `package.json` `prisma.schema` at `../api/prisma/schema.prisma` and deleted `apps/web/prisma/`. The API is now the single source of truth for both the schema and migrations; web only generates the client. No more schema drift.
+
+**Phase 2.2 closed.** Phase 2.3 ("Why not just build this?" content) is next, then Phase 3 (pricing tiers + named-competitor compare pages).

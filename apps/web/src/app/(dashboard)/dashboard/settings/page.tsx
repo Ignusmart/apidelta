@@ -16,11 +16,22 @@ import {
   Trash2,
   Copy,
   Mail,
+  Key,
+  Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import { getTeamId } from '@/lib/shared';
-import type { PlanTier, PlanStatus, TeamPlan, TeamMember, PendingInvite } from '@/lib/types';
+import type {
+  PlanTier,
+  PlanStatus,
+  TeamPlan,
+  TeamMember,
+  PendingInvite,
+  ApiKey,
+  ApiKeyCreated,
+} from '@/lib/types';
+import Link from 'next/link';
 import {
   trackBeginCheckout,
   trackPurchaseFromSession,
@@ -100,6 +111,13 @@ export default function SettingsPage() {
   const [inviteSubmitting, setInviteSubmitting] = useState(false);
   const [revokingId, setRevokingId] = useState<string | null>(null);
 
+  // API keys (for MCP / programmatic access)
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [apiKeyName, setApiKeyName] = useState('');
+  const [apiKeySubmitting, setApiKeySubmitting] = useState(false);
+  const [revealedKey, setRevealedKey] = useState<ApiKeyCreated | null>(null);
+  const [revokingKeyId, setRevokingKeyId] = useState<string | null>(null);
+
   // Show success/cancel messages from Stripe redirect
   useEffect(() => {
     const billing = searchParams.get('billing');
@@ -118,14 +136,16 @@ export default function SettingsPage() {
     if (!teamId) return;
     setLoading(true);
     try {
-      const [plan, membersData, invitesData] = await Promise.all([
+      const [plan, membersData, invitesData, keysData] = await Promise.all([
         apiFetch<TeamPlan>(`/billing/plan?teamId=${teamId}`),
         apiFetch<TeamMember[]>('/team/members'),
         apiFetch<PendingInvite[]>('/team/invites'),
+        apiFetch<ApiKey[]>('/team/api-keys'),
       ]);
       setTeamPlan(plan);
       setMembers(membersData);
       setInvites(invitesData);
+      setApiKeys(keysData);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load plan details. Please try again.');
@@ -196,6 +216,55 @@ export default function SettingsPage() {
   function inviteUrl(token: string): string {
     if (typeof window === 'undefined') return `/invite/${token}`;
     return `${window.location.origin}/invite/${token}`;
+  }
+
+  // ── API key handlers ────────────────────────────
+
+  // Active = not revoked. The DB returns revoked rows too so users can
+  // see a paper trail, but we only render active rows in the UI for now.
+  const activeApiKeys = apiKeys.filter((k) => !k.revokedAt);
+
+  async function handleCreateApiKey(e: React.FormEvent) {
+    e.preventDefault();
+    if (!apiKeyName.trim()) return;
+    setApiKeySubmitting(true);
+    try {
+      const created = await apiFetch<ApiKeyCreated>('/team/api-keys', {
+        method: 'POST',
+        body: JSON.stringify({ name: apiKeyName.trim() }),
+      });
+      setApiKeys((prev) => [created, ...prev]);
+      setRevealedKey(created);
+      setApiKeyName('');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not create API key.');
+    } finally {
+      setApiKeySubmitting(false);
+    }
+  }
+
+  async function handleCopyApiKey(key: string) {
+    try {
+      await navigator.clipboard.writeText(key);
+      toast.success('API key copied');
+    } catch {
+      toast.error('Could not copy — copy manually');
+    }
+  }
+
+  async function handleRevokeApiKey(id: string) {
+    setRevokingKeyId(id);
+    try {
+      await apiFetch(`/team/api-keys/${id}`, { method: 'DELETE' });
+      setApiKeys((prev) =>
+        prev.map((k) => (k.id === id ? { ...k, revokedAt: new Date().toISOString() } : k)),
+      );
+      toast.success('API key revoked');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not revoke key.');
+    } finally {
+      setRevokingKeyId(null);
+    }
   }
 
   async function handleCheckout(planTier: 'STARTER' | 'PRO') {
@@ -562,6 +631,118 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* API Keys (MCP / programmatic access) */}
+      <div className="rounded-xl border border-gray-800 bg-gray-900/30 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">API Keys</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Personal access keys for the MCP server and programmatic access. Keep secret —{' '}
+              <Link href="/docs/mcp-setup" className="text-violet-400 hover:underline">
+                MCP setup guide
+              </Link>
+              .
+            </p>
+          </div>
+          <Key aria-hidden="true" className="h-5 w-5 text-gray-500" />
+        </div>
+
+        {/* One-time secret reveal banner */}
+        {revealedKey && (
+          <div
+            role="status"
+            className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/5 p-4"
+          >
+            <p className="text-sm font-medium text-amber-300">
+              Save this key now — you won&apos;t see it again.
+            </p>
+            <div className="mt-3 flex items-center gap-2 rounded-lg border border-amber-500/30 bg-gray-950/40 px-3 py-2">
+              <code className="flex-1 break-all font-mono text-xs text-amber-200">
+                {revealedKey.key}
+              </code>
+              <button
+                type="button"
+                onClick={() => handleCopyApiKey(revealedKey.key)}
+                aria-label="Copy API key"
+                className="rounded-md p-1.5 text-amber-300 transition hover:bg-amber-500/10 hover:text-amber-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              >
+                <Copy aria-hidden="true" className="h-4 w-4" />
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRevealedKey(null)}
+              className="mt-3 text-xs text-amber-400 hover:text-amber-300"
+            >
+              I&apos;ve saved it — dismiss
+            </button>
+          </div>
+        )}
+
+        {/* Active keys list */}
+        {activeApiKeys.length > 0 && (
+          <div className="mt-4 divide-y divide-gray-800/60 rounded-lg border border-gray-800/50 bg-gray-950/30">
+            {activeApiKeys.map((key) => (
+              <div key={key.id} className="flex items-center gap-3 p-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-gray-400">
+                  <Key aria-hidden="true" className="h-3.5 w-3.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{key.name}</p>
+                  <p className="truncate font-mono text-[11px] text-gray-500">
+                    {key.prefix}
+                    <span className="ml-2 font-sans text-gray-600">
+                      ·{' '}
+                      {key.lastUsedAt
+                        ? `last used ${new Date(key.lastUsedAt).toLocaleDateString()}`
+                        : 'not used yet'}
+                    </span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRevokeApiKey(key.id)}
+                  disabled={revokingKeyId === key.id}
+                  aria-label={`Revoke ${key.name}`}
+                  title="Revoke key"
+                  className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-red-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                >
+                  {revokingKeyId === key.id ? (
+                    <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Trash2 aria-hidden="true" className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Create form */}
+        <form onSubmit={handleCreateApiKey} className="mt-5 flex flex-col gap-2 sm:flex-row">
+          <input
+            id="api-key-name"
+            type="text"
+            value={apiKeyName}
+            onChange={(e) => setApiKeyName(e.target.value)}
+            placeholder='Key name (e.g. "Claude Desktop")'
+            className="flex-1 rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+          />
+          <button
+            type="submit"
+            disabled={apiKeySubmitting || !apiKeyName.trim()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            {apiKeySubmitting ? (
+              <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+            ) : (
+              <Plus aria-hidden="true" className="h-4 w-4" />
+            )}
+            Create key
+          </button>
+        </form>
       </div>
 
       {/* Notification Preferences */}

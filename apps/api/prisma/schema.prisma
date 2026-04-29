@@ -89,8 +89,29 @@ model Team {
   alertRules AlertRule[]
   alerts     Alert[]
   invites    TeamInvite[]
+  apiKeys    ApiKey[]
 
   @@index([plan])
+}
+
+// Per-team API key for MCP / programmatic access. The full key is shown
+// once at creation; only the SHA-256 hash is persisted. The UI shows the
+// `prefix` (first 8 chars + last 4) so users can identify which key is
+// which without ever seeing the secret again.
+model ApiKey {
+  id          String    @id @default(cuid())
+  teamId      String
+  name        String    // user-supplied label, e.g. "Claude Desktop"
+  prefix      String    // displayable hint: first 8 chars of the key
+  hash        String    @unique // SHA-256 of the full key, hex-encoded
+  createdById String?   // User.id of the team member who created the key
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
 }
 
 model TeamInvite {
