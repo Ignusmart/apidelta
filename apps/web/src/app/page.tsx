@@ -72,7 +72,7 @@ const FEATURES = [
     icon: Clock,
     title: "Hourly Monitoring",
     description:
-      "APIDelta checks every monitored API on the hour. When a breaking change lands, you know within 60 minutes — not when your CI pipeline fails at 2 AM.",
+      "APIDelta checks every monitored API on the hour. When a breaking change lands, you know within 60 minutes — not when your CI pipeline fails at 2 AM. Hourly on every plan; faster cadence available on Business.",
   },
   {
     icon: Shield,
@@ -176,7 +176,7 @@ const FAQS = [
   },
   {
     q: "What happens during the free trial?",
-    a: "You get 14 days of full Pro access with up to 3 monitored APIs. No credit card required. At the end of the trial, pick a plan or your monitoring pauses — we never delete your data.",
+    a: "You get 14 days of full Team access with up to 3 monitored APIs. No credit card required. At the end of the trial, pick a plan or your monitoring pauses — we never delete your data.",
   },
   {
     q: "Can I filter which changes trigger alerts?",
