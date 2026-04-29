@@ -88,8 +88,27 @@ model Team {
   sources    ApiSource[]
   alertRules AlertRule[]
   alerts     Alert[]
+  invites    TeamInvite[]
 
   @@index([plan])
+}
+
+model TeamInvite {
+  id           String    @id @default(cuid())
+  teamId       String
+  email        String    // invitee email — must match user.email at accept-time (case-insensitive)
+  token        String    @unique // shareable secret embedded in /invite/<token>
+  invitedById  String?   // User.id of the team owner who created the invite
+  expiresAt    DateTime  // typically createdAt + 14d
+  acceptedAt   DateTime?
+  acceptedById String?   // User.id who accepted (post-signup)
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@index([email])
 }
 
 model User {

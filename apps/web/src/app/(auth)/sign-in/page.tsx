@@ -21,23 +21,28 @@ export const metadata: Metadata = {
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; error?: string; email?: string }>;
 }) {
-  const session = await auth();
-  if (session?.user) redirect('/dashboard');
-
   const params = await searchParams;
   const callbackUrl = params.callbackUrl ?? '/dashboard';
+
+  const session = await auth();
+  if (session?.user) redirect(decodeURIComponent(callbackUrl));
+
   const error = params.error;
+  const prefillEmail = params.email ?? '';
+  const isInviteFlow = callbackUrl.startsWith('/invite/');
 
   return (
     <div className="w-full max-w-sm">
       <div className="rounded-xl border border-gray-800 bg-gray-900 p-8">
         <h1 className="mb-2 text-center text-2xl font-bold text-white">
-          Welcome back
+          {isInviteFlow ? 'Accept your invite' : 'Welcome back'}
         </h1>
         <p className="mb-6 text-center text-sm text-gray-400">
-          Sign in to your APIDelta account
+          {isInviteFlow
+            ? 'Sign in with the invited email to join the team.'
+            : 'Sign in to your APIDelta account'}
         </p>
 
         {error && (
@@ -109,6 +114,7 @@ export default async function SignInPage({
             type="email"
             required
             autoComplete="email"
+            defaultValue={prefillEmail}
             placeholder="you@company.com"
             className="mb-3 w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2.5 text-sm text-white placeholder-gray-500 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
           />

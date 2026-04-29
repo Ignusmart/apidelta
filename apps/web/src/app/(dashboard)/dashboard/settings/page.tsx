@@ -12,10 +12,15 @@ import {
   Zap,
   Crown,
   Sparkles,
+  UserPlus,
+  Trash2,
+  Copy,
+  Mail,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import { getTeamId } from '@/lib/shared';
-import type { PlanTier, PlanStatus, TeamPlan } from '@/lib/types';
+import type { PlanTier, PlanStatus, TeamPlan, TeamMember, PendingInvite } from '@/lib/types';
 import {
   trackBeginCheckout,
   trackPurchaseFromSession,
@@ -88,6 +93,13 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Team members + pending invites
+  const [members, setMembers] = useState<TeamMember[]>([]);
+  const [invites, setInvites] = useState<PendingInvite[]>([]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteSubmitting, setInviteSubmitting] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+
   // Show success/cancel messages from Stripe redirect
   useEffect(() => {
     const billing = searchParams.get('billing');
@@ -106,8 +118,14 @@ export default function SettingsPage() {
     if (!teamId) return;
     setLoading(true);
     try {
-      const data = await apiFetch<TeamPlan>(`/billing/plan?teamId=${teamId}`);
-      setTeamPlan(data);
+      const [plan, membersData, invitesData] = await Promise.all([
+        apiFetch<TeamPlan>(`/billing/plan?teamId=${teamId}`),
+        apiFetch<TeamMember[]>('/team/members'),
+        apiFetch<PendingInvite[]>('/team/invites'),
+      ]);
+      setTeamPlan(plan);
+      setMembers(membersData);
+      setInvites(invitesData);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load plan details. Please try again.');
@@ -119,6 +137,66 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchPlan();
   }, [fetchPlan]);
+
+  // Pending invites that are still actionable (not accepted, not revoked, not expired).
+  const pendingInvites = invites.filter(
+    (i) => !i.acceptedAt && !i.revokedAt && new Date(i.expiresAt) > new Date(),
+  );
+
+  async function handleInviteSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!teamId || !inviteEmail.trim()) return;
+    setInviteSubmitting(true);
+    try {
+      const created = await apiFetch<PendingInvite>('/team/invites', {
+        method: 'POST',
+        body: JSON.stringify({ email: inviteEmail.trim() }),
+      });
+      setInvites((prev) => [created, ...prev]);
+      setInviteEmail('');
+      // Auto-copy the share link so the owner can paste it into Slack/email immediately.
+      const url = inviteUrl(created.token);
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Invite link copied to clipboard');
+      } catch {
+        toast.success('Invite created — copy the link from the list below');
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not create invite. Please try again.');
+    } finally {
+      setInviteSubmitting(false);
+    }
+  }
+
+  async function handleCopyInvite(token: string) {
+    try {
+      await navigator.clipboard.writeText(inviteUrl(token));
+      toast.success('Invite link copied to clipboard');
+    } catch {
+      toast.error('Could not copy — copy the URL manually from the address bar');
+    }
+  }
+
+  async function handleRevokeInvite(id: string) {
+    setRevokingId(id);
+    try {
+      await apiFetch(`/team/invites/${id}`, { method: 'DELETE' });
+      setInvites((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, revokedAt: new Date().toISOString() } : i)),
+      );
+      toast.success('Invite revoked');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not revoke invite.');
+    } finally {
+      setRevokingId(null);
+    }
+  }
+
+  function inviteUrl(token: string): string {
+    if (typeof window === 'undefined') return `/invite/${token}`;
+    return `${window.location.origin}/invite/${token}`;
+  }
 
   async function handleCheckout(planTier: 'STARTER' | 'PRO') {
     if (!teamId) return;
@@ -366,23 +444,124 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold">Team Members</h2>
-            <p className="mt-1 text-sm text-gray-500">Manage who has access to your APIDelta workspace.</p>
+            <p className="mt-1 text-sm text-gray-500">
+              Invite teammates and manage access. {teamPlan?.limits ? (
+                <span>
+                  Plan allows {teamPlan.limits.maxMembers} member{teamPlan.limits.maxMembers === 1 ? '' : 's'}.
+                </span>
+              ) : null}
+            </p>
           </div>
           <span className="rounded-full border border-gray-700 bg-gray-800 px-3 py-1 text-[10px] font-medium uppercase tracking-wider text-gray-400">
-            Coming Soon
+            {members.length}{teamPlan?.limits ? ` / ${teamPlan.limits.maxMembers}` : ''}
           </span>
         </div>
-        <div className="mt-4 rounded-lg border border-gray-800/50 bg-gray-950/30 p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500/20 text-sm font-medium text-violet-300">
-              {(session?.user?.name?.[0] ?? session?.user?.email?.[0] ?? 'A').toUpperCase()}
-            </div>
-            <div>
-              <p className="text-sm font-medium">{session?.user?.name ?? 'You'}</p>
-              <p className="text-xs text-gray-500">{session?.user?.email ?? ''} &middot; Owner</p>
+
+        {/* Members list */}
+        <div className="mt-4 divide-y divide-gray-800/60 rounded-lg border border-gray-800/50 bg-gray-950/30">
+          {members.length === 0 ? (
+            <div className="p-4 text-sm text-gray-500">Just you so far.</div>
+          ) : (
+            members.map((m) => (
+              <div key={m.id} className="flex items-center gap-3 p-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500/20 text-sm font-medium text-violet-300">
+                  {(m.name?.[0] ?? m.email[0] ?? 'A').toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">{m.name ?? m.email.split('@')[0]}</p>
+                  <p className="truncate text-xs text-gray-500">
+                    {m.email}
+                    {m.isOwner && <span className="ml-2 text-violet-400">&middot; Owner</span>}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Invite form */}
+        <form onSubmit={handleInviteSubmit} className="mt-5 flex flex-col gap-2 sm:flex-row">
+          <div className="flex-1">
+            <label htmlFor="invite-email" className="sr-only">
+              Email address
+            </label>
+            <div className="relative">
+              <Mail aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <input
+                id="invite-email"
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="teammate@company.com"
+                className="w-full rounded-lg border border-gray-800 bg-gray-900 py-2.5 pl-9 pr-3.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+              />
             </div>
           </div>
-        </div>
+          <button
+            type="submit"
+            disabled={inviteSubmitting || !inviteEmail.trim()}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            {inviteSubmitting ? (
+              <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+            ) : (
+              <UserPlus aria-hidden="true" className="h-4 w-4" />
+            )}
+            Send invite
+          </button>
+        </form>
+        <p className="mt-2 text-[11px] text-gray-600">
+          We&apos;ll generate a shareable invite link. Send it to your teammate — when they sign in with this email, they&apos;ll automatically join this team.
+        </p>
+
+        {/* Pending invites */}
+        {pendingInvites.length > 0 && (
+          <div className="mt-5">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-gray-500">
+              Pending invites
+            </p>
+            <div className="divide-y divide-gray-800/60 rounded-lg border border-gray-800/50 bg-gray-950/30">
+              {pendingInvites.map((inv) => (
+                <div key={inv.id} className="flex items-center gap-3 p-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-800 text-sm text-gray-400">
+                    <Mail aria-hidden="true" className="h-3.5 w-3.5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{inv.email}</p>
+                    <p className="text-xs text-gray-500">
+                      Expires {new Date(inv.expiresAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => handleCopyInvite(inv.token)}
+                      aria-label={`Copy invite link for ${inv.email}`}
+                      title="Copy invite link"
+                      className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                    >
+                      <Copy aria-hidden="true" className="h-4 w-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRevokeInvite(inv.id)}
+                      disabled={revokingId === inv.id}
+                      aria-label={`Revoke invite for ${inv.email}`}
+                      title="Revoke invite"
+                      className="rounded-lg p-2 text-gray-500 transition hover:bg-gray-800 hover:text-red-400 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                    >
+                      {revokingId === inv.id ? (
+                        <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 aria-hidden="true" className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Notification Preferences */}

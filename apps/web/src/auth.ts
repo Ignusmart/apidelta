@@ -58,18 +58,47 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   events: {
     async createUser({ user }) {
-      // Auto-create a team for new users
-      if (user.id && user.email) {
-        const team = await prisma.team.create({
-          data: {
-            name: `${user.name ?? user.email.split('@')[0]}'s Team`,
-          },
+      if (!user.id || !user.email) return;
+      const email = user.email.toLowerCase();
+
+      // If this email has a pending team invite, claim it instead of
+      // auto-creating a default team. This is the team-invite happy path:
+      // owner sends /invite/<token> → invitee follows magic link → on
+      // first signup we land them directly on the inviter's team.
+      const pendingInvite = await prisma.teamInvite.findFirst({
+        where: {
+          email,
+          acceptedAt: null,
+          revokedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (pendingInvite) {
+        await prisma.$transaction(async (tx) => {
+          await tx.teamInvite.update({
+            where: { id: pendingInvite.id },
+            data: { acceptedAt: new Date(), acceptedById: user.id! },
+          });
+          await tx.user.update({
+            where: { id: user.id! },
+            data: { teamId: pendingInvite.teamId, isOwner: false },
+          });
         });
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { teamId: team.id, isOwner: true },
-        });
+        return;
       }
+
+      // No invite — default behavior: auto-create a team and mark this user owner.
+      const team = await prisma.team.create({
+        data: {
+          name: `${user.name ?? user.email.split('@')[0]}'s Team`,
+        },
+      });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { teamId: team.id, isOwner: true },
+      });
     },
   },
 });

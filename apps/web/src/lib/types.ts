@@ -101,6 +101,27 @@ export interface PaginatedAlerts {
   pageSize: number;
 }
 
+// ── Team types ──
+
+export interface TeamMember {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+  isOwner: boolean;
+  createdAt: string;
+}
+
+export interface PendingInvite {
+  id: string;
+  email: string;
+  token: string;
+  expiresAt: string;
+  acceptedAt: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+}
+
 // ── Billing types ──
 
 export type PlanTier = 'FREE_TRIAL' | 'STARTER' | 'PRO';

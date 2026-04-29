@@ -101,9 +101,14 @@ Reused the AlertRule pattern instead of a separate Integration table — same tr
 
 ### 1.3 Team invite flow
 
-- [ ] API endpoints: invite/accept (reuse NextAuth email magic link)
-- [ ] Replace "Coming Soon" stub at `/(dashboard)/dashboard/settings`
-- [ ] Per-tier seat enforcement already exists via `PLAN_LIMITS` in `billing.service.ts` — wire UI only
+The flow: owner creates an invite (email + plan-limit checked) → APIDelta returns a shareable `/invite/<token>` URL → invitee clicks link → if they're a brand-new user, the email magic-link signup attaches them to the inviting team automatically (NextAuth `events.createUser` hook); if they're an existing user, the landing page shows an "Accept invite" button that moves them to the new team. Token is the only auth on the public preview endpoint.
+
+- [x] Schema: new `TeamInvite` model (token, teamId, email, expiresAt, acceptedAt/By, revokedAt, invitedById). Migration `20260428030000_add_team_invites` (applied locally + Neon prod).
+- [x] Backend: new `apps/api/src/modules/team/` module — `TeamService` + `TeamController` covering members list, invite list/create/revoke, public preview-by-token, and accept-by-token. Plan-limit guard at create-time uses `PLAN_LIMITS[team.plan].maxMembers` (members + pending non-expired invites < cap).
+- [x] NextAuth `events.createUser` hook (`apps/web/src/auth.ts`): on first signup, looks up a pending invite for the user's email and either attaches them to the inviter's team (skipping the default-team auto-create) or falls through to the original "create your own team" path.
+- [x] Settings UI (`/dashboard/settings`): replaced the "Coming Soon" Team Members stub with a real members list + invite form + pending-invite list with copy-link / revoke. Auto-copies the new invite URL to clipboard on submit. Counter shows `{members.length} / {plan.maxMembers}`.
+- [x] Invite landing: new `/invite/[token]` server component branches on invite status (pending/accepted/revoked/expired) and the visitor's session state. Signed-out visitors get a "Sign in to accept" CTA that pre-fills the invite email and bounces back via `callbackUrl=/invite/<token>`. Signed-in visitors with matching email and matching team see "you're on the team"; signed-in visitors with matching email but different team see an "Accept invite" client form. Accept route handler (`/api/invite/[token]/accept`) sources `userId` from the server-side session — never the client body — and forwards to the API.
+- [x] Sign-in page (`/sign-in`): accepts `?email=<addr>` to pre-fill the email input and renders an "Accept your invite" header when `callbackUrl` starts with `/invite/`.
 
 ### Reuse
 
@@ -369,3 +374,22 @@ Both Phase 0.1 + Phase 1.1 migrations applied to local and production (Neon Post
 - **Verification** — `apps/api/scripts/smoke-github.ts` (in-process fetch stub, asserts URL/method/auth/api-version/title/body/labels) passes; `tsc --noEmit` clean across web + api; `nest build` clean; dev server compiles `/dashboard/alerts` and serves HTTP 200.
 
 **Phase 1.2 closed.** Phase 1.3 (team invite flow) is next.
+
+### 2026-04-28 — Phase 1.3 shipped (team invite flow)
+
+- **Schema** — new `TeamInvite` model with `token` (unique), `email`, `expiresAt` (default 14d), and `acceptedAt`/`acceptedById`/`revokedAt` lifecycle fields. Migration `20260428030000_add_team_invites` applied locally + production Neon (additive, safe).
+- **Backend module** (`apps/api/src/modules/team/`) — `TeamService` covers `listMembers`, `createInvite` (plan-limit guarded: members + pending non-expired invites < `PLAN_LIMITS[team.plan].maxMembers`, 403 if cap reached), `listInvites`, `revokeInvite`, `getInvitePreview` (public — token IS the auth), `acceptInvite` (validates email match + plan capacity), and `claimPendingInviteForNewUser` (used by NextAuth signup path).
+- **NextAuth hook** (`apps/web/src/auth.ts`) — `events.createUser` now looks up a pending invite for the new user's email before defaulting to the auto-create-a-team path. If found, it transactionally marks the invite accepted and sets `user.teamId` + `isOwner=false` so the new user lands directly on the inviting team. No duplicate "default team" gets created.
+- **Settings UI** (`/(dashboard)/dashboard/settings/page.tsx`) — replaced the "Coming Soon" Team Members stub with a real members list + invite form + pending-invite list. The form auto-copies the generated `/invite/<token>` URL to the clipboard on success; pending-invite cards have copy-link and revoke buttons; the section header counter reads `{members.length} / {plan.maxMembers}`.
+- **Invite landing** (`/invite/[token]/page.tsx`) — server component that fetches the public preview and branches on invite status × session state:
+  - `accepted` → "You're already on the team" + dashboard CTA (covers the brand-new-signup path where NextAuth's hook already handled assignment).
+  - `revoked` / `expired` / not-found → message variants.
+  - `pending` + signed-out → "Sign in to accept" CTA pointing at `/sign-in?email=<invite.email>&callbackUrl=/invite/<token>`.
+  - `pending` + signed-in + email matches + already on the team → "You're on the team" + dashboard CTA.
+  - `pending` + signed-in + email matches + different team → renders `AcceptInviteForm` (client component) that POSTs to the accept route handler.
+  - `pending` + signed-in + email mismatch → "Wrong account, sign out and try again."
+- **Accept handler** (`/api/invite/[token]/accept/route.ts`) — server route handler that reads `userId` from the trusted server-side session via `auth()` and forwards to the API. The API endpoint accepts `userId` in the body for now; the route handler is the only legitimate caller. Hardening item: API should pull `userId` from a proxy-injected header instead of trusting the body — tracked but not blocking.
+- **Sign-in page** ergonomics — accepts `?email=<addr>` to pre-fill the email input; switches the header to "Accept your invite" when `callbackUrl` starts with `/invite/`.
+- **Verification** — `tsc --noEmit` clean across web + api; `nest build` clean; dev server compiles `/dashboard/settings`, `/sign-in`, `/invite/[token]`, and `/api/invite/[token]/accept` without errors. Bad-token landing renders the "Invite not found" branch.
+
+**Phase 1.3 closed.** Phase 1 of V2 is complete (webhooks + GitHub Issues + team invites). Phase 2 (curated catalog + MCP server + "Why not just build this?") is next.
