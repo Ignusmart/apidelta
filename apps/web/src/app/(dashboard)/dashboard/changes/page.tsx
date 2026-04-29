@@ -21,12 +21,19 @@ import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
 import type { ApiSource, ChangeEntry, Severity, TriageStatus } from '@/lib/types';
 import { SeverityBadge, ChangeTypeBadge, TriageStatusBadge } from '@/lib/components';
-import { SEVERITY_ORDER, getTeamId } from '@/lib/shared';
+import { SEVERITY_ORDER, getTeamId, timeAgo } from '@/lib/shared';
 import { useDemo } from '@/lib/use-demo';
 import { DEMO_CHANGES, DEMO_SOURCES } from '@/lib/demo-data';
 import { useSavedFilters } from '@/lib/use-saved-filters';
 import { usePrompt } from '@/lib/dialogs';
 import { useFocusTrap } from '@/lib/use-focus-trap';
+import { OnboardingChecklist } from '../../onboarding-checklist';
+import {
+  CHANNEL_ICON,
+  CHANNEL_LABEL,
+  ALERT_STATUS_CONFIG,
+  formatDestination,
+} from '@/lib/alert-display';
 
 // Rank used to sort: lower number = more important
 const SEVERITY_RANK: Record<Severity, number> = {
@@ -349,6 +356,9 @@ export default function ChangesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Onboarding checklist — only shows for new teams; self-dismisses */}
+      <OnboardingChecklist />
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -774,6 +784,29 @@ export default function ChangesPage() {
                   <span className="flex-1 truncate text-sm text-white">
                     {change.title}
                   </span>
+                  {change.alerts && change.alerts.length > 0 && (
+                    <span
+                      className="hidden shrink-0 items-center gap-1 md:inline-flex"
+                      aria-label={`${change.alerts.length} delivery ${change.alerts.length === 1 ? 'attempt' : 'attempts'}`}
+                    >
+                      {change.alerts.slice(0, 3).map((a) => {
+                        const Icon = CHANNEL_ICON[a.alertRule.channel];
+                        const cfg = ALERT_STATUS_CONFIG[a.status];
+                        return (
+                          <span
+                            key={a.id}
+                            className={`inline-flex h-5 w-5 items-center justify-center rounded ${cfg.bg}`}
+                            title={`${cfg.label} → ${a.alertRule.name} (${CHANNEL_LABEL[a.alertRule.channel]})`}
+                          >
+                            <Icon aria-hidden="true" className={`h-3 w-3 ${cfg.color}`} />
+                          </span>
+                        );
+                      })}
+                      {change.alerts.length > 3 && (
+                        <span className="text-[10px] text-gray-500">+{change.alerts.length - 3}</span>
+                      )}
+                    </span>
+                  )}
                   {status !== 'OPEN' && (
                     <TriageStatusBadge status={status} />
                   )}
@@ -937,6 +970,56 @@ function ChangeDetailPanel({
                   </code>
                 ))}
               </div>
+            </div>
+          )}
+
+          {change.alerts && change.alerts.length > 0 && (
+            <div className="mt-5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                  Delivery
+                </h3>
+                <Link
+                  href="/dashboard/settings#alert-rules"
+                  className="text-[11px] text-gray-500 transition hover:text-violet-300"
+                >
+                  Manage rules →
+                </Link>
+              </div>
+              <ul className="mt-2 space-y-2">
+                {change.alerts.map((a) => {
+                  const Icon = CHANNEL_ICON[a.alertRule.channel];
+                  const cfg = ALERT_STATUS_CONFIG[a.status];
+                  const StatusIcon = cfg.icon;
+                  return (
+                    <li
+                      key={a.id}
+                      className="rounded-lg border border-gray-900 bg-gray-950/40 px-3 py-2 text-xs"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+                          <span className="truncate text-gray-300">{a.alertRule.name}</span>
+                        </span>
+                        <span className={`inline-flex shrink-0 items-center gap-1 ${cfg.color}`}>
+                          <StatusIcon aria-hidden="true" className="h-3 w-3" />
+                          {cfg.label}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between gap-3 text-[11px] text-gray-500">
+                        <span className="truncate">
+                          {CHANNEL_LABEL[a.alertRule.channel]} &rarr;{' '}
+                          {formatDestination(a.alertRule.channel, a.alertRule.destination)}
+                        </span>
+                        <span className="shrink-0">{timeAgo(a.sentAt ?? null)}</span>
+                      </div>
+                      {a.status === 'FAILED' && a.errorMessage && (
+                        <p className="mt-1 text-[11px] text-red-400">{a.errorMessage}</p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           )}
 

@@ -24,19 +24,19 @@ export default async function SignUpPage({
   searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }) {
   const session = await auth();
-  if (session?.user) redirect('/dashboard');
+  if (session?.user) redirect('/dashboard/changes');
 
   const params = await searchParams;
-  const callbackUrl = params.callbackUrl ?? '/dashboard';
+  const callbackUrl = params.callbackUrl ?? '/dashboard/changes';
   const error = params.error;
   // Append GA4 tracking params only when using the default dashboard redirect,
   // so callers passing a custom callbackUrl are respected.
   const isDefaultCallback = !params.callbackUrl;
   const githubCallback = isDefaultCallback
-    ? '/dashboard?welcome=1&method=github'
+    ? '/dashboard/changes?welcome=1&method=github'
     : callbackUrl;
   const emailCallback = isDefaultCallback
-    ? '/dashboard?welcome=1&method=email'
+    ? '/dashboard/changes?welcome=1&method=email'
     : callbackUrl;
 
   return (

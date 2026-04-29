@@ -24,7 +24,7 @@ export default async function SignInPage({
   searchParams: Promise<{ callbackUrl?: string; error?: string; email?: string }>;
 }) {
   const params = await searchParams;
-  const callbackUrl = params.callbackUrl ?? '/dashboard';
+  const callbackUrl = params.callbackUrl ?? '/dashboard/changes';
 
   const session = await auth();
   if (session?.user) redirect(decodeURIComponent(callbackUrl));

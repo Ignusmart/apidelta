@@ -88,7 +88,7 @@ export function OnboardingChecklist() {
       id: 'create-alert',
       label: 'Set up an alert rule',
       description: 'Get notified via email or Slack when changes happen',
-      href: '/dashboard/alerts',
+      href: '/dashboard/settings#alert-rules',
       icon: Bell,
       completed: rules.length > 0,
     },

@@ -41,6 +41,19 @@ export interface TriageAssignee {
   email: string;
 }
 
+export interface ChangeAlertDelivery {
+  id: string;
+  status: AlertStatus;
+  sentAt: string | null;
+  errorMessage: string | null;
+  alertRule: {
+    id: string;
+    name: string;
+    channel: AlertChannel;
+    destination: string;
+  };
+}
+
 export interface ChangeEntry {
   id: string;
   crawlRunId: string;
@@ -56,6 +69,7 @@ export interface ChangeEntry {
   triageAssignee?: TriageAssignee | null;
   createdAt: string;
   crawlRun?: CrawlRun & { source?: ApiSource };
+  alerts?: ChangeAlertDelivery[];
 }
 
 export interface AlertRule {

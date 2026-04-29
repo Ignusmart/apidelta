@@ -2,13 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Rss, GitCompareArrows, Bell, Settings } from 'lucide-react';
+import { Rss, GitCompareArrows, Settings } from 'lucide-react';
 
 const TABS = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-  { href: '/dashboard/sources', label: 'Sources', icon: Rss },
   { href: '/dashboard/changes', label: 'Changes', icon: GitCompareArrows },
-  { href: '/dashboard/alerts', label: 'Alerts', icon: Bell },
+  { href: '/dashboard/sources', label: 'Sources', icon: Rss },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -22,10 +20,7 @@ export function MobileNav() {
     >
       <div className="flex items-center justify-around">
         {TABS.map((tab) => {
-          const isActive =
-            tab.href === '/dashboard'
-              ? pathname === '/dashboard'
-              : pathname.startsWith(tab.href);
+          const isActive = pathname.startsWith(tab.href);
 
           return (
             <Link

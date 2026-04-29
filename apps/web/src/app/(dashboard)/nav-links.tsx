@@ -2,14 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Rss, GitCompareArrows, Bell, Settings } from 'lucide-react';
-import { AlertsBadge, ChangesBadge, SourcesBadge } from './nav-badge';
+import { Rss, GitCompareArrows, Settings } from 'lucide-react';
+import { ChangesBadge, SourcesBadge } from './nav-badge';
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-  { href: '/dashboard/sources', label: 'API Sources', icon: Rss },
   { href: '/dashboard/changes', label: 'Changes', icon: GitCompareArrows },
-  { href: '/dashboard/alerts', label: 'Alerts', icon: Bell },
+  { href: '/dashboard/sources', label: 'API Sources', icon: Rss },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -20,10 +18,7 @@ export function NavLinks() {
   return (
     <>
       {items.map((item) => {
-        const isActive =
-          item.href === '/dashboard'
-            ? pathname === '/dashboard'
-            : pathname.startsWith(item.href);
+        const isActive = pathname.startsWith(item.href);
 
         return (
           <Link
@@ -39,7 +34,6 @@ export function NavLinks() {
             <span className="flex-1">{item.label}</span>
             {item.label === 'API Sources' && <SourcesBadge />}
             {item.label === 'Changes' && <ChangesBadge />}
-            {item.label === 'Alerts' && <AlertsBadge />}
           </Link>
         );
       })}

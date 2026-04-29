@@ -47,6 +47,18 @@ export class CrawlerService {
           triageAssignee: {
             select: { id: true, name: true, email: true },
           },
+          alerts: {
+            select: {
+              id: true,
+              status: true,
+              sentAt: true,
+              errorMessage: true,
+              alertRule: {
+                select: { id: true, name: true, channel: true, destination: true },
+              },
+            },
+            orderBy: { createdAt: 'asc' },
+          },
         },
         orderBy: { createdAt: 'desc' },
         skip,

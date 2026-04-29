@@ -32,6 +32,7 @@ import type {
   ApiKeyCreated,
 } from '@/lib/types';
 import Link from 'next/link';
+import { AlertRulesSection } from './alert-rules-section';
 import {
   trackBeginCheckout,
   trackPurchaseFromSession,
@@ -775,6 +776,9 @@ export default function SettingsPage() {
           </button>
         </form>
       </div>
+
+      {/* Alert Rules */}
+      <AlertRulesSection />
 
       {/* Notification Preferences */}
       <div className="rounded-xl border border-gray-800 bg-gray-900/30 p-6">

@@ -491,6 +491,26 @@ export const DEMO_ALERTS: Alert[] = alertableChanges.flatMap((change, i) => {
   ];
 });
 
+// Wire each demo change's deliveries inline so the Changes feed delivery
+// column populates in demo mode. Mirrors what the real /changes endpoint
+// returns once Phase A's listChanges include is in place.
+for (const change of DEMO_CHANGES) {
+  change.alerts = DEMO_ALERTS.filter((a) => a.changeEntryId === change.id).map(
+    (a) => ({
+      id: a.id,
+      status: a.status,
+      sentAt: a.sentAt,
+      errorMessage: a.errorMessage,
+      alertRule: {
+        id: a.alertRule!.id,
+        name: a.alertRule!.name,
+        channel: a.alertRule!.channel,
+        destination: a.alertRule!.destination,
+      },
+    }),
+  );
+}
+
 // ── Team plan ──
 
 // Chart demo data — 30 days of realistic change activity
