@@ -184,25 +184,28 @@ Pre-empts the most common dev-tool objection.
 | **Team** | **$199** | **50** | **10** | Email + Slack + Webhooks + GitHub Issues | audit log export |
 | **Business** | **Contact us** | Unlimited | Unlimited | All + custom | SSO/SAML placeholder, priority support |
 
-- [ ] Update `PLAN_LIMITS` in `apps/api/src/modules/billing/billing.service.ts`
-- [ ] Update `PLANS` array in `apps/web/src/app/page.tsx`
-- [ ] Create Stripe price IDs for Team and Business tiers, add to env
-- [ ] Update FAQ + use-case page pricing teasers if they reference tier counts
+- [x] `PlanTier` enum extended with `TEAM` + `BUSINESS` (legacy `PRO` retained for back-compat, hidden from UI). Migration `20260429021024_add_team_business_plan_tiers` applied locally + Neon prod.
+- [x] `PLAN_LIMITS` in `billing.service.ts` updated — TEAM = 50 sources / 10 members / Email + Slack + Webhook + GitHub channels; BUSINESS = effectively-unlimited caps.
+- [x] `BillingService.createCheckoutSession` accepts `'STARTER' | 'PRO' | 'TEAM'`; new `STRIPE_PRICE_ID_TEAM` env var feeds the TEAM tier. Webhook handler accepts the new `planTier` metadata value too.
+- [x] `PLANS` arrays on `apps/web/src/app/page.tsx` (homepage pricing) and `apps/web/src/app/(dashboard)/dashboard/settings/page.tsx` (in-app pricing grid) replaced with Starter / Team / Business. Settings grid switched to a 4-column layout (Free Trial / Starter / Team / Business) with a rank-based upgrade/downgrade comparator and a contact-sales button on the Business card.
+- [x] GA event helper (`apps/web/src/app/_components/ga-events.tsx`) extended `CheckoutPlan` and `PLAN_VALUE` to include `TEAM` so begin_checkout / purchase events fire correctly.
+- [ ] **Open**: create the actual Stripe price ID for Team ($199/mo) in the Stripe dashboard and set `STRIPE_PRICE_ID_TEAM` in production env. Until that's done, hitting "Upgrade to Team" returns the existing `BadRequestException: No Stripe price configured for TEAM`.
 
-**Prerequisite**: user creates Stripe price IDs before this phase ships.
+**Prerequisite**: user creates Stripe price IDs before checkout flows live for the new tier.
 
 ### 3.2 Named competitor compare pages (decision: name them)
 
-- [ ] `/compare/apidelta-vs-pagecrawl/page.tsx`
-- [ ] `/compare/apidelta-vs-visualping/page.tsx`
-- [ ] `/compare/apidelta-vs-api-drift-alert/page.tsx`
-- [ ] Honest tables — where competitor is cheaper/better, say so; where APIDelta wins (curated catalog, MCP, AI tuned for changelogs specifically), prove it
-- [ ] Each page closes with a real changelog entry classified by APIDelta and the competitor side-by-side (audit F25)
-- [ ] Update `_components/seo-page-shell.tsx` `SeoInternalLinks` to include the new compare pages
+- [x] `/compare/apidelta-vs-pagecrawl/page.tsx` — generic page monitor; cheaper, has free tier, but no API-specific intelligence.
+- [x] `/compare/apidelta-vs-visualping/page.tsx` — visual screenshot diffs; right tool for marketing pages, wrong tool for changelogs.
+- [x] `/compare/apidelta-vs-api-drift-alert/page.tsx` — closest direct competitor; we win on price + AI + MCP + GitHub Issues, they win on PagerDuty + business-hours + SOC 2.
+- [x] `/compare/page.tsx` — index page so the three comparisons are discoverable from a single entry.
+- [x] Shared `CompareTable` component renders verdict-tinted feature rows (green = APIDelta wins, gray = competitor wins). Rows source data from `docs/competitive-teardown.md` plus public pricing pages.
+- [x] **Honest tables** — every page lists where the competitor wins explicitly (PagerDuty, SOC 2, business-hours deferral on API Drift Alert; price + free tier + region targeting on PageCrawl; visual diffs + non-API page tracking on Visualping). The "Pick X if…" sections name when a reader should *not* pick APIDelta.
+- [x] Homepage FAQ updated to link readers at `/compare`.
+- [ ] **Deferred**: per-page closing demo of "real changelog entry side-by-side" (audit F25 stretch goal). Not needed for first ship; add when a strong example is hand-classified.
 
-**Policy update** (already noted as locked decision):
-- [ ] Edit `docs/launch-strategy.md:571-577` to scope no-naming rule to ads/social/PR; explicitly permit named competitors on `/compare/*`
-- [ ] Source: `docs/competitive-teardown.md` already names PageCrawl / Visualping / API Drift Alert / oasdiff and has pricing data on lines 25-33, 87-93, 138-140
+**Policy update** (already locked):
+- [x] `docs/launch-strategy.md` competitor-naming policy at line 583+ already carves out the `/compare/*` exception (was added when the V2 plan was put in place). No further edit needed.
 
 ### Exit criteria
 
@@ -448,3 +451,19 @@ The Phase 2.2 push exposed a long-standing duplicate-schema problem: `apps/web/p
 - Discovery: top nav on the marketing homepage adds "Why not DIY?" alongside "Catalog"; new homepage FAQ entry "Should I just build my own?" with a teaser and a deep link.
 
 **Phase 2 of V2 is complete** (catalog + MCP + the buy-vs-build content). Phase 3 (pricing tiers + named-competitor compare pages) is next.
+
+### 2026-04-29 — Phase 3 shipped (pricing tiers + named-competitor compare pages)
+
+- **Pricing schema** — added `TEAM` + `BUSINESS` to the `PlanTier` enum (migration `20260429021024_add_team_business_plan_tiers`, applied locally + Neon prod). `PRO` retained as a legacy back-compat value (no rows reference it; we have 0 paying customers, but defensive). `PLAN_LIMITS[TEAM]` = 50 sources / 10 members / Email + Slack + Webhook + GitHub channels. `PLAN_LIMITS[BUSINESS]` = effectively-unlimited (1000/1000) caps with the same channel set.
+- **Billing service** — `createCheckoutSession` now accepts `'STARTER' | 'PRO' | 'TEAM'`. New `STRIPE_PRICE_ID_TEAM` env var. Checkout-session metadata + webhook handler updated to accept the new tier. Open: actual Stripe price ID needs to be created in the dashboard before TEAM checkout works in prod (BadRequestException until then).
+- **Pricing UI** — homepage `PLANS` array on `apps/web/src/app/page.tsx` swapped from `[Starter $49, Pro $99]` (2-col) to `[Starter $49, Team $199, Business "Contact us"]` (3-col). Business CTA is a `mailto:hello@apidelta.dev`. Settings page (`/dashboard/settings`) goes to a 4-column grid (Free Trial / Starter / Team / Business) with a rank-based upgrade/downgrade comparator and a contact-sales button on the Business card. GA event helper extended so begin_checkout / purchase fire on the TEAM value too.
+- **Three named-competitor compare pages**, all statically rendered:
+  - `/compare/apidelta-vs-api-drift-alert` — primary direct competitor. Honest scorecard: APIDelta wins on price (3× cheaper entry), AI classification, catalog, MCP, GitHub Issues, and check frequency on the entry tier; API Drift Alert wins on monitor count at Starter (15 vs. 10), native PagerDuty, business-hours deferral, and SOC 2 / SSO / RBAC shipped today.
+  - `/compare/apidelta-vs-pagecrawl` — generic page monitor. Calls out that PageCrawl is materially cheaper ($13 vs. $49) and has a free tier; APIDelta wins on API-specific intelligence (severity classification, affected-endpoint extraction, severity-based routing) and the curated catalog.
+  - `/compare/apidelta-vs-visualping` — visual diff tool. Frames it as the right tool for marketing / pricing / TOS monitoring; wrong tool for changelogs. We win on changelog-specific structured signal, GitHub Issues, MCP, and audit trail.
+  - `/compare/page.tsx` — index page so all three are discoverable. Closes with an email CTA for missing comparisons.
+- **Shared `CompareTable` component** renders verdict-tinted feature rows (emerald = APIDelta wins, gray = competitor wins, default = tie). Each page also surfaces a two-column "Where APIDelta wins / Where they win" summary up top, plus a "Pick X if…" decision section that explicitly names when a reader *shouldn't* pick APIDelta — credibility-positive vs. a one-sided pitch.
+- **Discovery** — homepage FAQ updated to link to `/compare`. Top nav already had Catalog and "Why not DIY?"; adding Compare to nav was held back to avoid crowding (FAQ link is sufficient).
+- **Policy** — `docs/launch-strategy.md` competitor-naming policy at line 583+ already carves out the `/compare/*` exception (was added during V2 plan). No edit needed.
+
+**Phase 3 closed.** All three V2 build phases are now done. Phase 4 (reset the kill checkpoint) is the only remaining V2 item — a docs-only update setting the new post-V2 metric criteria.

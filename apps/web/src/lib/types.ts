@@ -138,7 +138,7 @@ export interface ApiKeyCreated extends ApiKey {
 
 // ── Billing types ──
 
-export type PlanTier = 'FREE_TRIAL' | 'STARTER' | 'PRO';
+export type PlanTier = 'FREE_TRIAL' | 'STARTER' | 'PRO' | 'TEAM' | 'BUSINESS';
 export type PlanStatus = 'ACTIVE' | 'PAST_DUE' | 'CANCELLED';
 
 export interface TeamPlan {

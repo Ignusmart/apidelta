@@ -22,7 +22,7 @@ export class BillingController {
   @Post('checkout')
   async createCheckout(
     @Headers('x-team-id') teamId: string,
-    @Body() body: { planTier: 'STARTER' | 'PRO' },
+    @Body() body: { planTier: 'STARTER' | 'PRO' | 'TEAM' },
   ) {
     return this.billingService.createCheckoutSession(teamId, body.planTier);
   }

@@ -11,7 +11,21 @@ export const PLAN_LIMITS: Record<
 > = {
   FREE_TRIAL: { maxSources: 3, maxMembers: 1, channels: ['EMAIL'] },
   STARTER: { maxSources: 10, maxMembers: 2, channels: ['EMAIL', 'SLACK'] },
+  // PRO is legacy — kept for back-compat. New signups go to TEAM.
   PRO: { maxSources: 50, maxMembers: 10, channels: ['EMAIL', 'SLACK'] },
+  // TEAM unlocks the Phase 1 integrations (webhooks + GitHub Issues) plus
+  // higher seat counts; this is the V2 default mid-market tier.
+  TEAM: {
+    maxSources: 50,
+    maxMembers: 10,
+    channels: ['EMAIL', 'SLACK', 'WEBHOOK', 'GITHUB'],
+  },
+  // BUSINESS is contact-sales; treat unlimited as effectively-infinite caps.
+  BUSINESS: {
+    maxSources: 1000,
+    maxMembers: 1000,
+    channels: ['EMAIL', 'SLACK', 'WEBHOOK', 'GITHUB'],
+  },
 };
 
 @Injectable()
@@ -20,6 +34,7 @@ export class BillingService {
   private readonly stripe: Stripe;
   private readonly starterPriceId: string;
   private readonly proPriceId: string;
+  private readonly teamPriceId: string;
   private readonly webhookSecret: string;
 
   constructor(
@@ -30,15 +45,21 @@ export class BillingService {
     this.stripe = new Stripe(secretKey, { apiVersion: '2025-02-24.acacia' });
     this.starterPriceId = this.config.get<string>('STRIPE_PRICE_ID_STARTER', '');
     this.proPriceId = this.config.get<string>('STRIPE_PRICE_ID_PRO', '');
+    this.teamPriceId = this.config.get<string>('STRIPE_PRICE_ID_TEAM', '');
     this.webhookSecret = this.config.get<string>('STRIPE_WEBHOOK_SECRET', '');
   }
 
   // ── Checkout ────────────────────────────────
 
-  async createCheckoutSession(teamId: string, planTier: 'STARTER' | 'PRO') {
+  async createCheckoutSession(teamId: string, planTier: 'STARTER' | 'PRO' | 'TEAM') {
     const team = await this.prisma.team.findUniqueOrThrow({ where: { id: teamId } });
 
-    const priceId = planTier === 'STARTER' ? this.starterPriceId : this.proPriceId;
+    const priceId =
+      planTier === 'STARTER'
+        ? this.starterPriceId
+        : planTier === 'TEAM'
+          ? this.teamPriceId
+          : this.proPriceId;
     if (!priceId) {
       throw new BadRequestException(`No Stripe price configured for ${planTier}`);
     }
@@ -133,7 +154,7 @@ export class BillingService {
 
   private async onCheckoutCompleted(session: Stripe.Checkout.Session) {
     const teamId = session.metadata?.teamId;
-    const planTier = session.metadata?.planTier as 'STARTER' | 'PRO' | undefined;
+    const planTier = session.metadata?.planTier as 'STARTER' | 'PRO' | 'TEAM' | undefined;
     if (!teamId || !planTier) {
       this.logger.warn('checkout.session.completed missing metadata');
       return;

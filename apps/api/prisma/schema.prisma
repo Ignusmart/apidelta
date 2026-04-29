@@ -66,7 +66,9 @@ enum AlertStatus {
 enum PlanTier {
   FREE_TRIAL
   STARTER
-  PRO
+  PRO         // legacy — replaced by TEAM in V2 pricing; kept for back-compat with any existing rows
+  TEAM
+  BUSINESS    // contact-sales tier; no Stripe price
 }
 
 // ──────────────────────────────────────────────

@@ -115,23 +115,42 @@ const PLANS = [
       "Full change history",
     ],
     cta: "Start 14-day free trial",
+    href: "/sign-up",
     highlighted: false,
   },
   {
-    name: "Pro",
-    price: 99,
+    name: "Team",
+    price: 199,
     period: "per month",
     description: "For teams managing dozens of API dependencies",
     features: [
       "50 monitored APIs",
       "10 team members",
-      "Email + Slack alerts",
-      "AI classification",
+      "Email + Slack + Webhooks + GitHub Issues",
+      "MCP server (Claude / IDE access)",
+      "Audit log export",
       "Hourly monitoring",
-      "Full change history",
+      "Priority support",
     ],
     cta: "Start 14-day free trial",
+    href: "/sign-up",
     highlighted: true,
+  },
+  {
+    name: "Business",
+    priceLabel: "Contact us",
+    description: "For organizations with custom seat counts and compliance needs",
+    features: [
+      "Unlimited APIs",
+      "Unlimited team members",
+      "All Team features",
+      "SSO / SAML (roadmap)",
+      "Custom audit retention",
+      "Priority support + SLA",
+    ],
+    cta: "Contact sales",
+    href: "mailto:hello@apidelta.dev?subject=APIDelta%20Business%20plan",
+    highlighted: false,
   },
 ];
 
@@ -146,7 +165,7 @@ const FAQS = [
   },
   {
     q: "How is this different from generic page monitors?",
-    a: "Generic page monitors (Visualping, ChangeTower, Distill) were built for marketers tracking competitor pages. They show you raw diffs and leave the reading to you. APIDelta is purpose-built for API changelogs: AI classifies every entry by severity, extracts the affected endpoints, and writes a plain-English summary so engineers act only on what matters. We also handle the messy reality of how APIs actually publish updates — HTML pages, RSS feeds, GitHub Releases — without per-page configuration.",
+    a: "Generic page monitors (Visualping, ChangeTower, Distill) were built for marketers tracking competitor pages. They show you raw diffs and leave the reading to you. APIDelta is purpose-built for API changelogs: AI classifies every entry by severity, extracts the affected endpoints, and writes a plain-English summary so engineers act only on what matters. We also handle the messy reality of how APIs actually publish updates — HTML pages, RSS feeds, GitHub Releases — without per-page configuration. We've published head-to-head comparisons against PageCrawl, Visualping, and API Drift Alert at https://apidelta.dev/compare.",
   },
   {
     q: "Do I need to install anything?",
@@ -599,7 +618,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mx-auto grid max-w-3xl gap-8 lg:grid-cols-2">
+          <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-3">
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
@@ -621,15 +640,26 @@ export default function HomePage() {
                 </p>
 
                 <div className="mb-6">
-                  <span className="text-4xl font-bold">${plan.price}</span>
-                  <span className="text-gray-400">/mo</span>
-                  <p className="mt-1 text-xs text-gray-500">
-                    {plan.period}, billed monthly
-                  </p>
+                  {typeof plan.price === 'number' ? (
+                    <>
+                      <span className="text-4xl font-bold">${plan.price}</span>
+                      <span className="text-gray-400">/mo</span>
+                      <p className="mt-1 text-xs text-gray-500">
+                        {plan.period}, billed monthly
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-3xl font-bold">{plan.priceLabel}</span>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Custom pricing for your team
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 <a
-                  href="/sign-up"
+                  href={plan.href ?? '/sign-up'}
                   className={`mb-6 block rounded-lg py-2.5 text-center text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950 ${
                     plan.highlighted
                       ? "bg-violet-600 text-white hover:bg-violet-500"

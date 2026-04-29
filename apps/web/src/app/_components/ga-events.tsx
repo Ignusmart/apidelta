@@ -5,11 +5,12 @@ import { sendGAEvent } from '@next/third-parties/google';
 
 const GA_ENABLED = Boolean(process.env.NEXT_PUBLIC_GA_ID);
 
-type CheckoutPlan = 'STARTER' | 'PRO';
+type CheckoutPlan = 'STARTER' | 'PRO' | 'TEAM';
 
 const PLAN_VALUE: Record<CheckoutPlan, number> = {
   STARTER: 49,
   PRO: 99,
+  TEAM: 199,
 };
 
 export function track(event: string, params: Record<string, unknown> = {}) {

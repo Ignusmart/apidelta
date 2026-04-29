@@ -59,7 +59,6 @@ const PLANS = [
     period: '/month',
     icon: Sparkles,
     accent: 'blue',
-    popular: true,
     features: [
       'Up to 10 API sources',
       '2 team members',
@@ -69,19 +68,36 @@ const PLANS = [
     ],
   },
   {
-    tier: 'PRO' as PlanTier,
-    name: 'Pro',
-    price: '$99',
+    tier: 'TEAM' as PlanTier,
+    name: 'Team',
+    price: '$199',
     period: '/month',
     icon: Crown,
     accent: 'amber',
+    popular: true,
     features: [
       'Up to 50 API sources',
       '10 team members',
-      'All alert channels',
-      'AI-powered classification',
-      'Weekly digest emails',
+      'Email + Slack + Webhooks + GitHub Issues',
+      'MCP server (Claude / IDE access)',
+      'Audit log export',
       'Priority support',
+    ],
+  },
+  {
+    tier: 'BUSINESS' as PlanTier,
+    name: 'Business',
+    price: 'Contact us',
+    period: '',
+    icon: Crown,
+    accent: 'amber',
+    contactSales: true,
+    features: [
+      'Unlimited APIs + members',
+      'All Team features',
+      'SSO / SAML (roadmap)',
+      'Custom audit retention',
+      'Priority support + SLA',
     ],
   },
 ];
@@ -267,7 +283,7 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleCheckout(planTier: 'STARTER' | 'PRO') {
+  async function handleCheckout(planTier: 'STARTER' | 'PRO' | 'TEAM') {
     if (!teamId) return;
     setCheckoutLoading(planTier);
     setError(null);
@@ -426,16 +442,22 @@ export default function SettingsPage() {
       {/* Plan comparison */}
       <div>
         <h2 className="mb-4 text-lg font-semibold">Plans</h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {PLANS.map((plan) => {
+            // Rank-based comparison so we can express upgrade/downgrade
+            // across the 4-tier ladder: FREE_TRIAL < STARTER < TEAM < BUSINESS.
+            // Legacy PRO maps to the same rank as TEAM.
+            const rank: Record<PlanTier, number> = {
+              FREE_TRIAL: 0,
+              STARTER: 1,
+              PRO: 2,
+              TEAM: 2,
+              BUSINESS: 3,
+            };
             const isCurrent = currentTier === plan.tier;
-            const isUpgrade =
-              (currentTier === 'FREE_TRIAL' && plan.tier !== 'FREE_TRIAL') ||
-              (currentTier === 'STARTER' && plan.tier === 'PRO');
+            const isUpgrade = rank[plan.tier] > rank[currentTier];
             const isDowngrade =
-              (currentTier === 'PRO' && plan.tier !== 'PRO') ||
-              (currentTier === 'STARTER' && plan.tier === 'FREE_TRIAL');
-
+              rank[plan.tier] < rank[currentTier] && plan.tier !== 'FREE_TRIAL';
             const Icon = plan.icon;
 
             return (
@@ -462,7 +484,9 @@ export default function SettingsPage() {
 
                 <div className="mb-5">
                   <span className="text-3xl font-bold">{plan.price}</span>
-                  <span className="text-sm text-gray-500">{plan.period}</span>
+                  {plan.period && (
+                    <span className="text-sm text-gray-500">{plan.period}</span>
+                  )}
                 </div>
 
                 <ul className="mb-6 space-y-2.5">
@@ -478,9 +502,16 @@ export default function SettingsPage() {
                   <div className="rounded-lg border border-violet-500/30 bg-violet-500/10 py-2.5 text-center text-sm font-medium text-violet-400">
                     Current Plan
                   </div>
+                ) : plan.contactSales ? (
+                  <a
+                    href="mailto:hello@apidelta.dev?subject=APIDelta%20Business%20plan"
+                    className="block w-full rounded-lg bg-violet-600 py-2.5 text-center text-sm font-medium text-white transition hover:bg-violet-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                  >
+                    Contact sales
+                  </a>
                 ) : isUpgrade ? (
                   <button
-                    onClick={() => handleCheckout(plan.tier as 'STARTER' | 'PRO')}
+                    onClick={() => handleCheckout(plan.tier as 'STARTER' | 'PRO' | 'TEAM')}
                     disabled={checkoutLoading !== null}
                     className="w-full rounded-lg bg-violet-600 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-950"
                   >
