@@ -159,8 +159,9 @@ PageCrawl already ships an MCP server. Closing this gap is time-sensitive.
 
 Pre-empts the most common dev-tool objection.
 
-- [ ] Decide: section on homepage **or** new `/why-not-build` page (section is faster; page has SEO benefit). Default to section unless SEO opportunity is compelling at execution time.
-- [ ] Content angles: format drift maintenance, classifier degradation as LLM models change, audit trail / multi-tenant security work, the curated catalog (F19) as the one thing a weekend script can't replicate
+- [x] Chose standalone page over homepage section — better SEO target, room for substantive content, deep-linkable from pricing FAQ.
+- [x] New page `apps/web/src/app/why-not-build/page.tsx` (~1500 words, statically rendered). Five concrete sections (format drift, classifier rot, multi-tenancy, catalog, plumbing) using **specific, true stories** from APIDelta's actual crawler work — Stripe SPA / OpenAI 403 / GitHub Blog DOM drift / SendGrid retirement / AWS RSS URL move. The "honest summary" closes with explicit DIY-vs-buy guidance instead of pretending the build cost is zero on either side.
+- [x] Discovery: top nav on the marketing homepage now includes "Why not DIY?" alongside Catalog. Added an FAQ entry on the homepage that points at `/why-not-build` for the long version.
 
 ### Exit criteria
 
@@ -433,3 +434,17 @@ The Phase 2.2 push exposed a long-standing duplicate-schema problem: `apps/web/p
 **Fix**: pointed web's `package.json` `prisma.schema` at `../api/prisma/schema.prisma` and deleted `apps/web/prisma/`. The API is now the single source of truth for both the schema and migrations; web only generates the client. No more schema drift.
 
 **Phase 2.2 closed.** Phase 2.3 ("Why not just build this?" content) is next, then Phase 3 (pricing tiers + named-competitor compare pages).
+
+### 2026-04-29 — Phase 2.3 shipped ("Why not just build this?")
+
+- Picked standalone page over homepage section. The SEO target ("build my own changelog monitor") plus the deep-link-from-pricing-FAQ pattern win. Section would have been faster but lower leverage.
+- New `/why-not-build` page (~1500 words, statically rendered). The framing is direct: "Yes, you can. Here's what your weekend turns into in six months." Five sections, each grounded in a real APIDelta engineering story rather than vague hand-waving:
+  - **Format drift** — Stripe SPA forced Playwright; OpenAI 403'd plain UA; GitHub Blog DOM redesign rejected every entry as noise; SendGrid retired its docs URL post-Twilio; AWS RSS feed URL moved.
+  - **Classifier rot** — model deprecation breaking JSON output, vendor wording shifts, cost-cascade tuning, hallucinations on edge-case disclaimers.
+  - **Multi-tenancy** — alert dedup by rule × change pair, per-rule severity routing, audit logs, retry+DLQ, team invites + seat enforcement.
+  - **Catalog** — the data work nobody wants to redo (URL discovery, format identification, parser verification, descriptions, tagging).
+  - **Plumbing** — HMAC-signed webhooks, hashed API keys, GitHub Issues with PAT scoping, MCP server.
+- Closes with an "honest summary" that names when DIY *is* the right call (1–2 stable RSS sources, one user, time to maintain) — credibility-positive vs. a pure sales pitch.
+- Discovery: top nav on the marketing homepage adds "Why not DIY?" alongside "Catalog"; new homepage FAQ entry "Should I just build my own?" with a teaser and a deep link.
+
+**Phase 2 of V2 is complete** (catalog + MCP + the buy-vs-build content). Phase 3 (pricing tiers + named-competitor compare pages) is next.

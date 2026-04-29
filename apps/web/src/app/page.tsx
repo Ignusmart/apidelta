@@ -164,6 +164,10 @@ const FAQS = [
     q: "Is my data secure?",
     a: "All data is encrypted in transit (TLS) and at rest. APIDelta only stores changelog content and your alert configuration — never your source code or API keys. Each team's data is fully isolated.",
   },
+  {
+    q: "Should I just build my own?",
+    a: "You can. It's a cron + a fetch + an LLM call. Then in six months you're patching parsers because Stripe shipped an SPA, OpenAI started returning 403, GitHub Blog redesigned its DOM, and SendGrid retired its docs URL — all of which actually happened. We wrote a longer, honest answer (with specifics) at https://apidelta.dev/why-not-build.",
+  },
 ];
 
 const FAQ_SCHEMA = {
@@ -258,6 +262,9 @@ export default function HomePage() {
             </a>
             <a href="/catalog" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               Catalog
+            </a>
+            <a href="/why-not-build" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+              Why not DIY?
             </a>
           </div>
           <div className="flex items-center gap-3">
