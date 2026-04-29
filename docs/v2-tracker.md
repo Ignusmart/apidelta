@@ -90,9 +90,14 @@ Foundation for everything else — once webhooks ship, GitHub Issues, Linear, Pa
 
 ### 1.2 GitHub Issues integration
 
-- [ ] New transport: `github.transport.ts`
-- [ ] PAT-based auth for MVP; OAuth deferred to V3
-- [ ] Settings: GitHub repo connection + label config + severity gating (default: critical/high only)
+Reused the AlertRule pattern instead of a separate Integration table — same trade-off as Phase 1.1's webhook design: smaller change, same delivered surface. PAT lives on the rule row; UI never reads it back over the wire.
+
+- [x] Schema: `AlertChannel` adds `GITHUB`; `AlertRule` adds `githubToken String?` + `githubLabels String[]`. Migration `20260428020000_add_github_alert_channel` (applied locally + production Neon).
+- [x] New transport: `apps/api/src/modules/alerts/transports/github.transport.ts` — POSTs to `https://api.github.com/repos/{owner}/{repo}/issues` with `Accept: application/vnd.github+json` and `X-GitHub-Api-Version: 2022-11-28`. Title prefixed with severity + source name; body is markdown with affected endpoints list, change date, and a link back to the dashboard. Labels applied as configured.
+- [x] PAT-based auth for MVP. PATs are stored plaintext but redacted by `AlertsService.redactRule()` on every API response — `GET /alerts/rules` and `POST /alerts/rules` now return `hasGithubToken: boolean` instead of the actual token. OAuth deferred to V3; encryption-at-rest deferred to V3 hardening.
+- [x] `sendNotification()` extended to dispatch to `GithubTransport` when channel is `GITHUB`. Refuses to deliver if `githubToken` is null (defensive — createRule won't allow this).
+- [x] Settings UI: `/dashboard/alerts` rule editor adds a 4th channel button (Email / Slack / Webhook / GitHub). When GitHub is selected, three fields render: `owner/repo` destination (validated), PAT input (type=password), comma-separated label list. Rule cards now show a "PAT configured ✓" badge + label pills under each GitHub rule. History tab renders the GitHub icon for GITHUB alerts. Severity gating reuses the existing `minSeverity` field — UI defaults to MEDIUM; users can pick HIGH/CRITICAL+ when setting up the rule.
+- [x] Verified end-to-end with `apps/api/scripts/smoke-github.ts` (in-process fetch stub, asserts URL/method/headers/body/labels).
 
 ### 1.3 Team invite flow
 
@@ -353,3 +358,14 @@ Both Phase 0.1 + Phase 1.1 migrations applied to local and production (Neon Post
 - Dockerfile (`apps/api/Dockerfile`) migrated from `node:20-alpine` to `node:20-bookworm-slim`, with Playwright + Chromium installed via `pnpm exec playwright install --with-deps chromium` in the runner stage. `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` set so the non-root runtime user can read the browser. HEALTHCHECK swapped from `wget` (not in slim) to a Node-based check.
 
 **Phase 0 / 0.1 are now production-ready** end-to-end: code, schema, data, and image.
+
+### 2026-04-28 — Phase 1.2 shipped (GitHub Issues integration)
+
+- **Schema** — extended `AlertChannel` enum with `GITHUB`; added `AlertRule.githubToken String?` (PAT stored plaintext for MVP) + `AlertRule.githubLabels String[]`. Migration `20260428020000_add_github_alert_channel` applied locally and to Neon production via `prisma migrate dev` (additive, safe).
+- **Transport** — `apps/api/src/modules/alerts/transports/github.transport.ts` posts to `https://api.github.com/repos/{owner}/{repo}/issues` with `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`, and the rule's PAT as a `Bearer` token. Title format: `[{SEVERITY}] {sourceName}: {changeTitle}`. Body is markdown with affected endpoints list, change date, and a backlink to the dashboard. Labels applied as configured.
+- **AlertsService dispatch** — `sendNotification()` switch extended for `AlertChannel.GITHUB`. The shape passed to `sendNotification` now includes `githubToken` + `githubLabels`. Defends against missing PAT (logs + returns false) — should be unreachable since `createRule` enforces PAT presence at the DTO level.
+- **PAT redaction** — added `AlertsService.redactRule()` so `GET /alerts/rules`, `POST /alerts/rules`, and `POST /alerts/rules/:id/regenerate-secret` all replace `githubToken` with `hasGithubToken: boolean` before responding. PAT only travels client → server.
+- **Settings UI** (`/dashboard/alerts`) — fourth channel button (Email / Slack / Webhook / GitHub). When GitHub is selected: `owner/repo` destination input (regex-validated), password-typed PAT input with explainer about required scopes, comma-separated label input (default `apidelta`). GitHub rule cards now render a metadata footer with a "PAT configured ✓" badge (or "PAT missing" red badge if backfill ever happens) plus label pills. Severity gating uses the existing `minSeverity` selector — no new field needed.
+- **Verification** — `apps/api/scripts/smoke-github.ts` (in-process fetch stub, asserts URL/method/auth/api-version/title/body/labels) passes; `tsc --noEmit` clean across web + api; `nest build` clean; dev server compiles `/dashboard/alerts` and serves HTTP 200.
+
+**Phase 1.2 closed.** Phase 1.3 (team invite flow) is next.

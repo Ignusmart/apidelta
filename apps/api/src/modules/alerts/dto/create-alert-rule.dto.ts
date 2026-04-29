@@ -33,6 +33,16 @@ export class CreateAlertRuleDto {
   @IsString({ each: true })
   keywordFilter?: string[];
 
+  // GitHub channel only — repo PAT (treated as opaque secret) and labels to apply.
+  @IsOptional()
+  @IsString()
+  githubToken?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  githubLabels?: string[];
+
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;

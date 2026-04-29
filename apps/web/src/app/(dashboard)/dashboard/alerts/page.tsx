@@ -22,6 +22,7 @@ import {
   RotateCw,
   Eye,
   EyeOff,
+  Github,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -82,6 +83,8 @@ export default function AlertsPage() {
   const [formMinSeverity, setFormMinSeverity] = useState<Severity>('MEDIUM');
   const [formSourceFilter, setFormSourceFilter] = useState('');
   const [formKeywordFilter, setFormKeywordFilter] = useState('');
+  const [formGithubToken, setFormGithubToken] = useState('');
+  const [formGithubLabels, setFormGithubLabels] = useState('apidelta');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [ruleFormErrors, setRuleFormErrors] = useState<Record<string, string>>({});
@@ -142,7 +145,9 @@ export default function AlertsPage() {
           ? 'Enter the email address to receive alerts'
           : formChannel === 'SLACK'
             ? 'Enter your Slack webhook URL'
-            : 'Enter the webhook URL APIDelta should POST to';
+            : formChannel === 'WEBHOOK'
+              ? 'Enter the webhook URL APIDelta should POST to'
+              : 'Enter the GitHub repo as owner/repo';
     } else if (formChannel === 'EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formDestination)) {
       errors.destination = 'Enter a valid email address';
     } else if (formChannel === 'SLACK') {
@@ -156,6 +161,13 @@ export default function AlertsPage() {
       } catch {
         errors.destination = 'Enter a valid webhook URL (starts with https://)';
       }
+    } else if (formChannel === 'GITHUB') {
+      if (!/^[^/\s]+\/[^/\s]+$/.test(formDestination.trim())) {
+        errors.destination = 'Use the form owner/repo (e.g. acme/api)';
+      }
+    }
+    if (formChannel === 'GITHUB' && !formGithubToken.trim()) {
+      errors.githubToken = 'Enter a GitHub PAT with repo scope';
     }
     setRuleFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -168,6 +180,8 @@ export default function AlertsPage() {
     setFormMinSeverity('MEDIUM');
     setFormSourceFilter('');
     setFormKeywordFilter('');
+    setFormGithubToken('');
+    setFormGithubLabels('apidelta');
     setShowAdvancedFilters(false);
     setRuleFormErrors({});
     setRuleFieldsTouched({});
@@ -181,7 +195,7 @@ export default function AlertsPage() {
     e.preventDefault();
     if (!teamId) return;
     // Touch all fields to show errors
-    setRuleFieldsTouched({ name: true, destination: true });
+    setRuleFieldsTouched({ name: true, destination: true, githubToken: true });
     if (!validateRuleForm()) return;
     setSubmitting(true);
     try {
@@ -189,16 +203,27 @@ export default function AlertsPage() {
         .split(',')
         .map((k) => k.trim())
         .filter(Boolean);
+      const githubLabels =
+        formChannel === 'GITHUB'
+          ? formGithubLabels
+              .split(',')
+              .map((l) => l.trim())
+              .filter(Boolean)
+          : undefined;
       const created = await apiFetch<AlertRule>('/alerts/rules', {
         method: 'POST',
         body: JSON.stringify({
           teamId,
           name: formName,
           channel: formChannel,
-          destination: formDestination,
+          destination: formDestination.trim(),
           minSeverity: formMinSeverity,
           sourceFilter: formSourceFilter || null,
           keywordFilter: keywords,
+          ...(formChannel === 'GITHUB' && {
+            githubToken: formGithubToken,
+            githubLabels,
+          }),
         }),
       });
       resetRuleForm();
@@ -210,6 +235,8 @@ export default function AlertsPage() {
       if (created?.channel === 'WEBHOOK') {
         setRevealedSecrets((prev) => ({ ...prev, [created.id]: true }));
         toast.success('Webhook rule created — copy your signing secret below.');
+      } else if (created?.channel === 'GITHUB') {
+        toast.success('GitHub rule created — issues will open in the connected repo on matching changes.');
       } else {
         toast.success('Alert rule created');
       }
@@ -500,6 +527,18 @@ export default function AlertsPage() {
                       <Webhook aria-hidden="true" className="h-3.5 w-3.5" />
                       Webhook
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => { setFormChannel('GITHUB'); setFormDestination(''); setRuleFormErrors((prev) => ({ ...prev, destination: '', githubToken: '' })); }}
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
+                        formChannel === 'GITHUB'
+                          ? 'border-violet-500/50 bg-violet-500/10 text-white'
+                          : 'border-gray-700 bg-gray-800 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      <Github aria-hidden="true" className="h-3.5 w-3.5" />
+                      GitHub
+                    </button>
                   </div>
                   <span>to</span>
                 </div>
@@ -507,8 +546,20 @@ export default function AlertsPage() {
                 {/* Destination input */}
                 <input
                   id="rule-destination"
-                  type={formChannel === 'EMAIL' ? 'email' : 'url'}
-                  inputMode={formChannel === 'EMAIL' ? 'email' : 'url'}
+                  type={
+                    formChannel === 'EMAIL'
+                      ? 'email'
+                      : formChannel === 'GITHUB'
+                        ? 'text'
+                        : 'url'
+                  }
+                  inputMode={
+                    formChannel === 'EMAIL'
+                      ? 'email'
+                      : formChannel === 'GITHUB'
+                        ? 'text'
+                        : 'url'
+                  }
                   value={formDestination}
                   onChange={(e) => { setFormDestination(e.target.value); setRuleFormErrors((prev) => ({ ...prev, destination: '' })); }}
                   onBlur={() => touchRuleField('destination')}
@@ -517,7 +568,9 @@ export default function AlertsPage() {
                       ? 'team@company.com'
                       : formChannel === 'SLACK'
                         ? 'https://hooks.slack.com/services/...'
-                        : 'https://your-server.com/webhooks/apidelta'
+                        : formChannel === 'WEBHOOK'
+                          ? 'https://your-server.com/webhooks/apidelta'
+                          : 'owner/repo (e.g. acme/api)'
                   }
                   aria-invalid={ruleFieldsTouched.destination && !!ruleFormErrors.destination}
                   className={`w-full rounded-lg border bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:ring-1 ${
@@ -530,6 +583,54 @@ export default function AlertsPage() {
                   <p className="text-xs text-gray-500">
                     APIDelta will POST a signed JSON payload. We&apos;ll mint a signing secret you can verify against the <code className="rounded bg-gray-900 px-1 py-0.5 text-[11px] text-gray-400">X-APIDelta-Signature</code> header (HMAC-SHA256).
                   </p>
+                )}
+
+                {/* GitHub PAT + labels — only when channel is GITHUB */}
+                {formChannel === 'GITHUB' && (
+                  <div className="space-y-3">
+                    <div>
+                      <label htmlFor="rule-github-token" className="block text-xs font-medium text-gray-400">
+                        Personal access token
+                      </label>
+                      <input
+                        id="rule-github-token"
+                        type="password"
+                        autoComplete="off"
+                        value={formGithubToken}
+                        onChange={(e) => { setFormGithubToken(e.target.value); setRuleFormErrors((prev) => ({ ...prev, githubToken: '' })); }}
+                        onBlur={() => touchRuleField('githubToken')}
+                        placeholder="ghp_..."
+                        aria-invalid={ruleFieldsTouched.githubToken && !!ruleFormErrors.githubToken}
+                        className={`mt-1 w-full rounded-lg border bg-gray-900 px-3.5 py-2.5 font-mono text-sm text-white placeholder-gray-600 outline-none transition focus:ring-1 ${
+                          ruleFieldsTouched.githubToken && ruleFormErrors.githubToken
+                            ? 'border-red-500/50 focus:border-red-500 focus:ring-red-500/30'
+                            : 'border-gray-800 focus:border-violet-500 focus:ring-violet-500/30'
+                        }`}
+                      />
+                      {ruleFieldsTouched.githubToken && ruleFormErrors.githubToken && (
+                        <p className="mt-1 text-xs text-red-400">{ruleFormErrors.githubToken}</p>
+                      )}
+                      <p className="mt-1 text-[11px] text-gray-600">
+                        Needs <code className="rounded bg-gray-900 px-1 py-0.5 text-gray-400">repo</code> scope (or fine-grained read+issues:write on the target repo). Treat it like a password — APIDelta stores it to call the GitHub REST API on your behalf.
+                      </p>
+                    </div>
+                    <div>
+                      <label htmlFor="rule-github-labels" className="block text-xs font-medium text-gray-400">
+                        Issue labels (optional)
+                      </label>
+                      <input
+                        id="rule-github-labels"
+                        type="text"
+                        value={formGithubLabels}
+                        onChange={(e) => setFormGithubLabels(e.target.value)}
+                        placeholder="apidelta, breaking-change"
+                        className="mt-1 w-full rounded-lg border border-gray-800 bg-gray-900 px-3.5 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition focus:border-violet-500 focus:ring-1 focus:ring-violet-500/30"
+                      />
+                      <p className="mt-1 text-[11px] text-gray-600">
+                        Comma-separated. Labels must already exist on the repo or the issue create call will fail.
+                      </p>
+                    </div>
+                  </div>
                 )}
                 {ruleFieldsTouched.destination && ruleFormErrors.destination && (
                   <p className="text-xs text-red-400">{ruleFormErrors.destination}</p>
@@ -659,14 +760,19 @@ export default function AlertsPage() {
                     ? Mail
                     : rule.channel === 'SLACK'
                       ? MessageSquare
-                      : Webhook;
+                      : rule.channel === 'WEBHOOK'
+                        ? Webhook
+                        : Github;
                 const channelLabel =
                   rule.channel === 'EMAIL'
                     ? 'Email'
                     : rule.channel === 'SLACK'
                       ? 'Slack'
-                      : 'Webhook';
+                      : rule.channel === 'WEBHOOK'
+                        ? 'Webhook'
+                        : 'GitHub';
                 const isWebhook = rule.channel === 'WEBHOOK';
+                const isGithub = rule.channel === 'GITHUB';
                 const isRevealed = !!revealedSecrets[rule.id];
                 return (
                   <div
@@ -759,6 +865,43 @@ export default function AlertsPage() {
                         </button>
                       </div>
                     </div>
+
+                    {/* GitHub repo metadata — only on GITHUB rules */}
+                    {isGithub && (
+                      <div className="border-t border-gray-800/80 px-5 py-3">
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-gray-500">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium ${
+                              rule.hasGithubToken
+                                ? 'bg-emerald-500/10 text-emerald-400'
+                                : 'bg-red-500/10 text-red-400'
+                            }`}
+                          >
+                            <CheckCircle2 aria-hidden="true" className="h-3 w-3" />
+                            {rule.hasGithubToken ? 'PAT configured' : 'PAT missing'}
+                          </span>
+                          {rule.githubLabels.length > 0 ? (
+                            <>
+                              <span className="text-gray-700">&middot;</span>
+                              <span className="text-gray-500">Labels:</span>
+                              {rule.githubLabels.map((l) => (
+                                <span
+                                  key={l}
+                                  className="inline-flex items-center rounded-full bg-gray-800 px-2 py-0.5 text-[10px] text-gray-300"
+                                >
+                                  {l}
+                                </span>
+                              ))}
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-gray-700">&middot;</span>
+                              <span className="text-gray-600">No labels</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Webhook signing secret — only on WEBHOOK rules */}
                     {isWebhook && rule.webhookSecret && (
@@ -912,6 +1055,8 @@ export default function AlertsPage() {
                               <MessageSquare aria-hidden="true" className="h-3.5 w-3.5" />
                             ) : alert.alertRule?.channel === 'WEBHOOK' ? (
                               <Webhook aria-hidden="true" className="h-3.5 w-3.5" />
+                            ) : alert.alertRule?.channel === 'GITHUB' ? (
+                              <Github aria-hidden="true" className="h-3.5 w-3.5" />
                             ) : (
                               <Mail aria-hidden="true" className="h-3.5 w-3.5" />
                             )}

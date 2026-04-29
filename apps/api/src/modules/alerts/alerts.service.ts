@@ -5,6 +5,7 @@ import { AlertChannel, AlertStatus, ChangeType, Severity } from '@prisma/client'
 import { EmailTransport, AlertEmailPayload } from './transports/email.transport';
 import { SlackTransport, AlertSlackPayload } from './transports/slack.transport';
 import { WebhookTransport, AlertWebhookPayload } from './transports/webhook.transport';
+import { GithubTransport, AlertGithubPayload } from './transports/github.transport';
 import { CreateAlertRuleDto } from './dto/create-alert-rule.dto';
 
 // Severity ranking for threshold comparison
@@ -26,19 +27,33 @@ export class AlertsService {
     private readonly emailTransport: EmailTransport,
     private readonly slackTransport: SlackTransport,
     private readonly webhookTransport: WebhookTransport,
+    private readonly githubTransport: GithubTransport,
   ) {}
 
   // ── Alert Rules CRUD ────────────────────────────
 
+  /**
+   * Replace the GitHub PAT on an outbound rule with a boolean. PATs are
+   * secrets — once stored, they should never travel back over the wire,
+   * even to the team that owns them.
+   */
+  private redactRule<T extends { githubToken: string | null }>(
+    rule: T,
+  ): Omit<T, 'githubToken'> & { hasGithubToken: boolean } {
+    const { githubToken, ...rest } = rule;
+    return { ...rest, hasGithubToken: githubToken !== null && githubToken !== '' };
+  }
+
   async listRules(teamId: string) {
-    return this.prisma.alertRule.findMany({
+    const rules = await this.prisma.alertRule.findMany({
       where: { teamId },
       orderBy: { createdAt: 'desc' },
     });
+    return rules.map((r) => this.redactRule(r));
   }
 
   async createRule(dto: CreateAlertRuleDto) {
-    return this.prisma.alertRule.create({
+    const rule = await this.prisma.alertRule.create({
       data: {
         teamId: dto.teamId,
         name: dto.name,
@@ -50,12 +65,16 @@ export class AlertsService {
           dto.channel === AlertChannel.WEBHOOK
             ? randomBytes(32).toString('hex')
             : null,
+        // GitHub PAT + labels only persisted for GITHUB channel rules.
+        githubToken: dto.channel === AlertChannel.GITHUB ? (dto.githubToken ?? null) : null,
+        githubLabels: dto.channel === AlertChannel.GITHUB ? (dto.githubLabels ?? []) : [],
         minSeverity: dto.minSeverity ?? Severity.MEDIUM,
         sourceFilter: dto.sourceFilter ?? null,
         keywordFilter: dto.keywordFilter ?? [],
         isActive: dto.isActive ?? true,
       },
     });
+    return this.redactRule(rule);
   }
 
   /**
@@ -72,10 +91,11 @@ export class AlertsService {
         `Rule ${ruleId} is not a WEBHOOK rule — secret rotation only applies to webhook channels`,
       );
     }
-    return this.prisma.alertRule.update({
+    const updated = await this.prisma.alertRule.update({
       where: { id: ruleId },
       data: { webhookSecret: randomBytes(32).toString('hex') },
     });
+    return this.redactRule(updated);
   }
 
   async deleteRule(id: string) {
@@ -362,6 +382,8 @@ export class AlertsService {
       channel: AlertChannel;
       destination: string;
       webhookSecret: string | null;
+      githubToken: string | null;
+      githubLabels: string[];
     },
     change: {
       id: string;
@@ -430,6 +452,30 @@ export class AlertsService {
         dashboardUrl,
       };
       return this.webhookTransport.send(payload);
+    }
+
+    if (rule.channel === AlertChannel.GITHUB) {
+      if (!rule.githubToken) {
+        this.logger.error(
+          `GitHub rule has no PAT; refusing to deliver. Recreate the rule with a valid token.`,
+        );
+        return false;
+      }
+      const payload: AlertGithubPayload = {
+        destination: rule.destination,
+        token: rule.githubToken,
+        labels: rule.githubLabels,
+        alertId,
+        sourceName,
+        changeType: change.changeType,
+        severity: change.severity,
+        title: change.title,
+        description: change.description,
+        affectedEndpoints: change.affectedEndpoints,
+        changeDate: change.changeDate?.toISOString() ?? null,
+        dashboardUrl,
+      };
+      return this.githubTransport.send(payload);
     }
 
     this.logger.warn(`Unknown alert channel: ${rule.channel}`);

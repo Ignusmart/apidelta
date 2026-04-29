@@ -4,10 +4,17 @@ import { AlertsController } from './alerts.controller';
 import { EmailTransport } from './transports/email.transport';
 import { SlackTransport } from './transports/slack.transport';
 import { WebhookTransport } from './transports/webhook.transport';
+import { GithubTransport } from './transports/github.transport';
 
 @Module({
   controllers: [AlertsController],
-  providers: [AlertsService, EmailTransport, SlackTransport, WebhookTransport],
+  providers: [
+    AlertsService,
+    EmailTransport,
+    SlackTransport,
+    WebhookTransport,
+    GithubTransport,
+  ],
   exports: [AlertsService],
 })
 export class AlertsModule {}

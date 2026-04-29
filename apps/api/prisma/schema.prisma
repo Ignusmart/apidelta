@@ -48,6 +48,7 @@ enum AlertChannel {
   EMAIL
   SLACK
   WEBHOOK
+  GITHUB
 }
 
 enum PlanStatus {
@@ -242,11 +243,18 @@ model AlertRule {
   teamId          String
   name            String       // e.g. "Critical Stripe changes"
   channel         AlertChannel
-  destination     String       // Email address, Slack webhook URL, or generic webhook URL
+  destination     String       // Email address, Slack webhook URL, generic webhook URL, or owner/repo for GITHUB
   // For channel=WEBHOOK: HMAC-SHA256 secret. Receiver verifies the
   // X-APIDelta-Signature header against the request body. Auto-generated
   // on rule creation; null for non-WEBHOOK channels.
   webhookSecret   String?
+  // For channel=GITHUB: PAT with `repo` scope. Stored plaintext for MVP —
+  // multi-tenant DB rows are team-scoped, but rotating to encrypted at
+  // rest is on the V3 hardening list.
+  githubToken     String?
+  // For channel=GITHUB: labels applied to the created issue. Empty array
+  // means "no labels" — UI defaults to ['apidelta'] but doesn't enforce.
+  githubLabels    String[]     @default([])
   minSeverity     Severity     @default(MEDIUM) // Only alert on this severity or higher
   sourceFilter    String?      // Optional: only alert for specific ApiSource ID
   keywordFilter   String[]     // Optional: only alert if these keywords appear

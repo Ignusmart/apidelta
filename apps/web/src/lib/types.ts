@@ -4,7 +4,7 @@ export type SourceType = 'HTML_CHANGELOG' | 'RSS_FEED' | 'GITHUB_RELEASES';
 export type CrawlStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
 export type ChangeType = 'BREAKING' | 'DEPRECATION' | 'NON_BREAKING' | 'INFO';
 export type Severity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
-export type AlertChannel = 'EMAIL' | 'SLACK' | 'WEBHOOK';
+export type AlertChannel = 'EMAIL' | 'SLACK' | 'WEBHOOK' | 'GITHUB';
 export type AlertStatus = 'SENT' | 'FAILED' | 'PENDING';
 export type TriageStatus = 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED';
 
@@ -65,6 +65,10 @@ export interface AlertRule {
   channel: AlertChannel;
   destination: string;
   webhookSecret: string | null;
+  // GitHub PAT itself is never returned over the wire — server replaces
+  // it with this boolean so the UI can show "configured" state.
+  hasGithubToken: boolean;
+  githubLabels: string[];
   minSeverity: Severity;
   sourceFilter: string | null;
   keywordFilter: string[];
