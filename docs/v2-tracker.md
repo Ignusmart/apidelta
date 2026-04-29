@@ -132,11 +132,15 @@ The flow: owner creates an invite (email + plan-limit checked) → APIDelta retu
 
 The single biggest moat available — the data work nobody else has done.
 
-- [ ] Prisma model: `CatalogEntry` (slug, name, logoUrl, changelogUrl, parser, tags[], status)
-- [ ] Seed 30+ entries at Phase 2 start
-- [ ] Target 100+ entries before V2 launch
-- [ ] Public marketing page: `apps/web/src/app/catalog/page.tsx` — searchable, tag-filterable
-- [ ] Onboarding flow change: `/dashboard/sources/new` becomes "search catalog" first, "paste URL" fallback
+- [x] Prisma model: `CatalogEntry` (slug, name, description, logoUrl, websiteUrl, changelogUrl, sourceType, requiresJs, category, tags[], popular, featured). Migrations `20260428040000_add_catalog_entry` + `20260429013309_add_catalog_entry` (drift fix from a `@default([])` mismatch on tags — both applied locally + Neon prod).
+- [x] Seed 30+ entries — shipped 39 covering Payments, AI/ML, Communications, Cloud, Developer Tools, Frameworks, Databases, Auth, Observability, Productivity, Web3. Idempotent upsert by slug (`apps/api/prisma/seed-catalog.ts`).
+- [ ] Target 100+ entries before V2 launch (39/100 — track the gap below)
+- [x] Backend module: `apps/api/src/modules/catalog/` — public `GET /catalog` (with `q` / `category` / `popular` / `featured` filters), `GET /catalog/categories`, `GET /catalog/:slug`. No auth — catalog is public.
+- [x] Public marketing page: `apps/web/src/app/catalog/page.tsx` — server component, fetches via `API_URL` (no proxy needed since catalog is public). URL-driven filters (`?q=` and `?category=`) so all states are bookmarkable + SEO-friendly. Client-only `CatalogSearch` component handles debounced search input + category chips, updating the URL via `router.replace`.
+- [x] Per-entry detail page: `apps/web/src/app/catalog/[slug]/page.tsx` — server-rendered with `generateMetadata` for per-slug SEO, "Monitor with APIDelta" CTA pointing at `/sign-up?source=<slug>`. ISR cache via `next: { revalidate: 600 }`.
+- [x] Logo strategy: `logo.dev` free-tier API by domain — `https://img.logo.dev/<domain>?token=…`. Avoids hosting logo assets ourselves; falls back to a generic globe icon when null.
+- [x] Homepage nav links to `/catalog` so it's discoverable.
+- [ ] Onboarding flow change: `/dashboard/sources/new` becomes "search catalog" first, "paste URL" fallback. Deferred — current dashboard `quick-add-sources.tsx` has 25 hardcoded entries, low-latency. Refactor to fetch from `/catalog?popular=true` is a follow-up; keeps the dashboard fast while we expand the public catalog.
 
 **Sub-task**: compile catalog seed list. Leverage existing CrawlRun history + manual research. Track the URL list as a separate sub-issue inside this phase.
 
@@ -393,3 +397,16 @@ Both Phase 0.1 + Phase 1.1 migrations applied to local and production (Neon Post
 - **Verification** — `tsc --noEmit` clean across web + api; `nest build` clean; dev server compiles `/dashboard/settings`, `/sign-in`, `/invite/[token]`, and `/api/invite/[token]/accept` without errors. Bad-token landing renders the "Invite not found" branch.
 
 **Phase 1.3 closed.** Phase 1 of V2 is complete (webhooks + GitHub Issues + team invites). Phase 2 (curated catalog + MCP server + "Why not just build this?") is next.
+
+### 2026-04-28 — Phase 2.1 shipped (curated API catalog)
+
+- **Schema** — new `CatalogEntry` model with `slug` (unique), `name`, `description`, `category`, `tags[]`, `changelogUrl`, `sourceType`, `requiresJs`, `logoUrl`, `websiteUrl`, `popular`, `featured`. Two migrations applied (the second is a drift fix from `@default([])` on `tags` — Prisma represents Postgres array defaults differently). Both applied locally + Neon prod.
+- **Seed** (`apps/api/prisma/seed-catalog.ts`) — 39 entries spanning 11 categories. Idempotent upsert by slug — re-running is safe. Targets the APIs the homepage already advertises (Stripe, OpenAI, GitHub, Anthropic) plus broad coverage (Twilio, AWS, GCP, Cloudflare, Vercel, Netlify, Railway, Supabase, Prisma, Linear, Notion, Sentry, Datadog, Auth0, Clerk, WorkOS, viem/wagmi/Hardhat/OpenZeppelin/Alchemy, etc.). `popular: true` on the homepage-advertised set; `featured: true` on Stripe/OpenAI/Anthropic/GitHub.
+- **Backend** — new `CatalogModule` (`apps/api/src/modules/catalog/`) with public `GET /catalog` (filters: `q`, `category`, `popular`, `featured`), `GET /catalog/categories`, `GET /catalog/:slug`. No auth — catalog is public-by-design.
+- **Public listing page** (`/catalog`) — server component, fetches `entries` + `categories` in parallel via `API_URL` direct calls (no proxy). Search-by-name/tag/description plus category chips; all filter state is in the URL so deep-links are bookmarkable + SEO-friendly. Empty state with "paste any URL" fallback CTA.
+- **Detail page** (`/catalog/[slug]`) — server-rendered with `generateMetadata` so each entry gets its own canonical title + description for SEO. CTA goes to `/sign-up?source=<slug>` (the slug param is reserved for the deferred onboarding-prefill work).
+- **Logos** — `logo.dev` free-tier CDN by domain (`https://img.logo.dev/<domain>?token=…`). Cheaper than self-hosting and consistent across the catalog. Generic globe icon falls back when `logoUrl` is null.
+- **Discovery** — top nav on the marketing homepage now includes `Catalog` between `Use Cases` and the auth CTAs.
+- **Verification** — API endpoints respond with shaped JSON for popular / categories / by-slug. Public page renders 200 with all 39 entries linked to their detail pages; bad slug → 404; query/category filters work via URL params.
+
+**Phase 2.1 mostly closed** — public catalog ships. Outstanding: catalog growth toward 100+ entries and the dashboard onboarding refactor (both tracked above as `[ ]`). Phase 2.2 (MCP server) is next; it'll reuse the catalog data via a new `list_catalog` MCP tool.

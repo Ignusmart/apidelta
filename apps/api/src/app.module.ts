@@ -6,6 +6,7 @@ import { ClassifierModule } from './modules/classifier/classifier.module';
 import { AlertsModule } from './modules/alerts/alerts.module';
 import { BillingModule } from './modules/billing/billing.module';
 import { TeamModule } from './modules/team/team.module';
+import { CatalogModule } from './modules/catalog/catalog.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -20,6 +21,7 @@ import { HealthController } from './health.controller';
     AlertsModule,
     BillingModule,
     TeamModule,
+    CatalogModule,
   ],
   controllers: [HealthController],
 })

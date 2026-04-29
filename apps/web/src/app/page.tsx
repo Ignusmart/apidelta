@@ -256,6 +256,9 @@ export default function HomePage() {
             <a href="/use-cases/api-changelog-monitoring" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
               Use Cases
             </a>
+            <a href="/catalog" className="rounded-md px-1 py-0.5 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+              Catalog
+            </a>
           </div>
           <div className="flex items-center gap-3">
             <a

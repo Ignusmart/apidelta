@@ -175,6 +175,38 @@ model VerificationToken {
 }
 
 // ──────────────────────────────────────────────
+// Catalog — public, curated list of monitorable APIs.
+// Read-only from the app's perspective; rows are managed by the seed
+// script + manual additions via Prisma Studio. The catalog is the
+// V2 moat (F19 in the audit).
+// ──────────────────────────────────────────────
+
+model CatalogEntry {
+  id           String     @id @default(cuid())
+  // URL slug used in /catalog/<slug>. Unique, lowercase, dash-separated.
+  slug         String     @unique
+  name         String     // Display name, e.g. "Stripe"
+  description  String     // 1-2 sentence summary of the API
+  category     String     // Broad bucket: "Payments", "AI / ML", "Cloud", etc.
+  tags         String[]   // Free-form tags for search (Postgres TEXT[] — no DEFAULT, callers always set)
+  changelogUrl String     // The URL we'd crawl
+  sourceType   SourceType // How the changelog is published
+  requiresJs   Boolean    @default(false) // Playwright-rendered SPA?
+  // Visual metadata — logoUrl is preferred when set, otherwise the public
+  // page falls back to a generic icon.
+  logoUrl      String?
+  websiteUrl   String?    // Marketing homepage
+  // Display flags for landing surfaces.
+  popular      Boolean    @default(false)
+  featured     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([category])
+  @@index([popular])
+}
+
+// ──────────────────────────────────────────────
 // Crawler domain
 // ──────────────────────────────────────────────
 
