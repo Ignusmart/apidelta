@@ -12,6 +12,9 @@ import {
   Clock,
   MessageSquare,
   Mail,
+  Terminal,
+  Sparkles,
+  FileText,
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -82,9 +85,9 @@ const FEATURES = [
 const HOW_IT_WORKS = [
   {
     step: "1",
-    title: "Paste your changelog URLs",
+    title: "Pick from 39 monitored APIs (or paste any URL)",
     description:
-      "Add the changelog URL for any third-party API your product depends on. Stripe, OpenAI, GitHub, Twilio, and more work out of the box — any URL with an HTML changelog or RSS feed works.",
+      "Start from our curated catalog — Stripe, OpenAI, Anthropic, GitHub, Twilio, Cloudflare, AWS, and 32 more — pre-vetted with the right parser already wired up. Or paste any HTML changelog, RSS/Atom feed, or GitHub Releases URL when your stack runs on something we haven't catalogued yet.",
   },
   {
     step: "2",
@@ -237,8 +240,38 @@ const SOFTWARE_SCHEMA = {
   ],
 };
 
+const LOGO = (domain: string) =>
+  `https://img.logo.dev/${domain}?token=pk_X-1ZO13GSgeOoUrIuJ6GMQ`;
+
+const CATALOG_PREVIEW: { name: string; logoUrl: string }[] = [
+  { name: 'Stripe', logoUrl: LOGO('stripe.com') },
+  { name: 'OpenAI', logoUrl: LOGO('openai.com') },
+  { name: 'Anthropic', logoUrl: LOGO('anthropic.com') },
+  { name: 'GitHub', logoUrl: LOGO('github.com') },
+  { name: 'Twilio', logoUrl: LOGO('twilio.com') },
+  { name: 'Cloudflare', logoUrl: LOGO('cloudflare.com') },
+  { name: 'AWS', logoUrl: LOGO('aws.amazon.com') },
+  { name: 'Vercel', logoUrl: LOGO('vercel.com') },
+  { name: 'Slack API', logoUrl: LOGO('slack.com') },
+  { name: 'Prisma', logoUrl: LOGO('prisma.io') },
+  { name: 'Supabase', logoUrl: LOGO('supabase.com') },
+  { name: 'SendGrid', logoUrl: LOGO('sendgrid.com') },
+];
+
+const CATALOG_CATEGORIES = [
+  'Payments',
+  'AI / ML',
+  'Cloud',
+  'Communications',
+  'Developer Tools',
+  'Databases',
+  'Auth',
+  'Observability',
+];
+
 // ---------------------------------------------------------------------------
 import { StickyCTA } from './sticky-cta';
+import { CatalogLogo } from './_components/catalog-logo';
 
 // Page component
 // ---------------------------------------------------------------------------
@@ -370,23 +403,50 @@ export default function HomePage() {
       </section>
 
       {/* ----------------------------------------------------------------- */}
-      {/* SOCIAL PROOF STRIP                                                 */}
+      {/* CATALOG PREVIEW — leads with the moat                              */}
       {/* ----------------------------------------------------------------- */}
-      <section className="border-y border-gray-800/60 bg-gray-900/30 py-10">
-        <div className="mx-auto max-w-4xl px-6 text-center">
-          <p className="mb-6 text-sm font-medium uppercase tracking-wider text-gray-500">
-            Monitors changelogs from APIs you already depend on
+      <section className="border-y border-gray-800/60 bg-gray-900/30 py-14">
+        <div className="mx-auto max-w-5xl px-6 text-center">
+          <p className="mb-2 text-sm font-medium uppercase tracking-wider text-violet-400">
+            Curated catalog
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-lg font-semibold text-gray-500">
-            <span>Stripe</span>
-            <span>OpenAI</span>
-            <span>GitHub</span>
-            <span>Twilio</span>
-            <span>Cloudflare</span>
-            <span>Slack</span>
-            <span>Vercel</span>
-            <span>Prisma</span>
+          <h2 className="mb-3 text-2xl font-bold tracking-tight sm:text-3xl">
+            We already monitor <span className="text-violet-400">39 APIs</span> — pick yours, or paste any URL.
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-sm text-gray-400">
+            Each entry is hand-vetted with the right parser already wired up. Stop reverse-engineering changelog HTML.
+          </p>
+
+          <ul
+            aria-label="Sample of catalogued APIs"
+            className="mx-auto grid max-w-3xl grid-cols-4 gap-4 sm:grid-cols-6 sm:gap-5"
+          >
+            {CATALOG_PREVIEW.map((entry) => (
+              <li key={entry.name} className="flex flex-col items-center gap-2">
+                <CatalogLogo logoUrl={entry.logoUrl} name={entry.name} size="md" />
+                <span className="truncate text-[11px] text-gray-500">{entry.name}</span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs text-gray-500">
+            {CATALOG_CATEGORIES.map((cat, i) => (
+              <span key={cat} className="flex items-center gap-3">
+                <span>{cat}</span>
+                {i < CATALOG_CATEGORIES.length - 1 && (
+                  <span aria-hidden="true" className="text-gray-700">·</span>
+                )}
+              </span>
+            ))}
           </div>
+
+          <a
+            href="/catalog"
+            className="mt-8 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-violet-400 transition hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            Browse the full catalog
+            <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+          </a>
         </div>
       </section>
 
@@ -423,6 +483,116 @@ export default function HomePage() {
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------------- */}
+      {/* MCP SERVER — query API changes from Claude or Cursor               */}
+      {/* ----------------------------------------------------------------- */}
+      <section
+        id="mcp"
+        className="border-t border-gray-800/60 bg-gradient-to-b from-violet-950/10 via-gray-950 to-gray-950 py-24"
+      >
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="mb-12 text-center">
+            <p className="mb-2 inline-flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-violet-400">
+              <Terminal aria-hidden="true" className="h-4 w-4" /> MCP server
+            </p>
+            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              Query API changes from <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">Claude or Cursor</span>.
+            </h2>
+            <p className="mx-auto max-w-2xl text-gray-400">
+              APIDelta exposes a Model Context Protocol server. Connect once with a
+              per-team API key — your AI assistant can pull recent changes, search
+              the changelog, and list catalogued sources without leaving the editor.
+            </p>
+          </div>
+
+          <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[3fr_2fr]">
+            {/* Chat-style example */}
+            <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-6 shadow-xl shadow-violet-500/5">
+              <div className="mb-4 flex items-center gap-2 text-xs text-gray-500">
+                <span className="rounded bg-gray-800 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-gray-400">
+                  Claude · MCP
+                </span>
+                <span>apidelta-team</span>
+              </div>
+
+              <div className="space-y-4 text-sm">
+                {/* User turn */}
+                <div className="rounded-lg border border-gray-800 bg-gray-950 px-4 py-3">
+                  <p className="mb-1 text-[10px] font-medium uppercase tracking-wider text-gray-500">You</p>
+                  <p className="text-gray-200">
+                    What CRITICAL changes hit Stripe this week?
+                  </p>
+                </div>
+
+                {/* Assistant turn */}
+                <div className="rounded-lg border border-violet-500/30 bg-violet-500/5 px-4 py-3">
+                  <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-violet-400">Claude</p>
+                  <div className="mb-3 rounded border border-gray-800 bg-gray-950/80 px-3 py-2 font-mono text-[11px] text-gray-400">
+                    <span className="text-violet-300">recent_changes</span>(severity=<span className="text-pink-300">&quot;CRITICAL&quot;</span>, sourceName=<span className="text-pink-300">&quot;Stripe&quot;</span>, since=<span className="text-pink-300">&quot;7d&quot;</span>)
+                  </div>
+                  <p className="text-gray-300">
+                    One critical change in the last 7 days:
+                  </p>
+                  <ul className="mt-2 space-y-1 text-gray-400">
+                    <li className="flex gap-2">
+                      <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-[10px] font-medium text-red-400">CRITICAL</span>
+                      <span><span className="text-white">Payment Intents:</span> <code className="rounded bg-gray-800 px-1 text-violet-300">source</code> parameter removed — migrate to <code className="rounded bg-gray-800 px-1 text-violet-300">payment_method</code> by June 1.</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature list */}
+            <div className="space-y-5 text-sm">
+              <div className="flex gap-3">
+                <Terminal aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
+                <div>
+                  <p className="font-medium text-white">5 tools, ready to call</p>
+                  <p className="text-gray-400">
+                    <code className="text-violet-300">list_sources</code>,{' '}
+                    <code className="text-violet-300">recent_changes</code>,{' '}
+                    <code className="text-violet-300">search_changelog_entries</code>,{' '}
+                    <code className="text-violet-300">get_alert_history</code>,{' '}
+                    <code className="text-violet-300">list_catalog</code>.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Shield aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
+                <div>
+                  <p className="font-medium text-white">Per-team API keys</p>
+                  <p className="text-gray-400">Bearer auth scoped to your team — rotate or revoke from the dashboard. Read-only.</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Sparkles aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
+                <div>
+                  <p className="font-medium text-white">Works with Claude, Cursor, and any MCP client</p>
+                  <p className="text-gray-400">
+                    JSON-RPC 2.0 over Streamable HTTP. Drop the URL + token into your MCP config and you&apos;re done —{' '}
+                    <a href="/docs/mcp-setup" className="rounded text-violet-400 underline underline-offset-2 hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+                      see the setup guide
+                    </a>.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Users aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-violet-400" />
+                <div>
+                  <p className="font-medium text-white">Available on Team and Business</p>
+                  <p className="text-gray-400">
+                    <a href="#pricing" className="rounded text-violet-400 underline underline-offset-2 hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+                      See pricing →
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -515,71 +685,128 @@ export default function HomePage() {
       </section>
 
       {/* ----------------------------------------------------------------- */}
-      {/* ALERT PREVIEW                                                      */}
+      {/* ALERT PREVIEW — raw changelog → classified alert                    */}
       {/* ----------------------------------------------------------------- */}
       <section className="py-24">
-        <div className="mx-auto max-w-4xl px-6">
+        <div className="mx-auto max-w-6xl px-6">
           <div className="mb-12 text-center">
             <p className="mb-2 text-sm font-medium uppercase tracking-wider text-violet-400">
               See it in action
             </p>
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              An alert you actually want to read
+              From raw changelog{" "}
+              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
+                → classified alert
+              </span>.
             </h2>
-            <p className="mx-auto max-w-xl text-gray-400">
-              When a breaking change lands, you get a clear, actionable summary
-              with affected endpoints and next steps — not a raw diff.
+            <p className="mx-auto max-w-2xl text-gray-400">
+              We crawl the page, an LLM judges severity and pulls out affected
+              endpoints, and you get a structured alert in Slack — not a raw
+              diff to parse at 2 AM.
             </p>
           </div>
 
-          {/* Mock Slack message */}
-          <div className="mx-auto max-w-xl rounded-xl border border-gray-800 bg-gray-900 p-6" role="img" aria-label="Example APIDelta Slack alert showing a critical breaking change from Stripe API">
-            <div className="mb-3 flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded bg-violet-500/20">
-                <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
+          <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+            {/* Left: raw changelog scrape */}
+            <div className="flex flex-col rounded-xl border border-gray-800 bg-gray-900/40">
+              <div className="flex items-center justify-between border-b border-gray-800 px-4 py-2.5 text-xs">
+                <span className="flex items-center gap-2 font-medium text-gray-400">
+                  <FileText aria-hidden="true" className="h-3.5 w-3.5" />
+                  stripe.com/changelog
+                </span>
+                <span className="rounded bg-gray-800 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-gray-500">
+                  Raw
+                </span>
               </div>
-              <span className="font-semibold">APIDelta</span>
-              <span className="text-xs text-gray-500">2:34 PM</span>
+              <pre className="flex-1 overflow-x-auto px-4 py-4 text-[11px] leading-relaxed text-gray-400 font-mono whitespace-pre-wrap">
+{`<article class="changelog-entry">
+  <h3>2026-03-15 · API</h3>
+  <p>The <code>source</code> parameter on
+  <code>/v1/payment_intents</code> is now
+  removed. Existing integrations that pass
+  <code>source</code> will receive a 400
+  starting June 1, 2026. Use
+  <code>payment_method</code> instead.</p>
+  <p>Affects: /v1/payment_intents,
+  /v1/payment_intents/confirm</p>
+</article>`}
+              </pre>
             </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
-                  BREAKING
-                </span>
-                <span className="rounded bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
-                  CRITICAL
+
+            {/* Arrow / connector */}
+            <div className="hidden items-center justify-center lg:flex">
+              <div className="flex flex-col items-center gap-2 text-violet-400">
+                <Sparkles aria-hidden="true" className="h-5 w-5" />
+                <ArrowRight aria-hidden="true" className="h-5 w-5" />
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-500">
+                  AI
                 </span>
               </div>
-              <p className="font-medium text-white">
-                Stripe API — Payment Intents endpoint change
-              </p>
-              <p className="text-gray-400">
-                The <code className="rounded bg-gray-800 px-1 text-violet-300">/v1/payment_intents</code>{" "}
-                endpoint will remove the{" "}
-                <code className="rounded bg-gray-800 px-1 text-violet-300">source</code>{" "}
-                parameter on June 1, 2026. Migrate to{" "}
-                <code className="rounded bg-gray-800 px-1 text-violet-300">payment_method</code>{" "}
-                before the deadline.
-              </p>
-              <div className="border-t border-gray-800 pt-3">
-                <p className="text-xs text-gray-500">
-                  <span className="text-gray-400">Affected endpoints:</span>{" "}
-                  /v1/payment_intents, /v1/payment_intents/confirm
-                </p>
+            </div>
+
+            {/* Right: classified Slack output */}
+            <div className="flex flex-col rounded-xl border border-gray-800 bg-gray-900" role="img" aria-label="Example APIDelta Slack alert showing a critical breaking change from Stripe API">
+              <div className="flex items-center justify-between border-b border-gray-800 px-4 py-2.5 text-xs">
+                <span className="flex items-center gap-2 font-medium text-gray-400">
+                  <MessageSquare aria-hidden="true" className="h-3.5 w-3.5" />
+                  Slack · #api-changes
+                </span>
+                <span className="rounded bg-violet-500/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-violet-300">
+                  Classified
+                </span>
+              </div>
+              <div className="flex-1 p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded bg-violet-500/20">
+                    <Zap aria-hidden="true" className="h-4 w-4 text-violet-400" />
+                  </div>
+                  <span className="font-semibold">APIDelta</span>
+                  <span className="text-xs text-gray-500">2:34 PM</span>
+                </div>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
+                      BREAKING
+                    </span>
+                    <span className="rounded bg-red-500/20 px-2 py-0.5 text-xs font-medium text-red-400">
+                      CRITICAL
+                    </span>
+                  </div>
+                  <p className="font-medium text-white">
+                    Stripe API — Payment Intents endpoint change
+                  </p>
+                  <p className="text-gray-400">
+                    The <code className="rounded bg-gray-800 px-1 text-violet-300">/v1/payment_intents</code>{" "}
+                    endpoint will remove the{" "}
+                    <code className="rounded bg-gray-800 px-1 text-violet-300">source</code>{" "}
+                    parameter on June 1, 2026. Migrate to{" "}
+                    <code className="rounded bg-gray-800 px-1 text-violet-300">payment_method</code>{" "}
+                    before the deadline.
+                  </p>
+                  <div className="border-t border-gray-800 pt-3">
+                    <p className="text-xs text-gray-500">
+                      <span className="text-gray-400">Affected endpoints:</span>{" "}
+                      /v1/payment_intents, /v1/payment_intents/confirm
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-gray-500">
+          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
               <MessageSquare aria-hidden="true" className="h-4 w-4" /> Slack
             </span>
             <span className="flex items-center gap-1.5">
               <Mail aria-hidden="true" className="h-4 w-4" /> Email
             </span>
+            <span className="flex items-center gap-1.5">
+              <Terminal aria-hidden="true" className="h-4 w-4" /> Webhook · MCP
+            </span>
           </div>
 
-          <p className="mt-8 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm text-gray-500">
             Get alerts like this for every API you depend on.{" "}
             <a
               href="/sign-up"
@@ -588,6 +815,35 @@ export default function HomePage() {
               Start your free trial
             </a>
           </p>
+        </div>
+      </section>
+
+      {/* ----------------------------------------------------------------- */}
+      {/* WHY NOT BUILD — credibility callout above pricing                  */}
+      {/* ----------------------------------------------------------------- */}
+      <section className="pb-4 pt-16">
+        <div className="mx-auto max-w-4xl px-6">
+          <a
+            href="/why-not-build"
+            className="group flex flex-col items-start gap-4 rounded-2xl border border-gray-800 bg-gray-900/50 p-6 transition hover:border-violet-500/40 hover:bg-violet-500/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 sm:flex-row sm:items-center sm:gap-6 sm:p-7"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-400">
+              <FileText aria-hidden="true" className="h-6 w-6" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-violet-300">Wondering if you should just build this yourself?</p>
+              <p className="mt-1 text-base text-gray-200">
+                <span className="italic">&ldquo;The $49 we charge isn&apos;t for the script. It&apos;s for the cleanup.&rdquo;</span>
+              </p>
+              <p className="mt-1 text-sm text-gray-500">
+                We wrote a longer, honest answer — Stripe SPAs, OpenAI 403s, GitHub DOM changes, and the maintenance work nobody respects.
+              </p>
+            </div>
+            <span className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-md text-sm font-medium text-violet-400 transition group-hover:text-violet-300 sm:self-center">
+              Read it
+              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+            </span>
+          </a>
         </div>
       </section>
 

@@ -1,19 +1,19 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Globe, Github, Rss, Search } from 'lucide-react';
 import { CatalogSearch } from './CatalogSearch';
+import { CatalogLogo } from '../_components/catalog-logo';
 
 const API_BASE = process.env.API_URL ?? 'http://localhost:3001/api';
 
 export const metadata: Metadata = {
   title: 'API Catalog — Curated changelogs you can monitor with APIDelta',
   description:
-    'Browse 35+ curated APIs APIDelta monitors out of the box — Stripe, OpenAI, GitHub, Vercel, Anthropic, AWS, and more. Pick a source, paste your alert routing, ship.',
+    'Browse 39 curated APIs APIDelta monitors out of the box — Stripe, OpenAI, GitHub, Vercel, Anthropic, AWS, and more. Pick a source, paste your alert routing, ship.',
   alternates: { canonical: 'https://apidelta.dev/catalog' },
   openGraph: {
     title: 'APIDelta — Curated API Changelog Catalog',
-    description: '35+ APIs APIDelta crawls and classifies for you.',
+    description: '39 APIs APIDelta crawls and classifies for you.',
     url: 'https://apidelta.dev/catalog',
   },
 };
@@ -124,7 +124,7 @@ export default async function CatalogPage({
                 className="group flex h-full flex-col gap-3 rounded-xl border border-gray-800 bg-gray-900/40 p-5 transition hover:border-violet-500/40 hover:bg-violet-500/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
               >
                 <div className="flex items-center gap-3">
-                  <CatalogLogo entry={entry} />
+                  <CatalogLogo logoUrl={entry.logoUrl} name={entry.name} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-base font-semibold text-white">{entry.name}</p>
                     <p className="truncate text-xs text-gray-500">{entry.category}</p>
@@ -148,35 +148,13 @@ export default async function CatalogPage({
       )}
 
       <p className="mt-10 text-center text-xs text-gray-600">
-        {entries.length} of 35+ catalog entries shown. Don&apos;t see what you need?{' '}
+        {entries.length} of 39 catalog entries shown. Don&apos;t see what you need?{' '}
         <Link href="/dashboard/sources" className="text-violet-400 hover:underline">
           Add any changelog URL
         </Link>{' '}
         to your dashboard.
       </p>
     </main>
-  );
-}
-
-function CatalogLogo({ entry }: { entry: CatalogEntry }) {
-  if (entry.logoUrl) {
-    return (
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white/95">
-        <Image
-          src={entry.logoUrl}
-          alt=""
-          width={32}
-          height={32}
-          className="h-7 w-7 object-contain"
-          unoptimized
-        />
-      </div>
-    );
-  }
-  return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-800 text-violet-400">
-      <Globe aria-hidden="true" className="h-5 w-5" />
-    </div>
   );
 }
 
