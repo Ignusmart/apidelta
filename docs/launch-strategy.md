@@ -532,22 +532,30 @@ Subject: `APIDelta — AI changelog monitoring for API dependencies (just launch
 
 ## Success Metrics
 
-### Status: deferred to post-V2 (2026-04-28)
+### Status: V2 launched 2026-04-29 — now in the 30/60/90-day metric window
 
-The original 30-Day Targets / Day 30 kill checkpoint has been **deferred**. As of 2026-04-28 (Day 13 of MVP launch), the product was tracking ~13 visitors/7d, 0 trial signups, 0 MRR — well below the original survival floor. Rather than kill on pre-V2 metrics, the product is being pushed to a V2 with a real moat (curated catalog, MCP server, workflow integrations, named competitor compare, "why not just build this?" content) before any kill decision.
+The original 30-Day Targets / Day 30 kill checkpoint was **deferred** on 2026-04-28 (Day 13 of MVP launch — ~13 visitors/7d, 0 trial signups, 0 MRR). V2 was built and launched on **2026-04-29** with the moat: curated catalog (39 entries), MCP server (5 tools), workflow integrations (HMAC-signed webhooks + GitHub Issues + team invites), named-competitor compare pages (PageCrawl / Visualping / API Drift Alert), and a buy-vs-build content page.
 
-**Live tracker**: `docs/v2-tracker.md` owns V2 phases 0-4 and the new post-V2 checkpoint criteria.
+**Live tracker**: `docs/v2-tracker.md` owns the post-V2 metric checkpoints + decision framework.
 
-### Post-V2 checkpoint (Phase 4 of v2-tracker)
+### Post-V2 checkpoints (3-cadence — replaces the original Day-30 binary)
 
-Day 30 from V2 launch (estimated ≈ 2026-07-25 if V2 ships ≈ 2026-06-25):
+The 30/60/90 cadence is calibrated to B2B dev-tools cold launch reality (Sentry, Linear, Convex, MicroConf founder data — 6-9 months to first paying customer is typical). Day-30 is a **distribution diagnostic**, not a kill decision.
+
+| Checkpoint | Date | Purpose |
+|-----------|------|---------|
+| **Day 30** | **2026-05-29** | Distribution diagnostic — is traffic working? |
+| **Day 60** | **2026-06-28** | Positioning checkpoint — if traffic fixed but 0 trials, buyer/value-prop mismatch |
+| **Day 90** | **2026-07-28** | Hard kill — $0 MRR with consistent marketing = reassess PMF |
+
+#### Day-30 metric targets (2026-05-29)
 
 | Metric | Survival Floor | Healthy Signal |
 |--------|----------------|----------------|
 | Website visitors / week | > 500 | > 1,500 |
 | Free trial signups (cumulative) | > 10 | > 30 |
-| Paying customers (any tier) | > 2 | > 5 |
-| MRR | > $98 (1 Team or 2 Starter) | > $300 |
+| Paying customers (any tier) | > 1 | > 3 |
+| MRR | > $49 (1 Starter) | > $200 (1 Team or 4 Starter) |
 | Catalog page visits / week | > 100 | > 500 |
 | MCP integrations connected (any team) | > 1 | > 5 |
 
@@ -561,13 +569,14 @@ Day 30 from V2 launch (estimated ≈ 2026-07-25 if V2 ships ≈ 2026-06-25):
   - `?utm_source=google&utm_medium=cpc&utm_campaign=demand_validation` (already in deploy.md)
   - `?utm_source=reddit&utm_medium=referral&utm_campaign=webdev`
 
-### Decision Framework (Post-V2 Day 30)
+### Decision Framework (Day 30 → Day 60 → Day 90)
 
-- **>2 paying customers + healthy MRR**: Continue. Optimize the highest-converting V2 surface.
-- **>10 trials + 0-1 customers**: Activation/onboarding problem — survey trial users, prioritize the curated catalog UX.
-- **<10 trials from >500 visitors/week**: Landing-page problem — re-run credibility audit against the V2 surface.
-- **<500 visitors/week**: Distribution problem — V2 didn't move the needle on traffic, reassess the channel mix.
-- **Hard kill criteria**: $0 MRR after 60 days post-V2 launch with consistent marketing effort → reassess product-market fit and consider Phase 5 (full pivot or sunset).
+- **Day 30, >1 paying customer + healthy traffic**: Continue. Optimize the highest-converting V2 surface.
+- **Day 30, >10 trials + 0 customers**: Activation/onboarding problem — survey trial users, prioritize the curated catalog onboarding.
+- **Day 30, <10 trials from >500 visitors/week**: Landing-page problem — re-run the credibility audit against the V2 surface.
+- **Day 30, <500 visitors/week**: Distribution problem — V2 didn't move the needle on traffic, reassess the channel mix.
+- **Day 60, traffic fixed but 0 trials**: Positioning problem — pause feature work, run targeted user interviews on the trial drop-off.
+- **Day 90, $0 MRR with consistent marketing effort**: Hard kill — reassess PMF, consider Phase 5 (full pivot or sunset).
 
 ---
 

@@ -1,9 +1,10 @@
 # APIDelta V2 — Build Tracker
 
-**Status**: PLANNING — V2 phases scheduled, no code work started
+**Status**: POST-V2 LAUNCH — all four phases shipped 2026-04-29; now in the 30/60/90-day metric window
 **Created**: 2026-04-28
+**V2 launched**: **2026-04-29** (Phases 0-3 in one day; Phase 4 = the metric reset that follows)
 **Predecessor**: docs/plan.md (MVP), docs/audit-log.md (iteration log), docs/launch-strategy.md (launch playbook)
-**Sibling tracker**: docs/TRACKER.md (ML classifier feature, gated by V2 launch)
+**Sibling tracker**: docs/TRACKER.md (ML classifier feature, gated by V2 launch — now unblocked)
 
 ---
 
@@ -215,39 +216,56 @@ Pre-empts the most common dev-tool objection.
 
 ---
 
-## Phase 4 — Reset the kill checkpoint (atomic with V2 launch)
+## Phase 4 — Reset the kill checkpoint (post-V2 launch)
 
-**Timeline target**: V2 launch day (estimated ≈ 2026-06-25 if Phases 0-3 hit their targets)
-**Why**: The May 15 checkpoint is now obsolete. The new checkpoint must be tied to V2 differentiation, not pre-V2 metrics.
+**V2 launch date**: **2026-04-29** (Phases 0-3 closed today — much faster than the original 2026-06-25 estimate)
+**Why**: The May 15 / pre-V2 checkpoint is obsolete. New checkpoints are tied to V2 differentiation and use the **3-checkpoint cadence** locked in CLAUDE.md (B2B dev-tools cold launches realistically take 6-9 months to first paying customer per Sentry / Linear / Convex / MicroConf founder data).
 
-### New post-V2 checkpoint criteria
+### Three checkpoints, not one
 
-Day 30 from V2 launch (≈ 2026-07-25 if launch is 2026-06-25):
+| Checkpoint | Date | Purpose | If missed → |
+|-----------|------|---------|-------------|
+| **Day 30** | **2026-05-29** | Distribution diagnostic — is traffic / activation working? | Fix tactic (channels, onboarding), not product |
+| **Day 60** | **2026-06-28** | Positioning checkpoint — if traffic is fixed but 0 trials, buyer/value-prop mismatch | Re-survey ICP, re-run credibility audit on V2 surface |
+| **Day 90** | **2026-07-28** | Product kill checkpoint — working distribution + 0 paying = real signal | Reassess PMF; consider sunset or pivot |
 
-| Metric | Survival Floor | Healthy Signal |
-|--------|----------------|----------------|
-| Website visitors / week | > 500 | > 1,500 |
-| Free trial signups (cumulative) | > 10 | > 30 |
-| Paying customers (any tier) | > 2 | > 5 |
-| MRR | > $98 (1 Team or 2 Starter) | > $300 |
-| Catalog page visits / week | > 100 | > 500 |
-| MCP integrations connected (any team) | > 1 | > 5 |
+**Hard kill backstop**: $0 MRR at Day 90 (2026-07-28) with consistent marketing effort over the window. Anything before that is a tactic problem, not a product problem.
 
-### Decision framework (Day 30 post-V2 launch)
+### Day-30 metric targets (2026-05-29)
 
-- **>2 paying customers + healthy MRR**: Continue. Optimize the highest-converting V2 surface.
-- **>10 trials + 0-1 customers**: Activation/onboarding problem — survey trial users, prioritize the curated catalog UX.
-- **<10 trials from >500 visitors/week**: Landing-page problem — re-run the credibility audit against the V2 surface.
-- **<500 visitors/week**: Distribution problem — V2 didn't move the needle on traffic, reassess the channel mix.
-- **Hard kill criteria**: $0 MRR after 60 days post-V2 launch with consistent marketing effort → reassess product-market fit and consider Phase 5 (full pivot or sunset).
+| Metric | Survival Floor | Healthy Signal | Why this matters |
+|--------|----------------|----------------|------------------|
+| Website visitors / week | > 500 | > 1,500 | Distribution working |
+| Free trial signups (cumulative) | > 10 | > 30 | Landing page converting |
+| Paying customers (any tier) | > 1 | > 3 | At Day 30, 1+ is the early signal — full validation comes at Day 90 |
+| MRR | > $49 (1 Starter) | > $200 (1 Team or 4 Starter) | First-customer floor — Team tier alone clears the higher bar |
+| Catalog page visits / week | > 100 | > 500 | V2 moat being discovered |
+| MCP integrations connected (any team) | > 1 | > 5 | New surface getting adoption |
+
+### Day-60 metric targets (2026-06-28)
+
+Same metrics, raised floors:
+- Visitors/week > 1,000
+- Trial signups (cumulative) > 25
+- Paying customers > 2 ($98+ MRR)
+- MCP integrations > 5
+
+If trials are converting at <2% from >1,000 visitors → positioning problem; pause feature work, run targeted user interviews on the trial drop-off.
+
+### Day-90 hard-kill criteria (2026-07-28)
+
+- $0 MRR with consistent marketing effort throughout the window → reassess PMF, consider Phase 5 (pivot or sunset)
+- < 5 paying customers but >$200 MRR → keep going, the signal is real even if the count is small
+- > 5 paying customers → V2 worked, re-allocate to growth
 
 ### Tasks for Phase 4
 
-- [ ] Set Phase 4 kickoff date (V2 launch day)
-- [ ] Run launch playbook (use `docs/launch-strategy.md` Phases 1-3, skip the 30-Day Targets block — it has been replaced)
-- [ ] Update `docs/launch-strategy.md` Success Metrics block with the new criteria
-- [ ] Update `/Users/jobeloquintero/Repos/solo/CLAUDE.md` "Current Revenue Strategy" item 3 with new dates
-- [ ] Update this tracker's Status header to BUILDING → POST-LAUNCH
+- [x] V2 launch date set: **2026-04-29**
+- [x] Update `/Users/jobeloquintero/Repos/solo/CLAUDE.md` "Current Revenue Strategy" item 3 with the actual V2 launch date and 30/60/90 cadence
+- [x] Update `docs/launch-strategy.md` post-V2 checkpoint block with concrete dates
+- [x] Update this tracker's Status header to **POST-V2 LAUNCH**
+- [ ] Run the launch playbook in `docs/launch-strategy.md` (Phases 1-3) — V2 distribution push, not pre-V2
+- [ ] Day 30 metric review on **2026-05-29**
 
 ---
 
