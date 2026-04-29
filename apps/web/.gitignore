@@ -1,2 +1,7 @@
 test-results/
 playwright-report/
+
+# Prisma schema is sourced from apps/api/prisma at build time via the
+# scripts/sync-schema.mjs prebuild hook — apps/api is the single source of truth.
+prisma/
+
