@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AlertChannel, AlertStatus, ChangeType, Severity } from '@prisma/client';
@@ -102,6 +102,49 @@ export class AlertsService {
     const rule = await this.prisma.alertRule.findUnique({ where: { id } });
     if (!rule) throw new NotFoundException(`Alert rule ${id} not found`);
     return this.prisma.alertRule.delete({ where: { id } });
+  }
+
+  /**
+   * Fire a clearly-labeled synthetic alert through this rule's configured
+   * channel so the team can verify their wiring end-to-end without waiting
+   * for a real change to land. The payload is marked [TEST] in every visible
+   * field; webhook deliveries carry a synthetic alertId prefixed with
+   * `test-` so receivers can ignore or special-case them.
+   */
+  async sendTestAlert(teamId: string, ruleId: string): Promise<{ ok: true; channel: AlertChannel }> {
+    const rule = await this.prisma.alertRule.findFirst({
+      where: { id: ruleId, teamId },
+    });
+    if (!rule) throw new NotFoundException(`Alert rule ${ruleId} not found`);
+
+    const syntheticAlertId = `test-${randomBytes(8).toString('hex')}`;
+    const syntheticChange = {
+      id: `test-change-${randomBytes(4).toString('hex')}`,
+      title: '[TEST] APIDelta — alert routing check',
+      changeType: ChangeType.INFO,
+      severity: Severity.LOW,
+      description:
+        'This is a test alert from APIDelta. If you see this, your alert rule is wired up correctly. No action needed — you can close, dismiss, or delete this notification.',
+      affectedEndpoints: [],
+      changeDate: new Date(),
+    };
+
+    const success = await this.sendNotification(
+      rule,
+      syntheticChange,
+      'APIDelta (test)',
+      'test-source',
+      syntheticAlertId,
+    );
+
+    if (!success) {
+      throw new BadRequestException(
+        `Test delivery failed for ${rule.channel} rule. Check the destination value and any required credentials, then try again.`,
+      );
+    }
+
+    this.logger.log(`Test alert dispatched for rule ${ruleId} (channel=${rule.channel})`);
+    return { ok: true, channel: rule.channel };
   }
 
   // ── Unread Count ────────────────────────────────

@@ -46,6 +46,15 @@ export class AlertsController {
     return this.alertsService.regenerateWebhookSecret(teamId, id);
   }
 
+  @Post('rules/:id/test')
+  @HttpCode(HttpStatus.OK)
+  async testRule(
+    @Headers('x-team-id') teamId: string,
+    @Param('id') id: string,
+  ) {
+    return this.alertsService.sendTestAlert(teamId, id);
+  }
+
   // ── Unread Count ─────────────────────────────────
 
   @Get('unread-count')
