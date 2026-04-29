@@ -147,18 +147,6 @@ export class AlertsService {
     return { ok: true, channel: rule.channel };
   }
 
-  // ── Unread Count ────────────────────────────────
-
-  async getUnreadCount(teamId: string): Promise<{ count: number }> {
-    const count = await this.prisma.alert.count({
-      where: {
-        teamId,
-        status: { in: ['PENDING', 'FAILED'] },
-      },
-    });
-    return { count };
-  }
-
   // ── Triggered Alerts List ───────────────────────
 
   async listAlerts(teamId: string, page = 1, pageSize = 20) {

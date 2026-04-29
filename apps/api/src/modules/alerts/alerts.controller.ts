@@ -55,13 +55,6 @@ export class AlertsController {
     return this.alertsService.sendTestAlert(teamId, id);
   }
 
-  // ── Unread Count ─────────────────────────────────
-
-  @Get('unread-count')
-  async getUnreadCount(@Headers('x-team-id') teamId: string) {
-    return this.alertsService.getUnreadCount(teamId);
-  }
-
   // ── Triggered Alerts ────────────────────────────
 
   @Get()

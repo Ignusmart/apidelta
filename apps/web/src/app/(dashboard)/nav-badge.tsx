@@ -20,20 +20,6 @@ function NavBadge({ count, color = 'bg-gray-700 text-gray-400' }: { count: numbe
   );
 }
 
-export function AlertsBadge() {
-  const isDemo = useIsDemo();
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (isDemo) { setCount(2); return; }
-    apiFetch<{ count: number }>('/alerts/unread-count')
-      .then((data) => setCount(data.count))
-      .catch(() => {});
-  }, [isDemo]);
-
-  return <NavBadge count={count} color="bg-red-500 text-white" />;
-}
-
 export function ChangesBadge() {
   const isDemo = useIsDemo();
   const [count, setCount] = useState(0);

@@ -13,7 +13,6 @@ import {
   Plus,
   ExternalLink,
   CheckCircle2,
-  Eye,
   Download,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -66,7 +65,11 @@ export default function ChangesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showInfo, setShowInfo] = useState(false); // Default-hide INFO noise
-  const [triageFilter, setTriageFilter] = useState<TriageStatus | 'ALL'>('OPEN');
+  // Two-state triage view: "Needs review" merges OPEN + legacy ACKNOWLEDGED
+  // rows; "Done" matches RESOLVED. The schema enum still has all three for
+  // backwards compatibility with pre-cleanup data; the UI never sets
+  // ACKNOWLEDGED on new actions.
+  const [triageFilter, setTriageFilter] = useState<'OPEN' | 'DONE' | 'ALL'>('OPEN');
   const [dateRange, setDateRange] = useState<'24h' | '7d' | '30d' | 'all'>('all');
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -169,13 +172,17 @@ export default function ChangesPage() {
     }
   }, [highlightId, changes, selected]);
 
-  // Triage counts (computed before other filters for tab badges)
+  // Triage counts (computed before other filters for tab badges).
+  // OPEN bucket includes legacy ACKNOWLEDGED rows so they don't appear to
+  // disappear after the cleanup — they sit under "Needs review" until a
+  // user marks them done.
   const triageCounts = useMemo(() => {
-    const counts = { OPEN: 0, ACKNOWLEDGED: 0, RESOLVED: 0, ALL: 0 };
+    const counts = { OPEN: 0, DONE: 0, ALL: 0 };
     for (const c of changes) {
       if (!showInfo && c.changeType === 'INFO') continue;
       const status = c.triageStatus ?? 'OPEN';
-      counts[status]++;
+      if (status === 'RESOLVED') counts.DONE++;
+      else counts.OPEN++;
       counts.ALL++;
     }
     return counts;
@@ -193,7 +200,11 @@ export default function ChangesPage() {
   const filtered = useMemo(() => {
     const result = changes.filter((c) => {
       if (!showInfo && c.changeType === 'INFO') return false;
-      if (triageFilter !== 'ALL' && (c.triageStatus ?? 'OPEN') !== triageFilter) return false;
+      if (triageFilter !== 'ALL') {
+        const isDone = (c.triageStatus ?? 'OPEN') === 'RESOLVED';
+        if (triageFilter === 'OPEN' && isDone) return false;
+        if (triageFilter === 'DONE' && !isDone) return false;
+      }
       if (severityFilter && c.severity !== severityFilter) return false;
       if (sourceFilter && c.crawlRun?.source?.id !== sourceFilter) return false;
       if (ruleIdFromUrl && !c.alerts?.some((a) => a.alertRule.id === ruleIdFromUrl)) return false;
@@ -472,11 +483,10 @@ export default function ChangesPage() {
 
       {/* Triage status tabs */}
       <div className="flex gap-1 rounded-lg border border-gray-800 bg-gray-900/30 p-1" role="tablist" aria-label="Filter by triage status">
-        {(['OPEN', 'ACKNOWLEDGED', 'RESOLVED', 'ALL'] as const).map((tab) => {
+        {(['OPEN', 'DONE', 'ALL'] as const).map((tab) => {
           const labels: Record<typeof tab, string> = {
-            OPEN: 'Open',
-            ACKNOWLEDGED: 'Acknowledged',
-            RESOLVED: 'Resolved',
+            OPEN: 'Needs review',
+            DONE: 'Done',
             ALL: 'All',
           };
           const isActive = triageFilter === tab;
@@ -696,19 +706,11 @@ export default function ChangesPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => handleBulkTriage('ACKNOWLEDGED')}
-              className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-400 transition hover:bg-amber-500/20"
-            >
-              <Eye className="h-3 w-3" />
-              Acknowledge all
-            </button>
-            <button
-              type="button"
               onClick={() => handleBulkTriage('RESOLVED')}
               className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/20"
             >
               <CheckCircle2 className="h-3 w-3" />
-              Resolve all
+              Mark all done
             </button>
           </div>
           <button
@@ -862,7 +864,7 @@ export default function ChangesPage() {
                         )}
                       </span>
                     )}
-                    {status !== 'OPEN' && (
+                    {status === 'RESOLVED' && (
                       <TriageStatusBadge status={status} />
                     )}
                   </button>
@@ -890,22 +892,12 @@ export default function ChangesPage() {
                   </span>
                   {/* Inline triage actions — visible on hover */}
                   <div className="hidden shrink-0 items-center gap-1 group-hover/row:flex">
-                    {status === 'OPEN' && (
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); handleTriage(change.id, 'ACKNOWLEDGED'); }}
-                        className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[10px] font-medium text-amber-400 transition hover:bg-amber-500/20"
-                        title="Acknowledge"
-                      >
-                        <Eye className="h-3 w-3" />
-                      </button>
-                    )}
                     {status !== 'RESOLVED' && (
                       <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); handleTriage(change.id, 'RESOLVED'); }}
                         className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-medium text-emerald-400 transition hover:bg-emerald-500/20"
-                        title="Resolve"
+                        title="Mark done"
                       >
                         <CheckCircle2 className="h-3 w-3" />
                       </button>
@@ -994,15 +986,8 @@ function ChangeDetailPanel({
 
           {/* Triage actions */}
           <div className="mt-3 flex items-center gap-2">
-            <TriageStatusBadge status={change.triageStatus ?? 'OPEN'} />
-            {(change.triageStatus ?? 'OPEN') === 'OPEN' && (
-              <button
-                onClick={() => onTriage(change.id, 'ACKNOWLEDGED')}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-400 transition hover:bg-amber-500/20"
-              >
-                <Eye className="h-3 w-3" />
-                Acknowledge
-              </button>
+            {(change.triageStatus ?? 'OPEN') === 'RESOLVED' && (
+              <TriageStatusBadge status={change.triageStatus ?? 'OPEN'} />
             )}
             {(change.triageStatus ?? 'OPEN') !== 'RESOLVED' && (
               <button
@@ -1010,10 +995,10 @@ function ChangeDetailPanel({
                 className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400 transition hover:bg-emerald-500/20"
               >
                 <CheckCircle2 className="h-3 w-3" />
-                Resolve
+                Mark done
               </button>
             )}
-            {(change.triageStatus ?? 'OPEN') !== 'OPEN' && (
+            {(change.triageStatus ?? 'OPEN') === 'RESOLVED' && (
               <button
                 onClick={() => onTriage(change.id, 'OPEN')}
                 className="rounded-lg px-3 py-1.5 text-xs text-gray-500 transition hover:bg-gray-800 hover:text-gray-300"
