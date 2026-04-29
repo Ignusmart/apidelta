@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import {
   Zap,
   Bell,
@@ -157,7 +158,9 @@ const PLANS = [
   },
 ];
 
-const FAQS = [
+const FAQ_LINK = "rounded text-violet-400 underline underline-offset-2 transition hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500";
+
+const FAQS: { q: string; a: string; aNode?: ReactNode }[] = [
   {
     q: "What APIs can APIDelta monitor?",
     a: "Any API that publishes a changelog as an HTML page, RSS/Atom feed, or GitHub Releases page. Paste the URL and APIDelta handles the parsing automatically. We actively monitor changelogs from Stripe, OpenAI, GitHub, Twilio, Cloudflare, Slack, Vercel, Prisma, and more.",
@@ -169,6 +172,21 @@ const FAQS = [
   {
     q: "How is this different from generic page monitors?",
     a: "Generic page monitors (Visualping, ChangeTower, Distill) were built for marketers tracking competitor pages. They show you raw diffs and leave the reading to you. APIDelta is purpose-built for API changelogs: AI classifies every entry by severity, extracts the affected endpoints, and writes a plain-English summary so engineers act only on what matters. We also handle the messy reality of how APIs actually publish updates — HTML pages, RSS feeds, GitHub Releases — without per-page configuration. We've published head-to-head comparisons against PageCrawl, Visualping, and API Drift Alert at https://apidelta.dev/compare.",
+    aNode: (
+      <>
+        Generic page monitors (Visualping, ChangeTower, Distill) were built for
+        marketers tracking competitor pages. They show you raw diffs and leave
+        the reading to you. APIDelta is purpose-built for API changelogs: AI
+        classifies every entry by severity, extracts the affected endpoints,
+        and writes a plain-English summary so engineers act only on what
+        matters. We also handle the messy reality of how APIs actually publish
+        updates — HTML pages, RSS feeds, GitHub Releases — without per-page
+        configuration. Head-to-head comparisons:{" "}
+        <a href="/compare/apidelta-vs-pagecrawl" className={FAQ_LINK}>APIDelta vs. PageCrawl</a>,{" "}
+        <a href="/compare/apidelta-vs-visualping" className={FAQ_LINK}>APIDelta vs. Visualping</a>,{" "}
+        <a href="/compare/apidelta-vs-api-drift-alert" className={FAQ_LINK}>APIDelta vs. API Drift Alert</a>.
+      </>
+    ),
   },
   {
     q: "Do I need to install anything?",
@@ -184,11 +202,30 @@ const FAQS = [
   },
   {
     q: "Is my data secure?",
-    a: "All data is encrypted in transit (TLS) and at rest. APIDelta only stores changelog content and your alert configuration — never your source code or API keys. Each team's data is fully isolated.",
+    a: "All data is encrypted in transit (TLS) and at rest. APIDelta only stores changelog content and your alert configuration — never your source code or API keys. Each team's data is fully isolated. Full details, sub-processors, and what we don't have yet on our security page at https://apidelta.dev/security.",
+    aNode: (
+      <>
+        All data is encrypted in transit (TLS) and at rest. APIDelta only
+        stores changelog content and your alert configuration — never your
+        source code or API keys. Each team&apos;s data is fully isolated. Full
+        details, sub-processors, and what we don&apos;t have yet on our{" "}
+        <a href="/security" className={FAQ_LINK}>security page</a>.
+      </>
+    ),
   },
   {
     q: "Should I just build my own?",
     a: "You can. It's a cron + a fetch + an LLM call. Then in six months you're patching parsers because Stripe shipped an SPA, OpenAI started returning 403, GitHub Blog redesigned its DOM, and SendGrid retired its docs URL — all of which actually happened. We wrote a longer, honest answer (with specifics) at https://apidelta.dev/why-not-build.",
+    aNode: (
+      <>
+        You can. It&apos;s a cron + a fetch + an LLM call. Then in six months
+        you&apos;re patching parsers because Stripe shipped an SPA, OpenAI
+        started returning 403, GitHub Blog redesigned its DOM, and SendGrid
+        retired its docs URL — all of which actually happened. We wrote a
+        longer, honest answer (with specifics) on our{" "}
+        <a href="/why-not-build" className={FAQ_LINK}>why-not-build page</a>.
+      </>
+    ),
   },
 ];
 
@@ -976,7 +1013,7 @@ export default function HomePage() {
                   <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-500 transition group-open:rotate-180" />
                 </summary>
                 <div className="px-6 pb-4 text-sm leading-relaxed text-gray-400">
-                  {faq.a}
+                  {faq.aNode ?? faq.a}
                 </div>
               </details>
             ))}
@@ -1050,6 +1087,7 @@ export default function HomePage() {
               <a href="#features" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">Features</a><br />
               <a href="#pricing" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">Pricing</a><br />
               <a href="#faq" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">FAQ</a><br />
+              <a href="/security" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">Security</a><br />
               <a href="/terms" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">Terms</a><br />
               <a href="/privacy" className="rounded transition hover:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">Privacy</a>
             </nav>
