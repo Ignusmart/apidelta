@@ -10,6 +10,7 @@ import { ShortcutsProvider } from './shortcuts-dialog';
 import { NavLinks } from './nav-links';
 import { MobileNav } from './mobile-nav';
 import { SignupSuccessEvent } from '@/app/_components/ga-events';
+import { DemoBanner } from './demo-banner';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -97,7 +98,10 @@ export default async function DashboardLayout({
       </aside>
 
       {/* Main content — pb-20 on mobile for bottom nav bar */}
-      <main id="main-content" className="min-w-0 flex-1 p-6 pb-20 pt-20 lg:ml-64 lg:p-8 lg:pb-8 lg:pt-8">{children}</main>
+      <main id="main-content" className="min-w-0 flex-1 p-6 pb-20 pt-20 lg:ml-64 lg:p-8 lg:pb-8 lg:pt-8">
+        <DemoBanner />
+        {children}
+      </main>
 
       {/* Mobile bottom navigation */}
       <MobileNav />

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import {
   Plus,
   Trash2,
@@ -14,6 +15,7 @@ import {
   Globe,
   Github,
   ArrowUpRight,
+  ArrowRight,
   ChevronDown,
   Settings2,
   MoreHorizontal,
@@ -135,6 +137,25 @@ export default function SourcesPage() {
   const [detailCrawls, setDetailCrawls] = useState<import('@/lib/types').CrawlRun[]>([]);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // Cross-link target: deep-link from a Change → Sources?detail=<id>.
+  // ?detail= auto-opens the slide-over once sources load; closing strips
+  // the param so refreshing doesn't re-open the panel.
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const detailIdFromUrl = searchParams.get('detail');
+  const lastAutoOpenedRef = useRef<string | null>(null);
+
+  const closeDetail = useCallback(() => {
+    setDetailSource(null);
+    if (detailIdFromUrl) {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete('detail');
+      const qs = next.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    }
+  }, [detailIdFromUrl, pathname, router, searchParams]);
+
   // View state (filter/search/sort/menu)
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -160,6 +181,24 @@ export default function SourcesPage() {
       document.removeEventListener('keydown', handleKey);
     };
   }, [openMenuId]);
+
+  // Auto-open the slide-over when navigating from a Change row with
+  // ?detail=<sourceId>. Tracks the last opened id so closing the panel
+  // doesn't immediately re-open it on the next render.
+  useEffect(() => {
+    if (
+      detailIdFromUrl &&
+      !detailSource &&
+      lastAutoOpenedRef.current !== detailIdFromUrl &&
+      sources.length > 0
+    ) {
+      const match = sources.find((s) => s.id === detailIdFromUrl);
+      if (match) {
+        handleOpenDetail(match);
+        lastAutoOpenedRef.current = detailIdFromUrl;
+      }
+    }
+  }, [detailIdFromUrl, sources, detailSource]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Form state
   const [formName, setFormName] = useState('');
@@ -871,11 +910,11 @@ export default function SourcesPage() {
       {/* Source detail slide-over */}
       {detailSource && (
         <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="source-detail-title">
-          <button type="button" aria-label="Close details" onClick={() => setDetailSource(null)} className="animate-modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <button type="button" aria-label="Close details" onClick={closeDetail} className="animate-modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm" />
           <div className="animate-slide-in-right relative flex h-full w-full max-w-xl flex-col border-l border-gray-800 bg-gray-950 shadow-2xl">
             <div className="flex items-center justify-between border-b border-gray-900 px-6 py-4">
               <h2 id="source-detail-title" className="text-base font-semibold">{detailSource.name}</h2>
-              <button type="button" onClick={() => setDetailSource(null)} aria-label="Close" className="rounded-md p-1 text-gray-500 transition hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+              <button type="button" onClick={closeDetail} aria-label="Close" className="rounded-md p-1 text-gray-500 transition hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -888,6 +927,15 @@ export default function SourcesPage() {
                 <div className="flex justify-between"><span className="text-gray-600">Last crawled</span><span className="text-gray-300">{timeAgo(detailSource.lastCrawledAt)}</span></div>
                 <div className="flex justify-between"><span className="text-gray-600">Added</span><span className="text-gray-300">{new Date(detailSource.createdAt).toLocaleDateString()}</span></div>
               </div>
+
+              <Link
+                href={isDemo ? `/dashboard/changes?sourceId=${detailSource.id}&demo=true` : `/dashboard/changes?sourceId=${detailSource.id}`}
+                onClick={closeDetail}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-sm font-medium text-violet-300 transition hover:bg-violet-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+              >
+                View changes for this source
+                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+              </Link>
 
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">Crawl History</h3>

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Rss, GitCompareArrows, Settings } from 'lucide-react';
 import { ChangesBadge, SourcesBadge } from './nav-badge';
+import { useDemo } from '@/lib/use-demo';
 
 const NAV_ITEMS = [
   { href: '/dashboard/changes', label: 'Changes', icon: GitCompareArrows },
@@ -14,16 +15,18 @@ const NAV_ITEMS = [
 export function NavLinks() {
   const items = NAV_ITEMS;
   const pathname = usePathname();
+  const isDemo = useDemo();
 
   return (
     <>
       {items.map((item) => {
         const isActive = pathname.startsWith(item.href);
+        const href = isDemo ? `${item.href}?demo=true` : item.href;
 
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={href}
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${
               isActive
                 ? 'bg-gray-800/80 text-white border-l-2 border-violet-500 -ml-[2px] pl-[14px]'

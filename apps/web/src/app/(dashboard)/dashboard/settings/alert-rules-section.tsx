@@ -696,7 +696,12 @@ export function AlertRulesSection() {
                       {source && (
                         <>
                           <span className="text-gray-700">&middot;</span>
-                          <span>{source.name}</span>
+                          <Link
+                            href={isDemo ? `/dashboard/sources?detail=${source.id}&demo=true` : `/dashboard/sources?detail=${source.id}`}
+                            className="rounded text-gray-400 transition hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                          >
+                            {source.name}
+                          </Link>
                         </>
                       )}
                       {rule.keywordFilter.length > 0 && (
@@ -705,6 +710,13 @@ export function AlertRulesSection() {
                           <span>Keywords: {rule.keywordFilter.join(', ')}</span>
                         </>
                       )}
+                      <span className="text-gray-700">&middot;</span>
+                      <Link
+                        href={isDemo ? `/dashboard/changes?ruleId=${rule.id}&demo=true` : `/dashboard/changes?ruleId=${rule.id}`}
+                        className="rounded text-violet-400 transition hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                      >
+                        View deliveries →
+                      </Link>
                     </div>
                   </div>
 

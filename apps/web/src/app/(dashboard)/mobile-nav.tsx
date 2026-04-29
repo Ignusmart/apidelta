@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Rss, GitCompareArrows, Settings } from 'lucide-react';
+import { useDemo } from '@/lib/use-demo';
 
 const TABS = [
   { href: '/dashboard/changes', label: 'Changes', icon: GitCompareArrows },
@@ -12,6 +13,7 @@ const TABS = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const isDemo = useDemo();
 
   return (
     <nav
@@ -21,11 +23,12 @@ export function MobileNav() {
       <div className="flex items-center justify-around">
         {TABS.map((tab) => {
           const isActive = pathname.startsWith(tab.href);
+          const href = isDemo ? `${tab.href}?demo=true` : tab.href;
 
           return (
             <Link
               key={tab.href}
-              href={tab.href}
+              href={href}
               className={`flex flex-1 flex-col items-center gap-0.5 px-1 py-2.5 text-[10px] transition-colors ${
                 isActive
                   ? 'text-violet-400'

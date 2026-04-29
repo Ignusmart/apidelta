@@ -22,7 +22,7 @@ import { apiFetch } from '@/lib/api';
 import type { ApiSource, ChangeEntry, Severity, TriageStatus } from '@/lib/types';
 import { SeverityBadge, ChangeTypeBadge, TriageStatusBadge } from '@/lib/components';
 import { SEVERITY_ORDER, getTeamId, timeAgo } from '@/lib/shared';
-import { useDemo } from '@/lib/use-demo';
+import { useDemo, useDemoHref } from '@/lib/use-demo';
 import { DEMO_CHANGES, DEMO_SOURCES } from '@/lib/demo-data';
 import { useSavedFilters } from '@/lib/use-saved-filters';
 import { usePrompt } from '@/lib/dialogs';
@@ -52,6 +52,8 @@ export default function ChangesPage() {
   const router = useRouter();
   const pathname = usePathname();
   const highlightId = searchParams.get('highlight');
+  const sourceIdFromUrl = searchParams.get('sourceId');
+  const ruleIdFromUrl = searchParams.get('ruleId');
 
   const [changes, setChanges] = useState<ChangeEntry[]>(isDemo ? DEMO_CHANGES : []);
   const [sources, setSources] = useState<ApiSource[]>(isDemo ? DEMO_SOURCES : []);
@@ -59,7 +61,7 @@ export default function ChangesPage() {
 
   // Filters
   const [severityFilter, setSeverityFilter] = useState<Severity | ''>('');
-  const [sourceFilter, setSourceFilter] = useState('');
+  const [sourceFilter, setSourceFilter] = useState(sourceIdFromUrl ?? '');
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -88,6 +90,20 @@ export default function ChangesPage() {
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     }
   }, [highlightId, pathname, router, searchParams]);
+
+  // Mirror sourceFilter into the URL so the Source ↔ Changes deep-link
+  // round-trips (changing the in-page dropdown updates the URL; clearing
+  // strips the param). Effect runs on every sourceFilter change; same-value
+  // replaces are deduped by Next.
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams.toString());
+    if (sourceFilter) next.set('sourceId', sourceFilter);
+    else next.delete('sourceId');
+    const qs = next.toString();
+    const target = qs ? `${pathname}?${qs}` : pathname;
+    router.replace(target, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sourceFilter]);
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -180,6 +196,7 @@ export default function ChangesPage() {
       if (triageFilter !== 'ALL' && (c.triageStatus ?? 'OPEN') !== triageFilter) return false;
       if (severityFilter && c.severity !== severityFilter) return false;
       if (sourceFilter && c.crawlRun?.source?.id !== sourceFilter) return false;
+      if (ruleIdFromUrl && !c.alerts?.some((a) => a.alertRule.id === ruleIdFromUrl)) return false;
       if (dateCutoff) {
         const changeTime = new Date(c.changeDate ?? c.createdAt).getTime();
         if (changeTime < dateCutoff.getTime()) return false;
@@ -209,7 +226,7 @@ export default function ChangesPage() {
     });
 
     return result;
-  }, [changes, severityFilter, sourceFilter, searchQuery, showInfo, triageFilter, dateCutoff]);
+  }, [changes, severityFilter, sourceFilter, ruleIdFromUrl, searchQuery, showInfo, triageFilter, dateCutoff]);
 
   const hiddenInfoCount = useMemo(
     () => changes.filter((c) => c.changeType === 'INFO').length,
@@ -218,6 +235,25 @@ export default function ChangesPage() {
 
   const activeFilterCount =
     (severityFilter ? 1 : 0) + (sourceFilter ? 1 : 0) + (searchInput ? 1 : 0) + (dateRange !== 'all' ? 1 : 0);
+
+  // Rule-filter pill: when navigating from Settings → "View deliveries",
+  // the URL carries ?ruleId=. Resolve the rule name from any change's
+  // alerts (cheap; if no changes have alerts from that rule, fall back).
+  const activeRuleName = useMemo(() => {
+    if (!ruleIdFromUrl) return null;
+    for (const c of changes) {
+      const a = c.alerts?.find((a) => a.alertRule.id === ruleIdFromUrl);
+      if (a) return a.alertRule.name;
+    }
+    return null;
+  }, [ruleIdFromUrl, changes]);
+
+  const clearRuleFilter = useCallback(() => {
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete('ruleId');
+    const qs = next.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [pathname, router, searchParams]);
 
   // Triage handler — shared between inline actions and detail panel
   const handleTriage = useCallback(async (id: string, status: TriageStatus) => {
@@ -414,6 +450,25 @@ export default function ChangesPage() {
           </button>
         )}
       </div>
+
+      {/* Rule-filter pill — visible when deep-linked from Settings */}
+      {ruleIdFromUrl && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-violet-500/30 bg-violet-500/5 px-4 py-2.5 text-sm">
+          <span className="text-violet-300">
+            Filtered by alert rule:{' '}
+            <span className="font-medium text-white">
+              {activeRuleName ?? 'this rule'}
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={clearRuleFilter}
+            className="rounded text-xs font-medium text-violet-300 underline underline-offset-2 transition hover:text-violet-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+          >
+            Clear
+          </button>
+        </div>
+      )}
 
       {/* Triage status tabs */}
       <div className="flex gap-1 rounded-lg border border-gray-800 bg-gray-900/30 p-1" role="tablist" aria-label="Filter by triage status">
@@ -777,50 +832,62 @@ export default function ChangesPage() {
                   <button
                     type="button"
                     onClick={() => { setSelected(change); setFocusedIdx(idx); }}
-                    className="flex flex-1 items-center gap-3 focus-visible:outline-none"
+                    className="flex min-w-0 flex-1 items-center gap-3 focus-visible:outline-none"
                   >
-                  <SeverityBadge severity={change.severity} />
-                  <ChangeTypeBadge type={change.changeType} />
-                  <span className="flex-1 truncate text-sm text-white">
-                    {change.title}
-                  </span>
-                  {change.alerts && change.alerts.length > 0 && (
-                    <span
-                      className="hidden shrink-0 items-center gap-1 md:inline-flex"
-                      aria-label={`${change.alerts.length} delivery ${change.alerts.length === 1 ? 'attempt' : 'attempts'}`}
+                    <SeverityBadge severity={change.severity} />
+                    <ChangeTypeBadge type={change.changeType} />
+                    <span className="flex-1 truncate text-sm text-white">
+                      {change.title}
+                    </span>
+                    {change.alerts && change.alerts.length > 0 && (
+                      <span
+                        className="hidden shrink-0 items-center gap-1 md:inline-flex"
+                        aria-label={`${change.alerts.length} delivery ${change.alerts.length === 1 ? 'attempt' : 'attempts'}`}
+                      >
+                        {change.alerts.slice(0, 3).map((a) => {
+                          const Icon = CHANNEL_ICON[a.alertRule.channel];
+                          const cfg = ALERT_STATUS_CONFIG[a.status];
+                          return (
+                            <span
+                              key={a.id}
+                              className={`inline-flex h-5 w-5 items-center justify-center rounded ${cfg.bg}`}
+                              title={`${cfg.label} → ${a.alertRule.name} (${CHANNEL_LABEL[a.alertRule.channel]})`}
+                            >
+                              <Icon aria-hidden="true" className={`h-3 w-3 ${cfg.color}`} />
+                            </span>
+                          );
+                        })}
+                        {change.alerts.length > 3 && (
+                          <span className="text-[10px] text-gray-500">+{change.alerts.length - 3}</span>
+                        )}
+                      </span>
+                    )}
+                    {status !== 'OPEN' && (
+                      <TriageStatusBadge status={status} />
+                    )}
+                  </button>
+                  {change.crawlRun?.source?.name && change.crawlRun.source.id && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const sourceId = change.crawlRun!.source!.id;
+                        const target = isDemo
+                          ? `/dashboard/sources?detail=${sourceId}&demo=true`
+                          : `/dashboard/sources?detail=${sourceId}`;
+                        router.push(target);
+                      }}
+                      title={`View source: ${change.crawlRun.source.name}`}
+                      className="hidden shrink-0 rounded text-xs text-gray-500 transition hover:text-violet-300 md:inline group-hover/row:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
                     >
-                      {change.alerts.slice(0, 3).map((a) => {
-                        const Icon = CHANNEL_ICON[a.alertRule.channel];
-                        const cfg = ALERT_STATUS_CONFIG[a.status];
-                        return (
-                          <span
-                            key={a.id}
-                            className={`inline-flex h-5 w-5 items-center justify-center rounded ${cfg.bg}`}
-                            title={`${cfg.label} → ${a.alertRule.name} (${CHANNEL_LABEL[a.alertRule.channel]})`}
-                          >
-                            <Icon aria-hidden="true" className={`h-3 w-3 ${cfg.color}`} />
-                          </span>
-                        );
-                      })}
-                      {change.alerts.length > 3 && (
-                        <span className="text-[10px] text-gray-500">+{change.alerts.length - 3}</span>
-                      )}
-                    </span>
-                  )}
-                  {status !== 'OPEN' && (
-                    <TriageStatusBadge status={status} />
-                  )}
-                  {change.crawlRun?.source?.name && (
-                    <span className="hidden shrink-0 text-xs text-gray-500 md:inline group-hover/row:hidden">
                       {change.crawlRun.source.name}
-                    </span>
+                    </button>
                   )}
                   <span className="hidden shrink-0 text-xs text-gray-600 md:inline group-hover/row:hidden">
                     {new Date(
                       change.changeDate ?? change.createdAt,
                     ).toLocaleDateString()}
                   </span>
-                  </button>
                   {/* Inline triage actions — visible on hover */}
                   <div className="hidden shrink-0 items-center gap-1 group-hover/row:flex">
                     {status === 'OPEN' && (
@@ -878,6 +945,11 @@ function ChangeDetailPanel({
   onTriage: (id: string, status: TriageStatus) => void;
 }) {
   const trapRef = useFocusTrap(true);
+  const sourceDetailHref = useDemoHref(
+    change.crawlRun?.source?.id
+      ? `/dashboard/sources?detail=${change.crawlRun.source.id}`
+      : '/dashboard/sources',
+  );
 
   return (
     <div
@@ -1038,9 +1110,16 @@ function ChangeDetailPanel({
             {change.crawlRun?.source?.name && (
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Source</span>
-                <span className="text-gray-400">
-                  {change.crawlRun.source.name}
-                </span>
+                {change.crawlRun.source.id ? (
+                  <Link
+                    href={sourceDetailHref}
+                    className="rounded text-violet-400 transition hover:text-violet-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                  >
+                    {change.crawlRun.source.name}
+                  </Link>
+                ) : (
+                  <span className="text-gray-400">{change.crawlRun.source.name}</span>
+                )}
               </div>
             )}
             {change.crawlRun?.source?.url && (
