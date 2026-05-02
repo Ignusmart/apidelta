@@ -25,6 +25,12 @@ interface CatalogSeed {
   websiteUrl?: string;
   popular?: boolean;
   featured?: boolean;
+  // V3.1 — scanner mappings. npm package names (matched against
+  // ImportDeclaration.moduleSpecifier) and URL hostnames (matched
+  // against string-literal expressions). Empty arrays mean the
+  // scanner can't attribute usage to this entry yet.
+  npmPackages?: string[];
+  urlHostnames?: string[];
 }
 
 /** Logo URLs use the Logo.dev free tier (CDN-cached SVG by domain). */
@@ -503,13 +509,95 @@ const ENTRIES: CatalogSeed[] = [
   },
 ];
 
+// ──────────────────────────────────────────────
+// V3.1 — scanner mappings overlay. Kept as a separate dict so we can
+// add to it without re-touching every catalog row. Slugs that don't
+// appear here ship with empty arrays (still discoverable in /catalog,
+// just not yet matchable by the code scanner).
+// ──────────────────────────────────────────────
+const SCANNER_MAPPINGS: Record<
+  string,
+  { npmPackages?: string[]; urlHostnames?: string[] }
+> = {
+  stripe: {
+    npmPackages: ['stripe', '@stripe/stripe-js', '@stripe/react-stripe-js'],
+    urlHostnames: ['api.stripe.com', 'checkout.stripe.com', 'js.stripe.com'],
+  },
+  openai: {
+    npmPackages: ['openai'],
+    urlHostnames: ['api.openai.com'],
+  },
+  anthropic: {
+    npmPackages: ['@anthropic-ai/sdk'],
+    urlHostnames: ['api.anthropic.com'],
+  },
+  twilio: {
+    npmPackages: ['twilio'],
+    urlHostnames: ['api.twilio.com'],
+  },
+  sendgrid: {
+    npmPackages: ['@sendgrid/mail', '@sendgrid/client'],
+    urlHostnames: ['api.sendgrid.com'],
+  },
+  'slack-api': {
+    npmPackages: ['@slack/web-api', '@slack/bolt'],
+    urlHostnames: ['slack.com/api', 'hooks.slack.com'],
+  },
+  cloudflare: {
+    npmPackages: ['cloudflare'],
+    urlHostnames: ['api.cloudflare.com'],
+  },
+  vercel: {
+    npmPackages: ['@vercel/sdk', '@vercel/blob', '@vercel/edge-config'],
+    urlHostnames: ['api.vercel.com'],
+  },
+  supabase: {
+    npmPackages: ['@supabase/supabase-js', '@supabase/auth-js'],
+    urlHostnames: ['supabase.co'],
+  },
+  prisma: {
+    npmPackages: ['@prisma/client', 'prisma'],
+    urlHostnames: [],
+  },
+  'next-js': {
+    npmPackages: ['next'],
+    urlHostnames: [],
+  },
+  sentry: {
+    npmPackages: ['@sentry/node', '@sentry/nextjs', '@sentry/react', '@sentry/browser'],
+    urlHostnames: ['sentry.io'],
+  },
+  resend: {
+    npmPackages: ['resend'],
+    urlHostnames: ['api.resend.com'],
+  },
+  clerk: {
+    npmPackages: ['@clerk/nextjs', '@clerk/clerk-sdk-node', '@clerk/backend', '@clerk/clerk-react'],
+    urlHostnames: ['api.clerk.com'],
+  },
+  auth0: {
+    npmPackages: ['auth0', '@auth0/nextjs-auth0', '@auth0/auth0-react'],
+    urlHostnames: ['auth0.com'],
+  },
+  linear: {
+    npmPackages: ['@linear/sdk'],
+    urlHostnames: ['api.linear.app'],
+  },
+};
+
 async function main(): Promise<void> {
   console.log(`Seeding ${ENTRIES.length} catalog entries...`);
 
   let created = 0;
   let updated = 0;
+  let mapped = 0;
   for (const entry of ENTRIES) {
     const existing = await prisma.catalogEntry.findUnique({ where: { slug: entry.slug } });
+    const mapping = SCANNER_MAPPINGS[entry.slug] ?? {};
+    const npmPackages = mapping.npmPackages ?? [];
+    const urlHostnames = mapping.urlHostnames ?? [];
+    if (npmPackages.length > 0 || urlHostnames.length > 0) mapped++;
+
     await prisma.catalogEntry.upsert({
       where: { slug: entry.slug },
       create: {
@@ -525,6 +613,8 @@ async function main(): Promise<void> {
         websiteUrl: entry.websiteUrl ?? null,
         popular: entry.popular ?? false,
         featured: entry.featured ?? false,
+        npmPackages,
+        urlHostnames,
       },
       update: {
         name: entry.name,
@@ -538,13 +628,15 @@ async function main(): Promise<void> {
         websiteUrl: entry.websiteUrl ?? null,
         popular: entry.popular ?? false,
         featured: entry.featured ?? false,
+        npmPackages,
+        urlHostnames,
       },
     });
     if (existing) updated++;
     else created++;
   }
 
-  console.log(`Done — ${created} created, ${updated} updated.`);
+  console.log(`Done — ${created} created, ${updated} updated, ${mapped} with scanner mappings.`);
 }
 
 main()

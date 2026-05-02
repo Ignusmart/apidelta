@@ -8,6 +8,8 @@ import { BillingModule } from './modules/billing/billing.module';
 import { TeamModule } from './modules/team/team.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { McpModule } from './modules/mcp/mcp.module';
+import { GithubModule } from './modules/github/github.module';
+import { ScannerModule } from './modules/scanner/scanner.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -24,6 +26,8 @@ import { HealthController } from './health.controller';
     TeamModule,
     CatalogModule,
     McpModule,
+    GithubModule,
+    ScannerModule,
   ],
   controllers: [HealthController],
 })

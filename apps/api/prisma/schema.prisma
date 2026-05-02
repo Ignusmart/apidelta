@@ -92,6 +92,7 @@ model Team {
   alerts     Alert[]
   invites    TeamInvite[]
   apiKeys    ApiKey[]
+  githubInstallations GithubInstallation[]
 
   @@index([plan])
 }
@@ -198,6 +199,98 @@ model VerificationToken {
 }
 
 // ──────────────────────────────────────────────
+// V3 GitHub App — per-team GitHub App installation. The App provides
+// inbound `Contents: Read` (for repo scanning) plus outbound `Pull
+// requests: Write` and `Issues: Write` (for Urgent alerts). The V2
+// PAT-based GITHUB AlertChannel still works as a fallback; teams can
+// run both side-by-side until V3.5 deprecates the PAT path.
+// ──────────────────────────────────────────────
+
+model GithubInstallation {
+  id              String   @id @default(cuid())
+  teamId          String
+  // GitHub-side installation ID — used to mint installation access
+  // tokens via the App JWT. Unique across all teams.
+  installationId  Int      @unique
+  // "User" or "Organization" — same shape as the GitHub webhook's
+  // `installation.account.type` field.
+  accountType     String
+  accountLogin    String   // GitHub username or org slug
+  accountId       Int      // GitHub account ID (numeric)
+  suspendedAt     DateTime?
+  // Most recent webhook payload that touched this row. Useful for
+  // debugging install/uninstall churn during V3.0.
+  lastWebhookAt   DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  team   Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  repos  GithubRepo[]
+
+  @@index([teamId])
+  @@index([accountLogin])
+}
+
+// Repos covered by an installation. The webhook payload tells us which
+// repos the user selected at install-time; we mirror that here so the
+// scanner (V3.1) has a deterministic list to walk without hitting the
+// GitHub API on every run.
+model GithubRepo {
+  id              String   @id @default(cuid())
+  installationId  String
+  // GitHub-side repo ID — stable across renames.
+  repoId          Int      @unique
+  fullName        String   // "owner/repo" — denormalized for log readability
+  defaultBranch   String   @default("main")
+  private         Boolean  @default(false)
+  removedAt       DateTime?
+  lastScannedAt   DateTime?
+  // SHA of the most recent commit we scanned. Used in V3.5 to skip
+  // re-scanning when push webhooks fire for unchanged trees.
+  lastScannedSha  String?
+  // Best-effort error string from the last scan run, null on success.
+  lastScanError   String?
+  createdAt       DateTime @default(now())
+
+  installation GithubInstallation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  usages       RepoUsage[]
+
+  @@index([installationId])
+  @@index([fullName])
+}
+
+// V3.1 — single fingerprint of "this repo uses surface X of catalog
+// entry Y, observed at file:line". The scanner replaces all rows for
+// a given (repoId, catalogSlug) on each successful scan — incremental
+// diffing comes in V3.5. Surface strings are free-form for now; V3.2's
+// surface registry will normalize them against a per-catalog-entry
+// vocabulary.
+enum RepoUsageKind {
+  SDK_CALL        // e.g. "stripe.subscriptions.create"
+  HTTP_HOSTNAME   // e.g. "api.stripe.com" matched in a string literal
+  HTTP_PATH       // e.g. "/v1/payment_intents" extracted from a URL literal
+  OPENAPI_PATH    // e.g. paths['/v1/customers']['post'] from openapi-fetch
+}
+
+model RepoUsage {
+  id            String        @id @default(cuid())
+  githubRepoId  String
+  catalogSlug   String        // FK-ish to CatalogEntry.slug; not enforced as
+                              // a relation so usage rows survive catalog edits
+  kind          RepoUsageKind
+  surface       String        // The captured identifier (e.g. "stripe.subscriptions.create")
+  filePath      String        // Path within the repo
+  line          Int
+  scannedAt     DateTime      @default(now())
+
+  githubRepo GithubRepo @relation(fields: [githubRepoId], references: [id], onDelete: Cascade)
+
+  @@index([githubRepoId])
+  @@index([catalogSlug])
+  @@index([githubRepoId, catalogSlug])
+}
+
+// ──────────────────────────────────────────────
 // Catalog — public, curated list of monitorable APIs.
 // Read-only from the app's perspective; rows are managed by the seed
 // script + manual additions via Prisma Studio. The catalog is the
@@ -222,6 +315,12 @@ model CatalogEntry {
   // Display flags for landing surfaces.
   popular      Boolean    @default(false)
   featured     Boolean    @default(false)
+  // V3.1 — code scanner mappings. Empty arrays mean "scanner can't
+  // attribute usage to this catalog entry"; entries without mappings
+  // still show up in /catalog and still get crawled, they just won't
+  // produce RepoUsage matches.
+  npmPackages  String[]   @default([])  // e.g. ["stripe", "@stripe/stripe-js"]
+  urlHostnames String[]   @default([])  // e.g. ["api.stripe.com", "checkout.stripe.com"]
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
