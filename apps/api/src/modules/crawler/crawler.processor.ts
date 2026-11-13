@@ -33,19 +33,10 @@ export class CrawlerProcessor {
     try {
       const now = new Date();
 
-      // Find active sources that are due for a crawl
+      // Prisma drops an empty `{}` inside OR, which left only never-crawled
+      // sources matching. Fetch all active sources and filter in code.
       const sources = await this.prisma.apiSource.findMany({
-        where: {
-          isActive: true,
-          OR: [
-            { lastCrawledAt: null }, // Never crawled
-            {
-              // lastCrawledAt + crawlIntervalHours < now
-              // We can't do interval arithmetic in Prisma easily,
-              // so fetch all active sources and filter in code.
-            },
-          ],
-        },
+        where: { isActive: true },
       });
 
       const dueSources = sources.filter((source) => {
