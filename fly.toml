@@ -1,0 +1,26 @@
+app = "apidelta-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "apps/api/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  API_PORT = "3001"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  # Crawls run on an in-process hourly cron, so the machine must stay up.
+  auto_stop_machines = "off"
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    path = "/api/health"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "30s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "1gb"

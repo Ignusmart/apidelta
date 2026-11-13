@@ -82,7 +82,7 @@ export function SeoNav() {
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed top-0 z-50 w-full border-b border-gray-800/60 bg-gray-950/80 backdrop-blur-md"
+      className="fixed top-9 z-50 w-full border-b border-gray-800/60 bg-gray-950/80 backdrop-blur-md"
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <a

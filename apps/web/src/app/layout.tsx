@@ -56,13 +56,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`scroll-smooth ${inter.variable}`}>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased pt-9">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-violet-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:outline-none"
         >
           Skip to main content
         </a>
+        <p
+          role="note"
+          className="fixed inset-x-0 top-0 z-[60] flex h-9 items-center justify-center bg-amber-100 px-4 text-center text-xs text-amber-950 sm:text-sm"
+        >
+          Portfolio demo. Billing runs in Stripe test mode (card 4242 4242 4242 4242). No real charges.
+        </p>
         <Providers>{children}</Providers>
       </body>
       {process.env.NEXT_PUBLIC_GA_ID &&
